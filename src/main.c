@@ -1,65 +1,19 @@
+#include "stdio.h"
+#include "string.h"
+
 #include "sokol_app.h"
 #include "sokol_gfx.h"
 #include "sokol_glue.h"
+
 #include "main.glsl.h"
 
-
-typedef struct buffer_object {
-  sg_pass_action pass_action;
-  sg_pipeline pip;
-  sg_bindings bind;
-  float* vertices;
-  uint16_t* indices;
-  int vertices_count;
-  int indices_count;
-} buffer_object;
-static buffer_object player_bo;
+#include "buffer_object.h"
+#include "quad.h"
 
 
-void init_buffer_object(buffer_object* bo, int vertices_count, int indices_count)
-{
-  int vertices_size = vertices_count * sizeof(float);
-  int indices_size = indices_count * sizeof(uint16_t);
+static buffer_object player_bo, map_bo;
+static quad player_quad;
 
-  bo->bind.vertex_buffers[0] = sg_make_buffer(&(sg_buffer_desc){
-      .usage = SG_USAGE_DYNAMIC,
-      .size = vertices_size
-      });
-
-  uint16_t indices[] = { 0, 1, 2,  0, 2, 3 };
-  bo->bind.index_buffer = sg_make_buffer(&(sg_buffer_desc){
-      .type = SG_BUFFERTYPE_INDEXBUFFER,
-      .usage = SG_USAGE_DYNAMIC,
-      .size = indices_size
-      });
-
-  sg_shader shd = sg_make_shader(main_shader_desc());
-
-  bo->pip = sg_make_pipeline(&(sg_pipeline_desc){
-      .shader = shd,
-      .index_type = SG_INDEXTYPE_UINT16,
-      .layout = {
-        .attrs = {
-          [ATTR_vs_position].format = SG_VERTEXFORMAT_FLOAT3,
-          [ATTR_vs_color0].format   = SG_VERTEXFORMAT_FLOAT4
-        }
-      }
-      });
-
-  bo->pass_action = (sg_pass_action) {
-    .colors[0] = { .action=SG_ACTION_CLEAR, .val={0.5f, 0.5f, 0.5f, 1.0f } }
-  };
-
-  bo->vertices = (float*)malloc(vertices_size);
-  bo->indices = (uint16_t*)malloc(indices_size);
-}
-
-
-void update_buffer_object(buffer_object* bo, int vertices_count, int indices_count)
-{
-  sg_update_buffer(bo->bind.vertex_buffers[0], bo->vertices, vertices_count * sizeof(float));
-  sg_update_buffer(bo->bind.index_buffer, bo->indices, indices_count * sizeof(uint16_t));
-}
 
 
 void init(void) {
@@ -67,33 +21,29 @@ void init(void) {
       .context = sapp_sgcontext()
       });
 
-  init_buffer_object(&player_bo, 28, 6);
+  init_buffer_object(&player_bo, vertices_per_quad, indices_per_quad);
+  init_buffer_object(&map_bo, vertices_per_quad, indices_per_quad);
 
-  float vertices[] = {
-    // positions            colors
-    -0.5f,  0.5f, 0.5f,     1.0f, 0.0f, 0.0f, 1.0f,
-    0.5f,  0.5f, 0.5f,     0.0f, 1.0f, 0.0f, 1.0f,
-    0.5f, -0.5f, 0.5f,     0.0f, 0.0f, 1.0f, 1.0f,
-    -0.5f, -0.5f, 0.5f,     1.0f, 1.0f, 0.0f, 1.0f,
+  player_quad = (quad){
+    -0.5f, -0.5f, 0.5f, 0.5f,
+    0.8f, 0.6f, 0.7f
   };
-  uint16_t indices[] = { 0, 1, 2,  0, 2, 3 };
 
-  memcpy(player_bo.vertices, vertices, sizeof(vertices));
-  memcpy(player_bo.indices, indices, sizeof(indices));
+  /* float vertices[] = { */
+  /*   // positions            colors */
+  /*   -0.5f,  0.5f, 0.5f,     1.0f, 0.0f, 0.0f, 1.0f, */
+  /*   0.5f,  0.5f, 0.5f,     0.0f, 1.0f, 0.0f, 1.0f, */
+  /*   0.5f, -0.5f, 0.5f,     0.0f, 0.0f, 1.0f, 1.0f, */
+  /*   -0.5f, -0.5f, 0.5f,     1.0f, 1.0f, 0.0f, 1.0f, */
+  /* }; */
+  /* uint16_t indices[] = { 0, 1, 2,  0, 2, 3 }; */
+  /*  */
+  /* memcpy(player_bo.vertices, vertices, sizeof(vertices)); */
+  /* memcpy(player_bo.indices, indices, sizeof(indices)); */
 
-  printf("%f %d - AAAAAAAAAA\n\n", player_bo.vertices[0], player_bo.indices[2]);
-
-  update_buffer_object(&player_bo, 28, 6);
-}
-
-
-void draw_buffer_object(buffer_object* bo, int base_element, int num_elements, int num_instances)
-{
-  sg_begin_default_pass(&bo->pass_action, sapp_width(), sapp_height());
-  sg_apply_pipeline(bo->pip);
-  sg_apply_bindings(&bo->bind);
-  sg_draw(base_element, num_elements, num_instances);
-  sg_end_pass();
+  quads_write_vertices(&player_quad, &player_bo, 1);
+  quads_write_indices(&player_bo, 1);
+  update_buffer_object(&player_bo);
 }
 
 
@@ -126,7 +76,7 @@ static void input(const sapp_event* ev) {
 
 
 void frame(void) {
-  draw_buffer_object(&player_bo, 0, 6, 1);
+  draw_buffer_object(&player_bo);
   sg_commit();
 }
 
