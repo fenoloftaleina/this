@@ -8,11 +8,11 @@
 #include "main.glsl.h"
 
 #include "buffer_object.h"
-#include "quad.h"
+#include "rect.h"
 
 
 static buffer_object player_bo, map_bo;
-static quad player_quad;
+static rect player_rect;
 
 
 
@@ -21,10 +21,10 @@ void init(void) {
       .context = sapp_sgcontext()
       });
 
-  init_buffer_object(&player_bo, vertices_per_quad, indices_per_quad);
-  init_buffer_object(&map_bo, vertices_per_quad, indices_per_quad);
+  init_buffer_object(&player_bo, vertices_per_rect, indices_per_rect);
+  init_buffer_object(&map_bo, vertices_per_rect, indices_per_rect);
 
-  player_quad = (quad){
+  player_rect = (rect){
     -0.5f, -0.5f, 0.5f, 0.5f,
     0.8f, 0.6f, 0.7f
   };
@@ -41,8 +41,8 @@ void init(void) {
   /* memcpy(player_bo.vertices, vertices, sizeof(vertices)); */
   /* memcpy(player_bo.indices, indices, sizeof(indices)); */
 
-  quads_write_vertices(&player_quad, &player_bo, 1);
-  quads_write_indices(&player_bo, 1);
+  rects_write_vertices(&player_rect, &player_bo, 1);
+  rects_write_indices(&player_bo, 1);
   update_buffer_object(&player_bo);
 }
 

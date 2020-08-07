@@ -14,8 +14,8 @@ typedef struct buffer_object {
 } buffer_object;
 
 
-const int vertices_per_quad = 4 * 7;
-const int indices_per_quad = 2 * 3;
+const int vertices_per_rect = 4 * 7;
+const int indices_per_rect = 2 * 3;
 const int vertex_size = sizeof(float);
 const int index_size = sizeof(uint16_t);
 
