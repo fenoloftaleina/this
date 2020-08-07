@@ -62,9 +62,14 @@ void init_buffer_object(buffer_object* bo, int vertices_count, int indices_count
 }
 
 
-void update_buffer_object(buffer_object* bo)
+void update_vertices_buffer(buffer_object* bo)
 {
   sg_update_buffer(bo->bind.vertex_buffers[0], bo->vertices, bo->vertices_size);
+}
+
+
+void update_indices_buffer(buffer_object* bo)
+{
   sg_update_buffer(bo->bind.index_buffer, bo->indices, bo->indices_size);
 }
 

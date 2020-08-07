@@ -43,7 +43,8 @@ void init(void) {
 
   rects_write_vertices(&player_rect, &player_bo, 1);
   rects_write_indices(&player_bo, 1);
-  update_buffer_object(&player_bo);
+  update_vertices_buffer(&player_bo);
+  update_indices_buffer(&player_bo);
 }
 
 
