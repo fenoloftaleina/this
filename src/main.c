@@ -9,42 +9,28 @@
 
 #include "buffer_object.h"
 #include "rect.h"
+#include "player.h"
+#include "map.h"
 
 
-static buffer_object player_bo, map_bo;
-static rect player_rect;
+static player_data player;
+static map_data map;
 
+static sg_pass_action pass_action;
 
 
 void init(void) {
   sg_setup(&(sg_desc){
       .context = sapp_sgcontext()
       });
-
-  init_buffer_object(&player_bo, vertices_per_rect, indices_per_rect);
-  init_buffer_object(&map_bo, vertices_per_rect, indices_per_rect);
-
-  player_rect = (rect){
-    -0.5f, -0.5f, 0.5f, 0.5f,
-    0.8f, 0.6f, 0.7f
+  pass_action = (sg_pass_action) {
+    .colors[0] = { .action=SG_ACTION_CLEAR, .val={0.5f, 0.5f, 0.5f, 1.0f } }
   };
 
-  /* float vertices[] = { */
-  /*   // positions            colors */
-  /*   -0.5f,  0.5f, 0.5f,     1.0f, 0.0f, 0.0f, 1.0f, */
-  /*   0.5f,  0.5f, 0.5f,     0.0f, 1.0f, 0.0f, 1.0f, */
-  /*   0.5f, -0.5f, 0.5f,     0.0f, 0.0f, 1.0f, 1.0f, */
-  /*   -0.5f, -0.5f, 0.5f,     1.0f, 1.0f, 0.0f, 1.0f, */
-  /* }; */
-  /* uint16_t indices[] = { 0, 1, 2,  0, 2, 3 }; */
-  /*  */
-  /* memcpy(player_bo.vertices, vertices, sizeof(vertices)); */
-  /* memcpy(player_bo.indices, indices, sizeof(indices)); */
+  init_player(&player);
+  init_map(&map);
 
-  rects_write_vertices(&player_rect, &player_bo, 1);
-  rects_write_indices(&player_bo, 1);
-  update_vertices_buffer(&player_bo);
-  update_indices_buffer(&player_bo);
+  init_level0(&map);
 }
 
 
@@ -77,7 +63,13 @@ static void input(const sapp_event* ev) {
 
 
 void frame(void) {
-  draw_buffer_object(&player_bo);
+  sg_begin_default_pass(&pass_action, sapp_width(), sapp_height());
+
+  draw_player(&player);
+  draw_map(&map);
+
+  sg_end_pass();
+
   sg_commit();
 }
 
