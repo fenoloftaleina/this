@@ -34,7 +34,7 @@ void init_level0(map_data* md)
   float y = -500.0f / sapp_height();
 
   for(int i = 0; i < n; ++i) {
-    md->rs[i] = (rect){i * tw - 0.5f, y, (i + 0.9f) * tw - 0.5f, y + th, 0.5f, 0.5f, i/(2.0f * n) + 0.7f, 1.0f};
+    md->rs[i] = (rect){i * tw - 0.5f, y, (i + 0.9f) * tw - 0.5f, y + th, 0.5f, 0.5f, i / (2.0f * n) + 0.7f, 1.0f};
   }
 
   set_buffer_counts(

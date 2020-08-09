@@ -20,12 +20,15 @@ static sg_pass_action pass_action;
 
 
 void init(void) {
-  sg_setup(&(sg_desc){
-      .context = sapp_sgcontext()
-      });
-  pass_action = (sg_pass_action) {
-    .colors[0] = { .action=SG_ACTION_CLEAR, .val={0.5f, 0.5f, 0.5f, 1.0f } }
-  };
+  sg_desc desc = {};
+  desc.context = sapp_sgcontext();
+  sg_setup(&desc);
+
+  pass_action.colors[0].action = SG_ACTION_CLEAR;
+  pass_action.colors[0].val[0] = 0.5f;
+  pass_action.colors[0].val[1] = 0.5f;
+  pass_action.colors[0].val[2] = 0.5f;
+  pass_action.colors[0].val[3] = 1.0f;
 
   init_player(&player);
   init_map(&map);
@@ -75,17 +78,20 @@ void frame(void) {
 
 
 sapp_desc sokol_main(int argc, char* argv[]) {
-  (void)argc; (void)argv;
-  return (sapp_desc){
-    .init_cb = init,
-    .frame_cb = frame,
-    .cleanup_cb = sg_shutdown,
-    .event_cb = input,
-    .width = 800,
-    .height = 600,
-    /* .fullscreen = true, */
-    .high_dpi = true,
-    .gl_force_gles2 = true,
-    .window_title = "Old",
-  };
+  (void)argc;
+  (void)argv;
+
+  sapp_desc desc = {};
+  desc.init_cb = init;
+  desc.frame_cb = frame;
+  desc.cleanup_cb = sg_shutdown;
+  desc.event_cb = input;
+  desc.width = 800;
+  desc.height = 600;
+  /* desc.fullscreen = true; */
+  desc.high_dpi = true;
+  desc.gl_force_gles2 = true;
+  desc.window_title = "Old";
+
+  return desc;
 }

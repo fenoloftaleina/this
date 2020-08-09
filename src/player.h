@@ -15,10 +15,7 @@ void init_player(player_data* pd)
   const float pw2 = player_width / (2.0f * sapp_width());
   const float ph2 = player_height / (2.0f * sapp_height());
 
-  pd->r = (rect){
-    -pw2, -ph2, pw2, ph2,
-    0.8f, 0.6f, 0.7f
-  };
+  pd->r = {-pw2, -ph2, pw2, ph2, 0.8f, 0.6f, 0.7f, 1.0f};
 
   rects_write_vertices(&pd->r, &pd->bo, 1);
   rects_write_indices(&pd->bo, 1);
