@@ -57,3 +57,12 @@ const int rects_write_indices(buffer_object* bo, const int count)
 
   return count * indices_per_rect;
 }
+
+
+void move_rect(rect* r, const float x, const float y)
+{
+  r->x1 += x;
+  r->y1 += y;
+  r->x2 += x;
+  r->y2 += y;
+}

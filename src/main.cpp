@@ -4,14 +4,20 @@
 #include "sokol_app.h"
 #include "sokol_gfx.h"
 #include "sokol_glue.h"
+#include "sokol_time.h"
+#define HANDMADE_MATH_IMPLEMENTATION
+#include "HandmadeMath.h"
 
 #include "main.glsl.h"
 
 #include "buffer_object.h"
 #include "rect.h"
-#include "player.h"
 #include "map.h"
+#include "input.h"
+#include "player.h"
 
+
+static input_data in = {IN_NONE, IN_NONE};
 
 static player_data player;
 static map_data map;
@@ -19,7 +25,8 @@ static map_data map;
 static sg_pass_action pass_action;
 
 
-void init(void) {
+void init(void)
+{
   sg_desc desc = {};
   desc.context = sapp_sgcontext();
   sg_setup(&desc);
@@ -34,10 +41,16 @@ void init(void) {
   init_map(&map);
 
   init_level0(&map);
+  // init_level_physics(&map);
+
+  stm_setup();
+
+  in.h = in.v = IN_NONE;
 }
 
 
-static void input(const sapp_event* ev) {
+static void input(const sapp_event* ev)
+{
   if (ev->type == SAPP_EVENTTYPE_KEY_DOWN) {
     switch (ev->key_code) {
       case SAPP_KEYCODE_ESCAPE:
@@ -46,17 +59,42 @@ static void input(const sapp_event* ev) {
 
       case SAPP_KEYCODE_W:
       case SAPP_KEYCODE_UP:
-
+        in.v = IN_UP;
         break;
 
       case SAPP_KEYCODE_A:
       case SAPP_KEYCODE_LEFT:
-
+        in.h = IN_LEFT;
         break;
 
       case SAPP_KEYCODE_D:
       case SAPP_KEYCODE_RIGHT:
+        in.h = IN_RIGHT;
+        break;
+      default:
+        break;
+    }
+  } else if (ev->type == SAPP_EVENTTYPE_KEY_UP) {
+    switch (ev->key_code) {
+      case SAPP_KEYCODE_W:
+      case SAPP_KEYCODE_UP:
+        if (in.v == IN_UP) {
+          in.v = IN_NONE;
+        }
+        break;
 
+      case SAPP_KEYCODE_A:
+      case SAPP_KEYCODE_LEFT:
+        if (in.h == IN_LEFT) {
+          in.h = IN_NONE;
+        }
+        break;
+
+      case SAPP_KEYCODE_D:
+      case SAPP_KEYCODE_RIGHT:
+        if (in.h == IN_RIGHT) {
+          in.h = IN_NONE;
+        }
         break;
       default:
         break;
@@ -64,16 +102,33 @@ static void input(const sapp_event* ev) {
   }
 }
 
+static uint64_t last_time = 0;
+static float dt;
 
-void frame(void) {
+void update()
+{
+  dt = stm_laptime(&last_time) / 1000000000.0f;
+  update_player(&player, dt, &in, &map);
+}
+
+
+void draw(void)
+{
   sg_begin_default_pass(&pass_action, sapp_width(), sapp_height());
 
-  draw_player(&player);
   draw_map(&map);
+  draw_player(&player);
 
   sg_end_pass();
 
   sg_commit();
+}
+
+
+void frame(void)
+{
+  update();
+  draw();
 }
 
 
