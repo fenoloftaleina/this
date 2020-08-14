@@ -4,43 +4,56 @@ typedef struct rect {
 } rect;
 
 
-const int rects_write_vertices(const rect* qs, buffer_object* bo, const int count)
+const float blend(const float a, const float b, const float f)
+{
+  return (1.0f - f) * a + f * b;
+}
+
+
+const int rects_write_vertices
+(const rect* prs, const rect* rs, buffer_object* bo, const int count, const float f)
 {
   for(int i = 0; i < count; ++i) {
-    bo->vertices[i * vertices_per_rect +  0] = qs[i].x1;
-    bo->vertices[i * vertices_per_rect +  1] = qs[i].y2;
+    bo->vertices[i * vertices_per_rect +  0] = blend(prs[i].x1, rs[i].x1, f);
+    bo->vertices[i * vertices_per_rect +  1] = blend(prs[i].y2, rs[i].y2, f);
     bo->vertices[i * vertices_per_rect +  2] = flat_z;
-    bo->vertices[i * vertices_per_rect +  3] = qs[i].r;
-    bo->vertices[i * vertices_per_rect +  4] = qs[i].g;
-    bo->vertices[i * vertices_per_rect +  5] = qs[i].b;
-    bo->vertices[i * vertices_per_rect +  6] = qs[i].a;
+    bo->vertices[i * vertices_per_rect +  3] = blend(prs[i].r, rs[i].r, f);
+    bo->vertices[i * vertices_per_rect +  4] = blend(prs[i].g, rs[i].g, f);
+    bo->vertices[i * vertices_per_rect +  5] = blend(prs[i].b, rs[i].b, f);
+    bo->vertices[i * vertices_per_rect +  6] = blend(prs[i].a, rs[i].a, f);
 
-    bo->vertices[i * vertices_per_rect +  7] = qs[i].x2;
-    bo->vertices[i * vertices_per_rect +  8] = qs[i].y2;
+    bo->vertices[i * vertices_per_rect +  7] = blend(prs[i].x2, rs[i].x2, f);
+    bo->vertices[i * vertices_per_rect +  8] = blend(prs[i].y2, rs[i].y2, f);
     bo->vertices[i * vertices_per_rect +  9] = flat_z;
-    bo->vertices[i * vertices_per_rect + 10] = qs[i].r;
-    bo->vertices[i * vertices_per_rect + 11] = qs[i].g;
-    bo->vertices[i * vertices_per_rect + 12] = qs[i].b;
-    bo->vertices[i * vertices_per_rect + 13] = qs[i].a;
+    bo->vertices[i * vertices_per_rect + 10] = blend(prs[i].r, rs[i].r, f);
+    bo->vertices[i * vertices_per_rect + 11] = blend(prs[i].g, rs[i].g, f);
+    bo->vertices[i * vertices_per_rect + 12] = blend(prs[i].b, rs[i].b, f);
+    bo->vertices[i * vertices_per_rect + 13] = blend(prs[i].a, rs[i].a, f);
 
-    bo->vertices[i * vertices_per_rect + 14] = qs[i].x2;
-    bo->vertices[i * vertices_per_rect + 15] = qs[i].y1;
+    bo->vertices[i * vertices_per_rect + 14] = blend(prs[i].x2, rs[i].x2, f);
+    bo->vertices[i * vertices_per_rect + 15] = blend(prs[i].y1, rs[i].y1, f);
     bo->vertices[i * vertices_per_rect + 16] = flat_z;
-    bo->vertices[i * vertices_per_rect + 17] = qs[i].r;
-    bo->vertices[i * vertices_per_rect + 18] = qs[i].g;
-    bo->vertices[i * vertices_per_rect + 19] = qs[i].b;
-    bo->vertices[i * vertices_per_rect + 20] = qs[i].a;
+    bo->vertices[i * vertices_per_rect + 17] = blend(prs[i].r, rs[i].r, f);
+    bo->vertices[i * vertices_per_rect + 18] = blend(prs[i].g, rs[i].g, f);
+    bo->vertices[i * vertices_per_rect + 19] = blend(prs[i].b, rs[i].b, f);
+    bo->vertices[i * vertices_per_rect + 20] = blend(prs[i].a, rs[i].a, f);
 
-    bo->vertices[i * vertices_per_rect + 21] = qs[i].x1;
-    bo->vertices[i * vertices_per_rect + 22] = qs[i].y1;
+    bo->vertices[i * vertices_per_rect + 21] = blend(prs[i].x1, rs[i].x1, f);
+    bo->vertices[i * vertices_per_rect + 22] = blend(prs[i].y1, rs[i].y1, f);
     bo->vertices[i * vertices_per_rect + 23] = flat_z;
-    bo->vertices[i * vertices_per_rect + 24] = qs[i].r;
-    bo->vertices[i * vertices_per_rect + 25] = qs[i].g;
-    bo->vertices[i * vertices_per_rect + 26] = qs[i].b;
-    bo->vertices[i * vertices_per_rect + 27] = qs[i].a;
+    bo->vertices[i * vertices_per_rect + 24] = blend(prs[i].r, rs[i].r, f);
+    bo->vertices[i * vertices_per_rect + 25] = blend(prs[i].g, rs[i].g, f);
+    bo->vertices[i * vertices_per_rect + 26] = blend(prs[i].b, rs[i].b, f);
+    bo->vertices[i * vertices_per_rect + 27] = blend(prs[i].a, rs[i].a, f);
   }
 
   return count * vertices_per_rect;
+}
+
+
+const int rects_write_vertices_simple(const rect* rs, buffer_object* bo, const int count)
+{
+  rects_write_vertices(rs, rs, bo, count, 1.0f);
 }
 
 

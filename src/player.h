@@ -24,7 +24,7 @@ void init_player(player_data* pd)
   pd->r = {-pw2, -ph2, pw2, ph2, 0.3f, 0.3f, 0.3f, 1.0f};
   move_rect(&pd->r, 0.0f, 0.3f);
 
-  rects_write_vertices(&pd->r, &pd->bo, 1);
+  rects_write_vertices_simple(&pd->r, &pd->bo, 1);
   rects_write_indices(&pd->bo, 1);
   // update_buffer_vertices(&pd->bo);
   update_buffer_indices(&pd->bo);
@@ -34,19 +34,19 @@ void init_player(player_data* pd)
 }
 
 
-void draw_player(const player_data* pd)
+void draw_player(player_data* pd, const float frame_fraction)
 {
+  rects_write_vertices(&pd->pr, &pd->r, &pd->bo, 1, frame_fraction);
+  update_buffer_vertices(&pd->bo);
+
   draw_buffer_object(&pd->bo);
 }
 
 
 void update_player
-(player_data* pd, const float dt, const input_data* in, map_data* md)
+(player_data* pd, const float t, const float dt, const input_data* in, map_data* md)
 {
   pd->pr = pd->r;
 
-  update_player_positions(pd, dt, in, md);
-
-  rects_write_vertices(&pd->r, &pd->bo, 1);
-  update_buffer_vertices(&pd->bo);
+  update_player_positions(pd, t, dt, in, md);
 }

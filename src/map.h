@@ -62,7 +62,7 @@ void init_level_physics(map_data* md)
 
   set_buffer_counts(
       &md->bo,
-      rects_write_vertices(md->rs, &md->bo, md->n),
+      rects_write_vertices_simple(md->rs, &md->bo, md->n),
       rects_write_indices(&md->bo, md->n)
       );
   update_buffer_vertices(&md->bo);
@@ -101,7 +101,7 @@ void init_level0(map_data* md)
 
   set_buffer_counts(
       &md->bo,
-      rects_write_vertices(md->rs, &md->bo, md->n),
+      rects_write_vertices_simple(md->rs, &md->bo, md->n),
       rects_write_indices(&md->bo, md->n)
       );
   update_buffer_vertices(&md->bo);

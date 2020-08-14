@@ -1,6 +1,40 @@
 #include "math.h"
 
 
+typedef struct
+{
+  const float gravity = -5.5f;
+  const float init_v = 1.085f;
+  const float init_double_v = 1.655f;
+  float double_jump_threshold = 0.1f;
+
+
+  float v = 0.0f;
+
+  bool in_air = false;
+  float started_at = 0.0f;
+  bool possible_double_jump = false;
+} jump_data;
+
+
+typedef struct
+{
+  const float default_transpose = 6.5f;
+  const float damping = 20.0f;
+
+
+  float v = 0.0f;
+  float transpose = default_transpose;
+} walk_data;
+
+
+static float e = 0.1f;
+
+
+static jump_data jump_state;
+static walk_data walk_state;
+
+
 bool lines_intersect
 (const float x1, const float y1, const float x2, const float y2,
  const float x3, const float y3, const float x4, const float y4)
@@ -23,8 +57,6 @@ bool lines_intersect
 }
 
 
-static bool in_air = false;
-
 void check_collisions(player_data* pd, map_data* md)
 {
   float col_x, col_y, diff_x = 0.0f, diff_y = 0.0f;
@@ -43,8 +75,11 @@ void check_collisions(player_data* pd, map_data* md)
             md->rs[i].x1 - w2, md->rs[i].y2, md->rs[i].x2 + w2, md->rs[i].y2)) {
         col_y = fmax(col_y, md->rs[i].y2);
         diff_y = col_y - pd->r.y1 + eps;
-        pd->vy = 0.0f;
-        in_air = false;
+
+        jump_state.v = 0.0f;
+        jump_state.in_air = false;
+        jump_state.started_at = 0.0f;
+        jump_state.possible_double_jump = false;
       }
     }
   }
@@ -57,8 +92,10 @@ void check_collisions(player_data* pd, map_data* md)
             md->rs[i].x1 - w2, md->rs[i].y1, md->rs[i].x2 + w2, md->rs[i].y1)) {
         col_y = fmin(col_y, md->rs[i].y1);
         diff_y = col_y - pd->r.y2 - eps;
-        pd->vy = 0.0f;
-        printf("%f %f %f\n", diff_y, col_y, pd->r.y2);
+
+        jump_state.v = 0.0f;
+        jump_state.started_at = 0.0f;
+        jump_state.possible_double_jump = false;
       }
     }
   }
@@ -99,7 +136,7 @@ void check_collisions(player_data* pd, map_data* md)
 
 float v_clamp(const float val)
 {
-  return HMM_Clamp(-3.0f, val, 20.0f);
+  return HMM_Clamp(-3.0f, val, 50.0f);
 }
 
 float h_clamp(const float val)
@@ -108,35 +145,42 @@ float h_clamp(const float val)
 }
 
 
-static float gravity = -5.5f,
-             jump_v = 1.5f,
-             move_x = 8.5f,
-             cur_move_x = move_x,
-             damping = 20.0f,
-             e = 0.1f;
-
 void update_player_positions
-(player_data* pd, const float dt, const input_data* in, map_data* md)
+(player_data* pd, const float t, const float dt, const input_data* in, map_data* md)
 {
-  if (in->v == IN_UP && !in_air) {
-    pd->vy = v_clamp(pd->vy + jump_v);
-    in_air = true;
-  } else {
-    pd->vy = v_clamp(pd->vy + dt * gravity);
+  // printf("%f\n", t);
+  if (in->v == IN_UP && !jump_state.in_air) {
+    jump_state.v = v_clamp(jump_state.init_v);
+    jump_state.in_air = true;
+    jump_state.started_at = t;
+    jump_state.possible_double_jump = true;
+  } else if (in->v == IN_UP &&
+      jump_state.in_air &&
+      jump_state.possible_double_jump &&
+      t - jump_state.started_at > jump_state.double_jump_threshold
+      ) {
+    jump_state.v = v_clamp(jump_state.init_double_v);
+    jump_state.possible_double_jump = false;
+  } else if (t - jump_state.started_at > jump_state.double_jump_threshold) {
+    jump_state.v = v_clamp(jump_state.v + dt * jump_state.gravity);
+  }
+
+  if (in->v != IN_UP) {
+    jump_state.possible_double_jump = false;
   }
 
   if (in->h == IN_LEFT) {
-    pd->vx = h_clamp(pd->vx - dt * cur_move_x);
+    walk_state.v = h_clamp(walk_state.v - dt * walk_state.transpose);
   } else if (in->h == IN_RIGHT) {
-    pd->vx = h_clamp(pd->vx + dt * cur_move_x);
+    walk_state.v = h_clamp(walk_state.v + dt * walk_state.transpose);
   } else {
-    pd->vx /= (1.0f + damping * dt);
-    if (abs(pd->vx) < e) {
-      pd->vx = 0.0f;
+    walk_state.v /= (1.0f + walk_state.damping * dt);
+    if (abs(walk_state.v) < e) {
+      walk_state.v = 0.0f;
     }
   }
 
-  move_rect(&pd->r, dt * pd->vx, dt * pd->vy);
+  move_rect(&pd->r, dt * walk_state.v, dt * jump_state.v);
 
   check_collisions(pd, md);
 }

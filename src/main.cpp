@@ -103,32 +103,31 @@ static void input(const sapp_event* ev)
 }
 
 static uint64_t last_time = 0;
-static float dt;
+static const float dt = 1.0f / 60.0f;
+static float t = 0.0f, frame_time, accumulator = 0.0f;
 
-void update()
+void frame(void)
 {
-  dt = stm_laptime(&last_time) / 1000000000.0f;
-  update_player(&player, dt, &in, &map);
-}
+  frame_time = stm_laptime(&last_time) / 1000000000.0f;
+  accumulator += frame_time;
+
+  while (accumulator >= dt) {
+    update_player(&player, t, dt, &in, &map);
+    accumulator -= dt;
+    t += dt;
+  }
+
+  const float frame_fraction = accumulator / dt;
 
 
-void draw(void)
-{
   sg_begin_default_pass(&pass_action, sapp_width(), sapp_height());
 
   draw_map(&map);
-  draw_player(&player);
+  draw_player(&player, frame_fraction);
 
   sg_end_pass();
 
   sg_commit();
-}
-
-
-void frame(void)
-{
-  update();
-  draw();
 }
 
 
