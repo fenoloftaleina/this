@@ -53,7 +53,7 @@ const int rects_write_vertices
 
 const int rects_write_vertices_simple(const rect* rs, buffer_object* bo, const int count)
 {
-  rects_write_vertices(rs, rs, bo, count, 1.0f);
+  return rects_write_vertices(rs, rs, bo, count, 1.0f);
 }
 
 

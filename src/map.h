@@ -1,15 +1,29 @@
-typedef struct
+enum spot_status { spot_alive, spot_dead };
+enum spot_type { spot_empty = -1, spot_red, spot_green, spot_blue };
+
+
+struct map_data
 {
   buffer_object bo;
-  rect* rs;
-  int n;
-  int* ts;
-} map_data;
 
-typedef struct
+  int n;
+  rect* prs; // prev
+  rect* rs;
+  spot_type* ts;
+  spot_status* ss;
+
+  int* m; // matrix, linear, but 2d
+
+  bool changed = false;
+
+  // int offset_x, offsey_y; // for moving between maps potentially
+};
+
+
+struct color
 {
   float r, g, b;
-} color;
+};
 
 color type_colors[] = {
   {0.5, 0.35, 0.47},
@@ -21,83 +35,85 @@ color type_colors[] = {
 static float tile_width = 200.0f;
 static float tile_height = 200.0f;
 
-static int max_n = 1000;
+static const int matrix_w = 20;
+static const int matrix_h = 12;
+static const int matrix_size = matrix_w * matrix_h;
+
+
+const int spot(const map_data* md, const int x, const int y)
+{
+  return md->m[y * matrix_w + x];
+}
 
 
 void init_map(map_data* md)
 {
-  init_buffer_object(&md->bo, max_n * vertices_per_rect, max_n * indices_per_rect);
+  init_buffer_object(&md->bo, matrix_size * vertices_per_rect, matrix_size * indices_per_rect);
   set_buffer_counts(&md->bo, 0, 0);
+
+  md->rs = (rect*)malloc(matrix_size * sizeof(rect));
+  md->ts = (spot_type*)malloc(matrix_size * sizeof(spot_type));
+  md->ss = (spot_status*)malloc(matrix_size * sizeof(spot_status));
+  md->m = (int*)malloc(matrix_size * sizeof(int));
+  memset(md->m, -1, matrix_size * sizeof(int));
 }
 
 
-void draw_map(const map_data* md)
+void draw_map(map_data* md, const float frame_fraction)
 {
+  if (md->changed) {
+    rects_write_vertices(md->prs, md->rs, &md->bo, md->n, frame_fraction),
+    update_buffer_vertices(&md->bo);
+  }
+
   draw_buffer_object(&md->bo);
-}
-
-
-void init_level_physics(map_data* md)
-{
-  md->n = 3;
-  md->rs = (rect*)malloc(md->n * sizeof(rect));
-  md->ts = (int*)malloc(md->n * sizeof(int));
-
-  float y = -500.0f / sapp_height();
-
-  md->rs[0] = {
-    -0.7f, y, 0.7f, y + 0.1f,
-    0.8f, 0.8f, 0.8f, 1.0f
-  };
-
-  md->rs[1] = {
-    -0.7f, y + 0.4f, -0.3f, y + 0.5f,
-    0.8f, 0.8f, 0.8f, 1.0f
-  };
-
-  md->rs[2] = {
-    0.5f, y + 0.1f, 0.6f, y + 0.2f,
-    0.8f, 0.8f, 0.8f, 1.0f
-  };
-
-  set_buffer_counts(
-      &md->bo,
-      rects_write_vertices_simple(md->rs, &md->bo, md->n),
-      rects_write_indices(&md->bo, md->n)
-      );
-  update_buffer_vertices(&md->bo);
-  update_buffer_indices(&md->bo);
 }
 
 
 void init_level0(map_data* md)
 {
-  md->n = 10;
-  md->rs = (rect*)malloc(md->n * sizeof(rect));
-  md->ts = (int*)malloc(md->n * sizeof(int));
+  spot_type* spots = (spot_type*)malloc(matrix_size * sizeof(spot_type));
+  memset(spots, -1, matrix_size * sizeof(spot_type));
+  spots[2] = spot_red;
+  spots[45] = spot_green;
+
 
   float tw = tile_width / sapp_width();
   float th = tile_height / sapp_height();
 
-  float y = -500.0f / sapp_height();
+  float start_x = -500.0f / sapp_width();
+  float start_y = -500.0f / sapp_height();
 
-  int cur_type;
-  float cur_y;
-  for(int i = 0; i < md->n; ++i) {
-    cur_y = i > md->n / 2 ? y : y + (5 - i) * th;
-    cur_type = i % 3;
-    md->rs[i] = {
-      i * tw - 0.5f,
-      cur_y,
-      (i + 1) * tw - 0.5f,
-      cur_y + th,
-      type_colors[cur_type].r,
-      type_colors[cur_type].g,
-      type_colors[cur_type].b,
-      1.0f
-    };
-    md->ts[i] = cur_type;
+
+  spot_type cur_type;
+  float cur_x, cur_y;
+  int j = 0;
+  for(int i = 0; i < matrix_size; ++i) {
+    if (spots[i] != -1) {
+      cur_type = spots[i];
+
+      cur_x = start_x + (i % matrix_w * tw);
+      cur_y = start_y + (i / matrix_w * th);
+
+      md->m[i] = j;
+      md->rs[j] = {
+        cur_x,
+        cur_y,
+        cur_x + tw,
+        cur_y + th,
+        type_colors[cur_type].r,
+        type_colors[cur_type].g,
+        type_colors[cur_type].b,
+        1.0f
+      };
+      md->ts[j] = cur_type;
+      md->ss[j] = spot_alive;
+
+      ++j;
+    }
   }
+
+  md->n = j;
 
   set_buffer_counts(
       &md->bo,

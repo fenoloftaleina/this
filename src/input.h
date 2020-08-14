@@ -1,7 +1,7 @@
-const int IN_UP = 0, IN_DOWN = 1, IN_LEFT = 2, IN_RIGHT = 3, IN_NONE = 4;
+enum in_type {IN_UP, IN_DOWN, IN_LEFT, IN_RIGHT, IN_NONE};
 
 typedef struct
 {
-  int h;
-  int v;
+  in_type h;
+  in_type v;
 } input_data;

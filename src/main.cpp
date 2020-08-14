@@ -15,6 +15,7 @@
 #include "map.h"
 #include "input.h"
 #include "player.h"
+#include "logic.h"
 
 
 static input_data in = {IN_NONE, IN_NONE};
@@ -41,7 +42,6 @@ void init(void)
   init_map(&map);
 
   init_level0(&map);
-  // init_level_physics(&map);
 
   stm_setup();
 
@@ -112,7 +112,7 @@ void frame(void)
   accumulator += frame_time;
 
   while (accumulator >= dt) {
-    update_player(&player, t, dt, &in, &map);
+    update(&player, t, dt, &in, &map);
     accumulator -= dt;
     t += dt;
   }
@@ -122,7 +122,7 @@ void frame(void)
 
   sg_begin_default_pass(&pass_action, sapp_width(), sapp_height());
 
-  draw_map(&map);
+  draw_map(&map, frame_fraction);
   draw_player(&player, frame_fraction);
 
   sg_end_pass();

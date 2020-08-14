@@ -11,7 +11,7 @@ typedef struct
 
   float v = 0.0f;
 
-  bool in_air = false;
+  bool in_air = true;
   float started_at = 0.0f;
   bool possible_double_jump = false;
 } jump_data;

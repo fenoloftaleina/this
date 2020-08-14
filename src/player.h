@@ -41,12 +41,3 @@ void draw_player(player_data* pd, const float frame_fraction)
 
   draw_buffer_object(&pd->bo);
 }
-
-
-void update_player
-(player_data* pd, const float t, const float dt, const input_data* in, map_data* md)
-{
-  pd->pr = pd->r;
-
-  update_player_positions(pd, t, dt, in, md);
-}
