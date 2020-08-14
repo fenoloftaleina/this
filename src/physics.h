@@ -3,36 +3,52 @@
 
 typedef struct
 {
-  const float gravity = -5.5f;
-  const float init_v = 1.085f;
-  const float init_double_v = 1.655f;
-  float double_jump_threshold = 0.1f;
+  const float gravity;
+  const float init_v;
+  const float init_double_v;
+  float double_jump_threshold;
 
 
-  float v = 0.0f;
+  float v;
 
-  bool in_air = true;
-  float started_at = 0.0f;
-  bool possible_double_jump = false;
+  bool in_air;
+  float started_at;
+  bool possible_double_jump;
 } jump_data;
 
 
 typedef struct
 {
-  const float default_transpose = 6.5f;
-  const float damping = 20.0f;
+  const float default_transpose;
+  const float damping;
 
 
-  float v = 0.0f;
-  float transpose = default_transpose;
+  float v;
+  float transpose;
 } walk_data;
 
 
 static float e = 0.1f;
 
 
-static jump_data jump_state;
-static walk_data walk_state;
+static jump_data jump_state = (jump_data){
+  .gravity = -5.5f,
+  .init_v = 1.085f,
+  .init_double_v = 1.655f,
+  .double_jump_threshold = 0.1f,
+
+  .v = 0.0f,
+
+  .in_air = true,
+  .started_at = 0.0f,
+  .possible_double_jump = false
+};
+static walk_data walk_state = (walk_data){
+  .default_transpose = 6.5f,
+  .damping = 20.0f,
+  .v = 0.0f,
+  .transpose = 6.5f
+};
 
 
 bool lines_intersect
@@ -175,7 +191,7 @@ void update_player_positions
     walk_state.v = h_clamp(walk_state.v + dt * walk_state.transpose);
   } else {
     walk_state.v /= (1.0f + walk_state.damping * dt);
-    if (abs(walk_state.v) < e) {
+    if (fabs(walk_state.v) < e) {
       walk_state.v = 0.0f;
     }
   }

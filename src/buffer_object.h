@@ -37,38 +37,29 @@ void init_buffer_object
 {
   set_buffer_counts(bo, vertices_count, indices_count);
 
-  sg_buffer_desc vertex_buffer_desc = {};
-  vertex_buffer_desc.usage = SG_USAGE_DYNAMIC;
-  vertex_buffer_desc.size = bo->vertices_size;
-  bo->bind.vertex_buffers[0] = sg_make_buffer(&vertex_buffer_desc);
+  bo->bind.vertex_buffers[0] = sg_make_buffer(&(sg_buffer_desc){
+      .usage = SG_USAGE_DYNAMIC,
+      .size = bo->vertices_size
+      });
 
-  sg_buffer_desc index_buffer_desc = {};
-  index_buffer_desc.type = SG_BUFFERTYPE_INDEXBUFFER;
-  index_buffer_desc.usage = SG_USAGE_DYNAMIC;
-  index_buffer_desc.size = bo->indices_size;
-  bo->bind.index_buffer = sg_make_buffer(&index_buffer_desc);
+  bo->bind.index_buffer = sg_make_buffer(&(sg_buffer_desc){
+      .type = SG_BUFFERTYPE_INDEXBUFFER,
+      .usage = SG_USAGE_DYNAMIC,
+      .size = bo->indices_size
+      });
 
   sg_shader shd = sg_make_shader(main_shader_desc());
 
-
-  sg_pipeline_desc pip_desc = {};
-  pip_desc.shader = shd;
-  pip_desc.index_type = SG_INDEXTYPE_UINT16;
-
-  sg_layout_desc layout_desc = {};
-
-  sg_vertex_attr_desc vertex_position_desc = {};
-  sg_vertex_attr_desc vertex_color0_desc = {};
-  vertex_position_desc.format = SG_VERTEXFORMAT_FLOAT3;
-  vertex_color0_desc.format = SG_VERTEXFORMAT_FLOAT4;
-
-  layout_desc.attrs[ATTR_vs_position] = vertex_position_desc;
-  layout_desc.attrs[ATTR_vs_color0] = vertex_color0_desc;
-
-  pip_desc.layout = layout_desc;
-
-  bo->pip = sg_make_pipeline(&pip_desc);
-
+  bo->pip = sg_make_pipeline(&(sg_pipeline_desc){
+      .shader = shd,
+      .index_type = SG_INDEXTYPE_UINT16,
+      .layout = {
+        .attrs = {
+          [ATTR_vs_position].format = SG_VERTEXFORMAT_FLOAT3,
+          [ATTR_vs_color0].format   = SG_VERTEXFORMAT_FLOAT4
+        }
+      }
+      });
 
   bo->vertices = (float*)malloc(bo->vertices_size);
   bo->indices = (uint16_t*)malloc(bo->indices_size);

@@ -1,8 +1,19 @@
-enum spot_status { spot_alive, spot_dead };
-enum spot_type { spot_empty = -1, spot_red, spot_green, spot_blue };
+typedef enum spot_status
+{
+  spot_alive,
+  spot_dead
+} spot_status;
+
+typedef enum spot_type
+{
+  spot_empty = -1,
+  spot_red,
+  spot_green,
+  spot_blue
+} spot_type;
 
 
-struct map_data
+typedef struct map_data
 {
   buffer_object bo;
 
@@ -14,16 +25,16 @@ struct map_data
 
   int* m; // matrix, linear, but 2d
 
-  bool changed = false;
+  bool changed;
 
   // int offset_x, offsey_y; // for moving between maps potentially
-};
+} map_data;
 
 
-struct color
+typedef struct color
 {
   float r, g, b;
-};
+} color;
 
 color type_colors[] = {
   {0.5, 0.35, 0.47},
@@ -56,6 +67,8 @@ void init_map(map_data* md)
   md->ss = (spot_status*)malloc(matrix_size * sizeof(spot_status));
   md->m = (int*)malloc(matrix_size * sizeof(int));
   memset(md->m, -1, matrix_size * sizeof(int));
+
+  md->changed = false;
 }
 
 
@@ -96,7 +109,7 @@ void init_level0(map_data* md)
       cur_y = start_y + (i / matrix_w * th);
 
       md->m[i] = j;
-      md->rs[j] = {
+      md->rs[j] = (rect){
         cur_x,
         cur_y,
         cur_x + tw,
@@ -122,4 +135,6 @@ void init_level0(map_data* md)
       );
   update_buffer_vertices(&md->bo);
   update_buffer_indices(&md->bo);
+
+  md->changed = false;
 }
