@@ -7,6 +7,7 @@ typedef enum spot_status
   spot_dead
 } spot_status;
 
+
 typedef enum spot_type
 {
   spot_empty = -1,
@@ -14,6 +15,8 @@ typedef enum spot_type
   spot_green,
   spot_blue
 } spot_type;
+
+const int spot_type_n = 3;
 
 
 typedef struct map_data
@@ -27,6 +30,8 @@ typedef struct map_data
   spot_status* ss;
 
   int* m; // matrix, linear, but 2d
+
+  spot_type* spots;
 
   bool changed;
 
@@ -46,20 +51,12 @@ color type_colors[] = {
 };
 
 
-static float tile_width = 200.0f;
-static float tile_height = 200.0f;
+float tile_width = 200.0f;
+float tile_height = 200.0f;
 
-static const int matrix_w = 20;
-static const int matrix_h = 12;
-static const int matrix_size = matrix_w * matrix_h;
-
-static spot_type* spots_tmp;
-
-
-const int spot(const map_data* md, const int x, const int y)
-{
-  return md->m[y * matrix_w + x];
-}
+const int matrix_w = 20;
+const int matrix_h = 12;
+const int matrix_size = matrix_w * matrix_h;
 
 
 void init_map(map_data* md)
@@ -72,7 +69,7 @@ void init_map(map_data* md)
   md->ss = (spot_status*)malloc(matrix_size * sizeof(spot_status));
   md->m = (int*)malloc(matrix_size * sizeof(int));
   memset(md->m, -1, matrix_size * sizeof(int));
-  spots_tmp = (spot_type*)malloc(matrix_size * sizeof(spot_type));
+  md->spots = (spot_type*)malloc(matrix_size * sizeof(spot_type));
 
   md->changed = false;
 }
@@ -89,67 +86,28 @@ void draw_map(map_data* md, const float frame_fraction)
 }
 
 
-
-#include <unistd.h>
-
-
-
-void load_map(map_data* md, const char* map_filename)
+void spots_to_matrix(map_data* md)
 {
-  char file_path[255];
-  sprintf(file_path, "../../../main/src/maps/%s", map_filename);
-  mpack_reader_t reader;
-  mpack_reader_init_filename(&reader, file_path);
-
-  mpack_tag_t tag;
-  tag = mpack_read_tag(&reader);
-  if (mpack_reader_error(&reader) != mpack_ok) {
-    fprintf(stderr, "An error occurred decoding the data!\n");
-    return;
-  }
-  // int cnt = mpack_tag_array_count(&tag);
-  for (int i = 0; i < matrix_size; ++i) {
-    tag = mpack_read_tag(&reader);
-    if (mpack_reader_error(&reader) != mpack_ok) {
-      fprintf(stderr, "An error occurred decoding the data!\n");
-      return;
-    }
-    if (mpack_tag_type(&tag) == mpack_type_uint) {
-      spots_tmp[i] = mpack_tag_uint_value(&tag);
-    } else {
-      spots_tmp[i] = mpack_tag_int_value(&tag);
-    }
-    if (mpack_reader_error(&reader) != mpack_ok) {
-      fprintf(stderr, "An error occurred decoding the data!\n");
-      return;
-    }
-  }
-  mpack_done_array(&reader);
-
-
   float tw = tile_width / sapp_width();
   float th = tile_height / sapp_height();
 
-  float start_x = -500.0f / sapp_width();
-  float start_y = -500.0f / sapp_height();
-
 
   spot_type cur_type;
-  float cur_x, cur_y;
+  float x, y;
   int j = 0;
   for(int i = 0; i < matrix_size; ++i) {
-    if (spots_tmp[i] != -1) {
-      cur_type = spots_tmp[i];
+    if (md->spots[i] != -1) {
+      cur_type = md->spots[i];
 
-      cur_x = start_x + (i % matrix_w * tw);
-      cur_y = start_y + (i / matrix_w * th);
+      x = -1.0f + (i % matrix_w * tw);
+      y = -1.0f + (i / matrix_w * th);
 
       md->m[i] = j;
       md->rs[j] = (rect){
-        cur_x,
-        cur_y,
-        cur_x + tw,
-        cur_y + th,
+        x,
+        y,
+        x + tw,
+        y + th,
         type_colors[cur_type].r,
         type_colors[cur_type].g,
         type_colors[cur_type].b,
@@ -176,6 +134,43 @@ void load_map(map_data* md, const char* map_filename)
 }
 
 
+void load_map(map_data* md, const char* map_filename)
+{
+  char file_path[255];
+  sprintf(file_path, "../../../main/src/maps/%s", map_filename);
+  mpack_reader_t reader;
+  mpack_reader_init_filename(&reader, file_path);
+
+  mpack_tag_t tag;
+  tag = mpack_read_tag(&reader);
+  if (mpack_reader_error(&reader) != mpack_ok) {
+    fprintf(stderr, "An error occurred decoding the data!\n");
+    return;
+  }
+  // int cnt = mpack_tag_array_count(&tag);
+  for (int i = 0; i < matrix_size; ++i) {
+    tag = mpack_read_tag(&reader);
+    if (mpack_reader_error(&reader) != mpack_ok) {
+      fprintf(stderr, "An error occurred decoding the data!\n");
+      return;
+    }
+    if (mpack_tag_type(&tag) == mpack_type_uint) {
+      md->spots[i] = mpack_tag_uint_value(&tag);
+    } else {
+      md->spots[i] = mpack_tag_int_value(&tag);
+    }
+    if (mpack_reader_error(&reader) != mpack_ok) {
+      fprintf(stderr, "An error occurred decoding the data!\n");
+      return;
+    }
+  }
+  mpack_done_array(&reader);
+
+
+  spots_to_matrix(md);
+}
+
+
 void save_map(map_data* md, const char* map_filename)
 {
   char file_path[255];
@@ -184,15 +179,19 @@ void save_map(map_data* md, const char* map_filename)
   mpack_writer_init_filename(&writer, file_path);
   mpack_start_array(&writer, matrix_size);
   for (int i = 0; i < matrix_size; ++i) {
-    if (md->m[i] != -1) {
-      mpack_write_int(&writer, (int)md->ts[md->m[i]]);
-    } else {
-      mpack_write_int(&writer, (int)spot_empty);
-    }
+    mpack_write_int(&writer, md->spots[i]);
   }
   mpack_finish_array(&writer);
   if (mpack_writer_destroy(&writer) != mpack_ok) {
     fprintf(stderr, "An error occurred encoding the data!\n");
     return;
   }
+}
+
+
+void set_spot(map_data* md, const int x, const int y, const spot_type t)
+{
+  md->spots[y * matrix_w + x] = t;
+
+  spots_to_matrix(md);
 }

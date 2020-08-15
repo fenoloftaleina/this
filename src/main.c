@@ -16,14 +16,38 @@
 #include "input.h"
 #include "player.h"
 #include "logic.h"
+#include "editor.h"
 
 
 static input_data in = {IN_NONE, IN_NONE};
+static bool in_editor = false;
 
 static player_data player;
 static map_data map;
+static editor_data editor;
 
 static sg_pass_action pass_action;
+
+static char cur_map[255];
+
+
+void run_map(const char* map_name)
+{
+  strcpy(cur_map, map_name);
+  load_map(&map, cur_map);
+}
+
+
+void reload_current_map()
+{
+  load_map(&map, cur_map);
+}
+
+
+void save_current_map()
+{
+  save_map(&map, cur_map);
+}
 
 
 void init(void)
@@ -37,8 +61,9 @@ void init(void)
 
   init_player(&player);
   init_map(&map);
+  init_editor(&editor);
 
-  load_map(&map, "level0");
+  run_map("level0");
 
   stm_setup();
 
@@ -48,7 +73,7 @@ void init(void)
 
 static void input(const sapp_event* ev)
 {
-  if (ev->type == SAPP_EVENTTYPE_KEY_DOWN) {
+  if (!in_editor && ev->type == SAPP_EVENTTYPE_KEY_DOWN) {
     switch (ev->key_code) {
       case SAPP_KEYCODE_ESCAPE:
         sapp_quit();
@@ -68,10 +93,11 @@ static void input(const sapp_event* ev)
       case SAPP_KEYCODE_RIGHT:
         in.h = IN_RIGHT;
         break;
+
       default:
         break;
     }
-  } else if (ev->type == SAPP_EVENTTYPE_KEY_UP) {
+  } else if (!in_editor && ev->type == SAPP_EVENTTYPE_KEY_UP) {
     switch (ev->key_code) {
       case SAPP_KEYCODE_W:
       case SAPP_KEYCODE_UP:
@@ -93,15 +119,76 @@ static void input(const sapp_event* ev)
           in.h = IN_NONE;
         }
         break;
+
+      case SAPP_KEYCODE_E:
+        reload_current_map();
+        in_editor = true;
+        break;
+
+      case SAPP_KEYCODE_R:
+        reload_current_map();
+        break;
+
+      default:
+        break;
+    }
+  } else if (in_editor && ev->type == SAPP_EVENTTYPE_KEY_UP) {
+    switch (ev->key_code) {
+      case SAPP_KEYCODE_ESCAPE:
+        sapp_quit();
+        break;
+
+      case SAPP_KEYCODE_W:
+      case SAPP_KEYCODE_UP:
+        in.v = IN_UP;
+        break;
+
+      case SAPP_KEYCODE_S:
+      case SAPP_KEYCODE_DOWN:
+        in.v = IN_DOWN;
+        break;
+
+      case SAPP_KEYCODE_A:
+      case SAPP_KEYCODE_LEFT:
+        in.h = IN_LEFT;
+        break;
+
+      case SAPP_KEYCODE_D:
+      case SAPP_KEYCODE_RIGHT:
+        in.h = IN_RIGHT;
+        break;
+
+      case SAPP_KEYCODE_E:
+        in_editor = false;
+        break;
+
+      case SAPP_KEYCODE_C:
+        add_spot(&editor, &map);
+        break;
+
+      case SAPP_KEYCODE_F:
+        next_spot_type(&editor, &map);
+        break;
+
+      case SAPP_KEYCODE_G:
+        kill_spot(&editor, &map);
+        break;
+
+      case SAPP_KEYCODE_T:
+        save_current_map();
+        break;
+
       default:
         break;
     }
   }
 }
 
+
 static uint64_t last_time = 0;
 static const float dt = 1.0f / 60.0f;
 static float t = 0.0f, frame_time, accumulator = 0.0f;
+static float frame_fraction;
 
 void frame(void)
 {
@@ -109,18 +196,30 @@ void frame(void)
   accumulator += frame_time;
 
   while (accumulator >= dt) {
-    update(&player, t, dt, &in, &map);
+    if (!in_editor) {
+      update(&player, t, dt, &in, &map);
+    } else {
+      update_editor(&editor, t, dt, &in, &map);
+      in.v = in.h = IN_NONE;
+    }
     accumulator -= dt;
     t += dt;
   }
 
-  const float frame_fraction = accumulator / dt;
+  if (!in_editor) {
+    frame_fraction = accumulator / dt;
+  } else {
+    frame_fraction = 0.0f;
+  }
 
 
   sg_begin_default_pass(&pass_action, sapp_width(), sapp_height());
 
   draw_map(&map, frame_fraction);
   draw_player(&player, frame_fraction);
+  if (in_editor) {
+    draw_editor(&editor);
+  }
 
   sg_end_pass();
 
@@ -139,6 +238,7 @@ sapp_desc sokol_main(int argc, char* argv[]) {
     .height = 600,
     /* .fullscreen = true, */
     .high_dpi = true,
+    .alpha = true,
     .gl_force_gles2 = true,
     .window_title = "Old",
   };

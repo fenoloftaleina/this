@@ -53,6 +53,11 @@ void init_buffer_object
   bo->pip = sg_make_pipeline(&(sg_pipeline_desc){
       .shader = shd,
       .index_type = SG_INDEXTYPE_UINT16,
+      .blend = {
+        .enabled = true,
+        .src_factor_rgb = SG_BLENDFACTOR_SRC_COLOR,
+        .dst_factor_rgb = SG_BLENDFACTOR_DST_COLOR
+      },
       .layout = {
         .attrs = {
           [ATTR_vs_position].format = SG_VERTEXFORMAT_FLOAT3,
