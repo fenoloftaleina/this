@@ -38,7 +38,7 @@ void init(void)
   init_player(&player);
   init_map(&map);
 
-  init_level0(&map);
+  load_map(&map, "level0");
 
   stm_setup();
 

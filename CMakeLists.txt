@@ -14,6 +14,8 @@ endif()
 get_filename_component(FIPS_ROOT_DIR "../fips" ABSOLUTE)
 include("${FIPS_ROOT_DIR}/cmake/fips.cmake")
 
+include_directories("libs/mpack")
+
 fips_setup()
 fips_ide_group("Imports")
 if (NOT USE_SOKOL_APP AND NOT SOKOL_USE_WGPU_DAWN AND NOT SOKOL_USE_D3D11 AND NOT SOKOL_USE_METAL)
