@@ -73,68 +73,10 @@ void init(void)
 
 static void input(const sapp_event* ev)
 {
-  if (!in_editor && ev->type == SAPP_EVENTTYPE_KEY_DOWN) {
+  if (ev->type == SAPP_EVENTTYPE_KEY_DOWN) {
     switch (ev->key_code) {
       case SAPP_KEYCODE_ESCAPE:
-        sapp_quit();
-        break;
-
-      case SAPP_KEYCODE_W:
-      case SAPP_KEYCODE_UP:
-        in.v = IN_UP;
-        break;
-
-      case SAPP_KEYCODE_A:
-      case SAPP_KEYCODE_LEFT:
-        in.h = IN_LEFT;
-        break;
-
-      case SAPP_KEYCODE_D:
-      case SAPP_KEYCODE_RIGHT:
-        in.h = IN_RIGHT;
-        break;
-
-      default:
-        break;
-    }
-  } else if (!in_editor && ev->type == SAPP_EVENTTYPE_KEY_UP) {
-    switch (ev->key_code) {
-      case SAPP_KEYCODE_W:
-      case SAPP_KEYCODE_UP:
-        if (in.v == IN_UP) {
-          in.v = IN_NONE;
-        }
-        break;
-
-      case SAPP_KEYCODE_A:
-      case SAPP_KEYCODE_LEFT:
-        if (in.h == IN_LEFT) {
-          in.h = IN_NONE;
-        }
-        break;
-
-      case SAPP_KEYCODE_D:
-      case SAPP_KEYCODE_RIGHT:
-        if (in.h == IN_RIGHT) {
-          in.h = IN_NONE;
-        }
-        break;
-
-      case SAPP_KEYCODE_E:
-        reload_current_map();
-        in_editor = true;
-        break;
-
-      case SAPP_KEYCODE_R:
-        reload_current_map();
-        break;
-
-      default:
-        break;
-    }
-  } else if (in_editor && ev->type == SAPP_EVENTTYPE_KEY_UP) {
-    switch (ev->key_code) {
-      case SAPP_KEYCODE_ESCAPE:
+      case SAPP_KEYCODE_Q:
         sapp_quit();
         break;
 
@@ -158,8 +100,50 @@ static void input(const sapp_event* ev)
         in.h = IN_RIGHT;
         break;
 
+      default:
+        break;
+    }
+  } else if (ev->type == SAPP_EVENTTYPE_KEY_UP) {
+    switch (ev->key_code) {
+      case SAPP_KEYCODE_W:
+      case SAPP_KEYCODE_UP:
+        if (in.v == IN_UP) {
+          in.v = IN_NONE;
+        }
+        break;
+
+      case SAPP_KEYCODE_S:
+      case SAPP_KEYCODE_DOWN:
+        if (in.v == IN_DOWN) {
+          in.v = IN_NONE;
+        }
+        break;
+
+      case SAPP_KEYCODE_A:
+      case SAPP_KEYCODE_LEFT:
+        if (in.h == IN_LEFT) {
+          in.h = IN_NONE;
+        }
+        break;
+
+      case SAPP_KEYCODE_D:
+      case SAPP_KEYCODE_RIGHT:
+        if (in.h == IN_RIGHT) {
+          in.h = IN_NONE;
+        }
+        break;
+
       case SAPP_KEYCODE_E:
-        in_editor = false;
+        if (in_editor) {
+          in_editor = false;
+        } else {
+          reload_current_map();
+          in_editor = true;
+        }
+        break;
+
+      case SAPP_KEYCODE_R:
+        reload_current_map();
         break;
 
       case SAPP_KEYCODE_C:

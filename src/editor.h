@@ -1,7 +1,6 @@
 typedef struct
 {
   int x, y;
-  spot_type t;
   rect r;
   buffer_object bo;
 } editor_data;
@@ -12,12 +11,11 @@ void init_editor(editor_data* ed)
   init_buffer_object(&ed->bo, vertices_per_rect, indices_per_rect);
 
   ed->x = ed->y = 0;
-  ed->t = (spot_type)0;
 
   float tw = tile_width / sapp_width();
   float th = tile_height / sapp_height();
 
-  ed->r = (rect){-1.0f, -1.0f, -1.0f + tw, -1.0f + th, 0.6f, 0.6f, 0.6f, 0.3f};
+  ed->r = (rect){-1.0f, -1.0f, -1.0f + tw, -1.0f + th, 0.6f, 0.6f, 0.6f, 0.2f};
   move_rect(&ed->r, ed->x * tw, ed->y * th);
 
   rects_write_vertices_simple(&ed->r, &ed->bo, 1);
@@ -52,14 +50,13 @@ void draw_editor(editor_data* ed)
 
 void add_spot(editor_data* ed, map_data* md)
 {
-  set_spot(md, ed->x, ed->y, ed->t);
+  set_spot(md, ed->x, ed->y, (spot_type)0);
 }
 
 
 void next_spot_type(editor_data* ed, map_data* md)
 {
-  ed->t = ((int)(ed->t) + 1) % spot_type_n;
-  set_spot(md, ed->x, ed->y, ed->t);
+  set_spot(md, ed->x, ed->y, (get_spot(md, ed->x, ed->y) + 1) % spot_type_n);
 }
 
 

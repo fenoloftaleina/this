@@ -195,3 +195,9 @@ void set_spot(map_data* md, const int x, const int y, const spot_type t)
 
   spots_to_matrix(md);
 }
+
+
+spot_type get_spot(map_data* md, const int x, const int y)
+{
+  return md->spots[y * matrix_w + x];
+}
