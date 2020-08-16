@@ -25,6 +25,9 @@ static bool in_editor = false;
 static player_data player;
 static map_data map;
 static editor_data editor;
+static logic_data logic = (logic_data){
+  .default_steps_till_eval = 3
+};
 
 static sg_pass_action pass_action;
 
@@ -35,12 +38,14 @@ void run_map(const char* map_name)
 {
   strcpy(cur_map, map_name);
   load_map(&map, cur_map);
+  reload_logic(&logic);
 }
 
 
 void reload_current_map()
 {
   load_map(&map, cur_map);
+  reload_logic(&logic);
 }
 
 
@@ -177,7 +182,7 @@ void frame(void)
 
   while (accumulator >= dt) {
     if (!in_editor) {
-      update(&player, t, dt, &in, &map);
+      update(&player, t, dt, &in, &map, &logic);
     } else {
       update_editor(&editor, t, dt, &in, &map);
       in.v = in.h = IN_NONE;

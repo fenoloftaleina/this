@@ -197,6 +197,4 @@ void update_player_positions
   }
 
   move_rect(&pd->r, dt * walk_state.v, dt * jump_state.v);
-
-  check_collisions(pd, md);
 }
