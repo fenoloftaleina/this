@@ -3,7 +3,6 @@ typedef struct
   buffer_object bo;
   rect r;
   rect pr; // prev rect
-  float vx, vy;
 } player_data;
 
 
@@ -28,9 +27,6 @@ void init_player(player_data* pd)
   rects_write_indices(&pd->bo, 1);
   // update_buffer_vertices(&pd->bo);
   update_buffer_indices(&pd->bo);
-
-  pd->vx = 0.0f;
-  pd->vy = 0.0f;
 }
 
 

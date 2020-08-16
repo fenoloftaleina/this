@@ -85,7 +85,7 @@ void check_collisions(player_data* pd, map_data* md)
 
   col_y = -1000.0f;
   // falling
-  if (pd->vy <= 0) {
+  if (jump_state.v <= 0) {
     for (int i = 0; i < md->n; ++i) {
       if (lines_intersect(pr_mid_x, pd->pr.y1, r_mid_x, pd->r.y1,
             md->rs[i].x1 - w2, md->rs[i].y2, md->rs[i].x2 + w2, md->rs[i].y2)) {
@@ -102,7 +102,7 @@ void check_collisions(player_data* pd, map_data* md)
 
   col_y = 1000.0f;
   // flying up
-  if (pd->vy > 0) {
+  if (jump_state.v > 0) {
     for (int i = 0; i < md->n; ++i) {
       if (lines_intersect(pr_mid_x, pd->pr.y2, r_mid_x, pd->r.y2,
             md->rs[i].x1 - w2, md->rs[i].y1, md->rs[i].x2 + w2, md->rs[i].y1)) {
@@ -124,7 +124,7 @@ void check_collisions(player_data* pd, map_data* md)
 
   col_x = -1000.0f;
   // left
-  if (pd->vx <= 0) {
+  if (walk_state.v <= 0) {
     for (int i = 0; i < md->n; ++i) {
       if (lines_intersect(pd->pr.x1, pr_mid_y, pd->r.x1, r_mid_y,
             md->rs[i].x2, md->rs[i].y1 - h2, md->rs[i].x2, md->rs[i].y2 + h2)) {
@@ -136,10 +136,10 @@ void check_collisions(player_data* pd, map_data* md)
 
   col_x = 1000.0f;
   // right
-  if (pd->vx > 0) {
+  if (walk_state.v > 0) {
     for (int i = 0; i < md->n; ++i) {
       if (lines_intersect(pd->pr.x2, pr_mid_y, pd->r.x2, r_mid_y,
-            md->rs[i].x1, md->rs[i].y2 + h2, md->rs[i].x1, md->rs[i].y1 - h2)) {
+            md->rs[i].x1, md->rs[i].y1 - h2, md->rs[i].x1, md->rs[i].y2 + h2)) {
         col_x = fmin(col_x, md->rs[i].x1);
         diff_x = col_x - pd->r.x2 - eps;
       }
