@@ -48,12 +48,6 @@ void draw_editor(editor_data* ed)
 }
 
 
-void add_spot(editor_data* ed, map_data* md)
-{
-  set_spot(md, ed->x, ed->y, (spot_type)0);
-}
-
-
 void next_spot_type(editor_data* ed, map_data* md)
 {
   set_spot(md, ed->x, ed->y, (get_spot(md, ed->x, ed->y) + 1) % spot_type_n);

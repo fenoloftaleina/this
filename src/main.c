@@ -133,7 +133,7 @@ static void input(const sapp_event* ev)
         }
         break;
 
-      case SAPP_KEYCODE_E:
+      case SAPP_KEYCODE_H:
         if (in_editor) {
           in_editor = false;
         } else {
@@ -146,19 +146,15 @@ static void input(const sapp_event* ev)
         reload_current_map();
         break;
 
-      case SAPP_KEYCODE_C:
-        add_spot(&editor, &map);
-        break;
-
-      case SAPP_KEYCODE_F:
+      case SAPP_KEYCODE_J:
         next_spot_type(&editor, &map);
         break;
 
-      case SAPP_KEYCODE_G:
+      case SAPP_KEYCODE_N:
         kill_spot(&editor, &map);
         break;
 
-      case SAPP_KEYCODE_T:
+      case SAPP_KEYCODE_P:
         save_current_map();
         break;
 
