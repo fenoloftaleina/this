@@ -8,7 +8,7 @@ typedef struct
 
 void init_editor(editor_data* ed)
 {
-  init_buffer_object(&ed->bo, vertices_per_rect, indices_per_rect);
+  init_rects_buffer_object(&ed->bo, 1);
 
   ed->x = ed->y = 0;
 

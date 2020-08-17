@@ -10,6 +10,12 @@ const float blend(const float a, const float b, const float f)
 }
 
 
+void init_rects_buffer_object(buffer_object* bo, const int count)
+{
+  init_buffer_object(bo, count * vertices_per_rect, count * indices_per_rect);
+}
+
+
 const int rects_write_vertices
 (const rect* prs, const rect* rs, buffer_object* bo, const int count, const float f)
 {

@@ -15,7 +15,7 @@ static float player_height = 120.0f;
 
 void init_player(player_data* pd)
 {
-  init_buffer_object(&pd->bo, vertices_per_rect, indices_per_rect);
+  init_rects_buffer_object(&pd->bo, 1);
 
   const float pw2 = player_width / (2.0f * sapp_width());
   const float ph2 = player_height / (2.0f * sapp_height());

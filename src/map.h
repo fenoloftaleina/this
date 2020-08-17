@@ -61,7 +61,7 @@ const int matrix_size = matrix_w * matrix_h;
 
 void init_map(map_data* md)
 {
-  init_buffer_object(&md->bo, matrix_size * vertices_per_rect, matrix_size * indices_per_rect);
+  init_rects_buffer_object(&md->bo, matrix_size);
   set_buffer_counts(&md->bo, 0, 0);
 
   md->rs = (rect*)malloc(matrix_size * sizeof(rect));
