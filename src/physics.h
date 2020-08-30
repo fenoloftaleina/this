@@ -73,80 +73,184 @@ bool lines_intersect
 }
 
 
+typedef struct
+{
+  float hanging_x, hanging_y, p_hanging_x, p_hanging_y;
+  float dragging_x, dragging_y, p_dragging_x, p_dragging_y;
+  float main_x, main_y, p_main_x, p_main_y;
+} collision_points_data;
+
+typedef struct
+{
+  float side_x, side_y1, side_y2;
+  float end_x1, end_x2, end_y;
+} rect_side_end_data;
+
+
+void recalc_collision_points
+(collision_points_data* cp, const player_data* pd, const bool up, const bool left)
+{
+  bool down = !up;
+  bool right = !left;
+
+  if (left && down) {
+    cp->hanging_x = pd->r.x1;
+    cp->p_hanging_x = pd->pr.x1;
+    cp->hanging_y = pd->r.y2;
+    cp->p_hanging_y = pd->pr.y2;
+
+    cp->dragging_x = pd->r.x2;
+    cp->p_dragging_x = pd->pr.x2;
+    cp->dragging_y = pd->r.y1;
+    cp->p_dragging_y = pd->pr.y1;
+
+    cp->main_x = pd->r.x1;
+    cp->p_main_x = pd->pr.x1;
+    cp->main_y = pd->r.y1;
+    cp->p_main_y = pd->pr.y1;
+  } else if (left && up) {
+    cp->hanging_x = pd->r.x1;
+    cp->p_hanging_x = pd->pr.x1;
+    cp->hanging_y = pd->r.y1;
+    cp->p_hanging_y = pd->pr.y1;
+
+    cp->dragging_x = pd->r.x2;
+    cp->p_dragging_x = pd->pr.x2;
+    cp->dragging_y = pd->r.y2;
+    cp->p_dragging_y = pd->pr.y2;
+
+    cp->main_x = pd->r.x1;
+    cp->p_main_x = pd->pr.x1;
+    cp->main_y = pd->r.y2;
+    cp->p_main_y = pd->pr.y2;
+  } else if (right && down) {
+    cp->hanging_x = pd->r.x2;
+    cp->p_hanging_x = pd->pr.x2;
+    cp->hanging_y = pd->r.y2;
+    cp->p_hanging_y = pd->pr.y2;
+
+    cp->dragging_x = pd->r.x1;
+    cp->p_dragging_x = pd->pr.x1;
+    cp->dragging_y = pd->r.y1;
+    cp->p_dragging_y = pd->pr.y1;
+
+    cp->main_x = pd->r.x2;
+    cp->p_main_x = pd->pr.x2;
+    cp->main_y = pd->r.y1;
+    cp->p_main_y = pd->pr.y1;
+  } else if (right && up) {
+    cp->hanging_x = pd->r.x2;
+    cp->p_hanging_x = pd->pr.x2;
+    cp->hanging_y = pd->r.y1;
+    cp->p_hanging_y = pd->pr.y1;
+
+    cp->dragging_x = pd->r.x1;
+    cp->p_dragging_x = pd->pr.x1;
+    cp->dragging_y = pd->r.y2;
+    cp->p_dragging_y = pd->pr.y2;
+
+    cp->main_x = pd->r.x2;
+    cp->p_main_x = pd->pr.x2;
+    cp->main_y = pd->r.y2;
+    cp->p_main_y = pd->pr.y2;
+  }
+}
+
+
+void recalc_rect_side_end
+(rect_side_end_data* rse, const rect* r, const bool up, const bool left)
+{
+  bool down = !up;
+  bool right = !left;
+
+  rse->side_y1 = r->y1;
+  rse->side_y2 = r->y2;
+
+  rse->end_x1 = r->x1;
+  rse->end_x2 = r->x2;
+
+  if (left && down) {
+    rse->side_x = r->x2;
+    rse->end_y = r->y2;
+  } else if (left && up) {
+    rse->side_x = r->x2;
+    rse->end_y = r->y1;
+  } else if (right && down) {
+    rse->side_x = r->x1;
+    rse->end_y = r->y2;
+  } else if (right && up) {
+    rse->side_x = r->x1;
+    rse->end_y = r->y1;
+  }
+}
+
+
 void check_collisions(player_data* pd, map_data* md)
 {
-  float col_x, col_y, diff_x = 0.0f, diff_y = 0.0f;
-
-  float w2 = (pd->r.x2 - pd->r.x1) * 0.5f;
-  float pr_mid_x = pd->pr.x1 + w2;
-  float r_mid_x = pd->r.x1 + w2;
-
   float eps = 0.001f;
 
-  col_y = -1000.0f;
-  // falling
-  if (jump_state.v <= 0) {
-    for (int i = 0; i < md->n; ++i) {
-      if (lines_intersect(pr_mid_x, pd->pr.y1, r_mid_x, pd->r.y1,
-            md->rs[i].x1 - w2, md->rs[i].y2, md->rs[i].x2 + w2, md->rs[i].y2)) {
-        col_y = fmax(col_y, md->rs[i].y2);
-        diff_y = col_y - pd->r.y1 + eps;
+  bool up = jump_state.v > 0;
+  bool left = walk_state.v <= 0;
+  bool down = !up;
+  bool right = !left;
 
-        jump_state.v = 0.0f;
-        jump_state.in_air = false;
-        jump_state.started_at = 0.0f;
-        jump_state.possible_double_jump = false;
-      }
+  float e_side = left ? eps : -eps;
+  float e_end = up ? -eps : eps;
+
+  collision_points_data cp;
+  recalc_collision_points(&cp, pd, up, left);
+
+  rect_side_end_data rse;
+
+  for (int i = 0; i < md->n; ++i) {
+    recalc_rect_side_end(&rse, &md->rs[i], up, left);
+    if (lines_intersect(
+          cp.p_hanging_x, cp.p_hanging_y, cp.hanging_x, cp.hanging_y,
+          rse.side_x, rse.side_y1, rse.side_x, rse.side_y2)) {
+      move_rect(&pd->r, rse.side_x - cp.hanging_x + e_side, 0.0f);
+      recalc_collision_points(&cp, pd, up, left);
     }
   }
 
-  col_y = 1000.0f;
-  // flying up
-  if (jump_state.v > 0) {
-    for (int i = 0; i < md->n; ++i) {
-      if (lines_intersect(pr_mid_x, pd->pr.y2, r_mid_x, pd->r.y2,
-            md->rs[i].x1 - w2, md->rs[i].y1, md->rs[i].x2 + w2, md->rs[i].y1)) {
-        col_y = fmin(col_y, md->rs[i].y1);
-        diff_y = col_y - pd->r.y2 - eps;
+  for (int i = 0; i < md->n; ++i) {
+    recalc_rect_side_end(&rse, &md->rs[i], up, left);
+    if (lines_intersect(
+          cp.p_dragging_x, cp.p_dragging_y, cp.dragging_x, cp.dragging_y,
+          rse.end_x1, rse.end_y, rse.end_x2, rse.end_y)) {
+      move_rect(&pd->r, 0.0f, rse.end_y - cp.dragging_y + e_end);
+      recalc_collision_points(&cp, pd, up, left);
 
-        jump_state.v = 0.0f;
-        jump_state.started_at = 0.0f;
-        jump_state.possible_double_jump = false;
-      }
+      jump_state.v = 0.0f;
+      jump_state.in_air = up;
+      jump_state.started_at = 0.0f;
+      jump_state.possible_double_jump = false;
     }
   }
 
-  move_rect(&pd->r, 0.0f, diff_y);
-
-  float h2 = (pd->r.y2 - pd->r.y1) * 0.5f;
-  float pr_mid_y = pd->pr.y1 + h2;
-  float r_mid_y = pd->r.y1 + h2;
-
-  col_x = -1000.0f;
-  // left
-  if (walk_state.v <= 0) {
-    for (int i = 0; i < md->n; ++i) {
-      if (lines_intersect(pd->pr.x1, pr_mid_y, pd->r.x1, r_mid_y,
-            md->rs[i].x2, md->rs[i].y1 - h2, md->rs[i].x2, md->rs[i].y2 + h2)) {
-        col_x = fmax(col_x, md->rs[i].x2);
-        diff_x = col_x - pd->r.x1 + eps;
-      }
+  for (int i = 0; i < md->n; ++i) {
+    recalc_rect_side_end(&rse, &md->rs[i], up, left);
+    if (lines_intersect(
+          cp.p_main_x, cp.p_main_y, cp.main_x, cp.main_y,
+          rse.side_x, rse.side_y1, rse.side_x, rse.side_y2)) {
+      move_rect(&pd->r, rse.side_x - cp.main_x + e_side, 0.0f);
+      recalc_collision_points(&cp, pd, up, left);
     }
   }
 
-  col_x = 1000.0f;
-  // right
-  if (walk_state.v > 0) {
-    for (int i = 0; i < md->n; ++i) {
-      if (lines_intersect(pd->pr.x2, pr_mid_y, pd->r.x2, r_mid_y,
-            md->rs[i].x1, md->rs[i].y1 - h2, md->rs[i].x1, md->rs[i].y2 + h2)) {
-        col_x = fmin(col_x, md->rs[i].x1);
-        diff_x = col_x - pd->r.x2 - eps;
-      }
+  for (int i = 0; i < md->n; ++i) {
+    recalc_rect_side_end(&rse, &md->rs[i], up, left);
+    if (lines_intersect(
+          cp.p_main_x, cp.p_main_y, cp.main_x, cp.main_y,
+          rse.end_x1, rse.end_y, rse.end_x2, rse.end_y)) {
+      move_rect(&pd->r, 0.0f, rse.end_y - cp.main_y + e_end);
+      recalc_collision_points(&cp, pd, up, left);
+
+      jump_state.v = 0.0f;
+      jump_state.in_air = up;
+      jump_state.started_at = 0.0f;
+      jump_state.possible_double_jump = false;
     }
   }
-
-  move_rect(&pd->r, diff_x, 0.0f);
 }
 
 
