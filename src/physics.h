@@ -19,12 +19,14 @@ typedef struct
 
 typedef struct
 {
-  const float default_transpose;
+  const float default_clamp;
+  const float flight_clamp;
   const float damping;
 
 
   float v;
   float transpose;
+  float clamp;
 } walk_data;
 
 
@@ -44,7 +46,8 @@ static jump_data jump_state = (jump_data){
   .possible_double_jump = false
 };
 static walk_data walk_state = (walk_data){
-  .default_transpose = 6.5f,
+  .default_clamp = 0.6f,
+  .flight_clamp = 0.42f,
   .damping = 20.0f,
   .v = 0.0f,
   .transpose = 6.5f
@@ -256,12 +259,12 @@ void check_collisions(player_data* pd, map_data* md)
 
 float v_clamp(const float val)
 {
-  return HMM_Clamp(-3.0f, val, 50.0f);
+  return HMM_Clamp(-3.0f, val, 2.0f);
 }
 
-float h_clamp(const float val)
+float h_clamp(const float val, const float clamp_val)
 {
-  return HMM_Clamp(-1.0f, val, 1.0f);
+  return HMM_Clamp(-clamp_val, val, clamp_val);
 }
 
 
@@ -289,10 +292,16 @@ void update_player_positions
     jump_state.possible_double_jump = false;
   }
 
+  if (jump_state.in_air) {
+    walk_state.clamp = walk_state.flight_clamp;
+  } else {
+    walk_state.clamp = walk_state.default_clamp;
+  }
+
   if (in->h == IN_LEFT) {
-    walk_state.v = h_clamp(walk_state.v - dt * walk_state.transpose);
+    walk_state.v = h_clamp(walk_state.v - dt * walk_state.transpose, walk_state.clamp);
   } else if (in->h == IN_RIGHT) {
-    walk_state.v = h_clamp(walk_state.v + dt * walk_state.transpose);
+    walk_state.v = h_clamp(walk_state.v + dt * walk_state.transpose, walk_state.clamp);
   } else {
     walk_state.v /= (1.0f + walk_state.damping * dt);
     if (fabs(walk_state.v) < e) {
