@@ -5,6 +5,8 @@
 #include "sokol_gfx.h"
 #include "sokol_glue.h"
 #include "sokol_time.h"
+#define SOKOL_DEBUGTEXT_IMPL
+#include "sokol_debugtext.h"
 #define HANDMADE_MATH_IMPLEMENTATION
 #include "HandmadeMath.h"
 
@@ -26,7 +28,8 @@ static player_data player;
 static map_data map;
 static editor_data editor;
 static logic_data logic = (logic_data){
-  .default_steps_till_eval = 3
+  .default_steps_till_eval = 3,
+  .n = 0
 };
 
 static sg_pass_action pass_action;
@@ -60,6 +63,18 @@ void init(void)
   sg_setup(&(sg_desc){
       .context = sapp_sgcontext()
       });
+
+  sdtx_setup(&(sdtx_desc_t){
+    .fonts = {
+      [0] = sdtx_font_kc854()
+    },
+  });
+
+  sdtx_canvas(sapp_width() * 0.2f, sapp_height() * 0.2f);
+  sdtx_origin(3.0f, 3.0f);
+  sdtx_font(0);
+  sdtx_color3f(1.0f, 0.0f, 0.0f);
+
   pass_action = (sg_pass_action) {
     .colors[0] = { .action=SG_ACTION_CLEAR, .val={0.5f, 0.5f, 0.5f, 1.0f } }
   };
@@ -205,6 +220,8 @@ void frame(void)
   if (in_editor) {
     draw_editor(&editor);
   }
+
+  sdtx_draw();
 
   sg_end_pass();
 

@@ -13,7 +13,10 @@ typedef enum spot_type
   spot_empty = -1,
   spot_red,
   spot_green,
-  spot_blue
+  spot_blue,
+  spot_red_dead,
+  spot_green_dead,
+  spot_blue_dead
 } spot_type;
 
 const int spot_type_n = 3;
@@ -50,6 +53,12 @@ color type_colors[] = {
   {0.3, 0.6, 0.7}
 };
 
+color dead_type_colors[] = {
+  {0.25, 0.175, 0.235},
+  {0.2, 0.3, 0.2},
+  {0.15, 0.3, 0.35}
+};
+
 
 float tile_width = 200.0f;
 float tile_height = 200.0f;
@@ -64,6 +73,7 @@ void init_map(map_data* md)
   init_rects_buffer_object(&md->bo, matrix_size);
   set_buffer_counts(&md->bo, 0, 0);
 
+  md->prs = (rect*)malloc(matrix_size * sizeof(rect));
   md->rs = (rect*)malloc(matrix_size * sizeof(rect));
   md->ts = (spot_type*)malloc(matrix_size * sizeof(spot_type));
   md->ss = (spot_status*)malloc(matrix_size * sizeof(spot_status));
@@ -78,8 +88,14 @@ void init_map(map_data* md)
 void draw_map(map_data* md, const float frame_fraction)
 {
   if (md->changed) {
-    rects_write_vertices(md->prs, md->rs, &md->bo, md->n, frame_fraction),
+    rects_write_vertices(md->prs, md->rs, &md->bo, md->n, frame_fraction);
     update_buffer_vertices(&md->bo);
+
+    md->changed = false;
+
+    for (int i = 0; i < md->n; ++i) {
+      md->prs[i] = md->rs[i];
+    }
   }
 
   draw_buffer_object(&md->bo);
@@ -90,7 +106,6 @@ void spots_to_matrix(map_data* md)
 {
   float tw = tile_width / sapp_width();
   float th = tile_height / sapp_height();
-
 
   spot_type cur_type;
   float x, y;
@@ -113,6 +128,7 @@ void spots_to_matrix(map_data* md)
         type_colors[cur_type].b,
         1.0f
       };
+      md->prs[j] = md->rs[j];
       md->ts[j] = cur_type;
       md->ss[j] = spot_alive;
 

@@ -46,7 +46,7 @@ static jump_data jump_state = (jump_data){
   .possible_double_jump = false
 };
 static walk_data walk_state = (walk_data){
-  .default_clamp = 0.6f,
+  .default_clamp = 0.1f,
   .flight_clamp = 0.42f,
   .damping = 20.0f,
   .v = 0.0f,
@@ -194,8 +194,8 @@ void check_collisions(player_data* pd, map_data* md)
 
   bool up = jump_state.v > 0;
   bool left = walk_state.v <= 0;
-  bool down = !up;
-  bool right = !left;
+  // bool down = !up;
+  // bool right = !left;
 
   float e_side = left ? eps : -eps;
   float e_end = up ? -eps : eps;
@@ -271,6 +271,8 @@ float h_clamp(const float val, const float clamp_val)
 void update_player_positions
 (player_data* pd, const float t, const float dt, const input_data* in, map_data* md)
 {
+  (void)md;
+
   // printf("%f\n", t);
   if (in->v == IN_UP && !jump_state.in_air) {
     jump_state.v = v_clamp(jump_state.init_v);

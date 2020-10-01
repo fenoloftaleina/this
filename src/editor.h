@@ -27,6 +27,8 @@ void init_editor(editor_data* ed)
 void update_editor
 (editor_data* ed, const float t, const float dt, const input_data* in, map_data* md)
 {
+  (void)t; (void)dt; (void) md;
+
   float tw = tile_width / sapp_width();
   float th = tile_height / sapp_height();
 

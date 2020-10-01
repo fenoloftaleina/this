@@ -3,25 +3,26 @@ typedef struct
   buffer_object bo;
   rect r;
   rect pr; // prev rect
+  float w;
+  float h;
 } player_data;
 
 
 #include "physics.h"
 
 
-static float player_width = 100.0f;
-static float player_height = 120.0f;
-
-
 void init_player(player_data* pd)
 {
   init_rects_buffer_object(&pd->bo, 1);
 
-  const float pw2 = player_width / (2.0f * sapp_width());
-  const float ph2 = player_height / (2.0f * sapp_height());
+  pd->w = 100.0f / sapp_width();
+  pd->h = 120.0f / sapp_height();
+
+  const float pw2 = pd->w * 0.5f;
+  const float ph2 = pd->h * 0.5f;
 
   pd->r = (rect){-pw2, -ph2, pw2, ph2, 0.3f, 0.3f, 0.3f, 1.0f};
-  move_rect(&pd->r, 0.0f, 0.3f);
+  move_rect(&pd->r, -0.05f, 0.3f);
 
   rects_write_vertices_simple(&pd->r, &pd->bo, 1);
   rects_write_indices(&pd->bo, 1);
