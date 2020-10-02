@@ -36,8 +36,6 @@ typedef struct map_data
 
   spot_type* spots;
 
-  bool changed;
-
   // int offset_x, offsey_y; // for moving between maps potentially
 } map_data;
 
@@ -48,15 +46,15 @@ typedef struct color
 } color;
 
 color type_colors[] = {
-  {0.5, 0.35, 0.47},
-  {0.4, 0.6, 0.4},
-  {0.3, 0.6, 0.7}
+  {0.5f, 0.35f, 0.47f},
+  {0.4f, 0.6f, 0.4f},
+  {0.3f, 0.6f, 0.7f}
 };
 
 color dead_type_colors[] = {
-  {0.25, 0.175, 0.235},
-  {0.2, 0.3, 0.2},
-  {0.15, 0.3, 0.35}
+  {1.0f, 0.0f, 0.0f},
+  {0.0f, 1.0f, 0.0f},
+  {0.0f, 0.0f, 1.0f}
 };
 
 
@@ -80,23 +78,13 @@ void init_map(map_data* md)
   md->m = (int*)malloc(matrix_size * sizeof(int));
   memset(md->m, -1, matrix_size * sizeof(int));
   md->spots = (spot_type*)malloc(matrix_size * sizeof(spot_type));
-
-  md->changed = false;
 }
 
 
 void draw_map(map_data* md, const float frame_fraction)
 {
-  if (md->changed) {
-    rects_write_vertices(md->prs, md->rs, &md->bo, md->n, frame_fraction);
-    update_buffer_vertices(&md->bo);
-
-    md->changed = false;
-
-    for (int i = 0; i < md->n; ++i) {
-      md->prs[i] = md->rs[i];
-    }
-  }
+  rects_write_vertices(md->prs, md->rs, &md->bo, md->n, frame_fraction);
+  update_buffer_vertices(&md->bo);
 
   draw_buffer_object(&md->bo);
 }
@@ -143,10 +131,8 @@ void spots_to_matrix(map_data* md)
       rects_write_vertices_simple(md->rs, &md->bo, md->n),
       rects_write_indices(&md->bo, md->n)
       );
-  update_buffer_vertices(&md->bo);
+  // update_buffer_vertices(&md->bo);
   update_buffer_indices(&md->bo);
-
-  md->changed = false;
 }
 
 

@@ -17,7 +17,7 @@ void init_rects_buffer_object(buffer_object* bo, const int count)
 
 
 const int rects_write_vertices
-(const rect* prs, const rect* rs, buffer_object* bo, const int count, const float f)
+(rect* prs, const rect* rs, buffer_object* bo, const int count, const float f)
 {
   for(int i = 0; i < count; ++i) {
     bo->vertices[i * vertices_per_rect +  0] = blend(prs[i].x1, rs[i].x1, f);
@@ -51,6 +51,8 @@ const int rects_write_vertices
     bo->vertices[i * vertices_per_rect + 25] = blend(prs[i].g, rs[i].g, f);
     bo->vertices[i * vertices_per_rect + 26] = blend(prs[i].b, rs[i].b, f);
     bo->vertices[i * vertices_per_rect + 27] = blend(prs[i].a, rs[i].a, f);
+
+    prs[i] = rs[i];
   }
 
   return count * vertices_per_rect;

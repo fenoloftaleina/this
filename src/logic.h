@@ -12,6 +12,9 @@ typedef struct
 void reload_logic(logic_data* ld)
 {
   ld->steps_till_eval = ld->default_steps_till_eval;
+  for (int i = 0; i < ld->steps_till_eval; ++i) {
+    ld->touch_ids[i] = -1;
+  }
 }
 
 
@@ -28,8 +31,6 @@ void kill_spots(const int id, map_data* md)
       md->rs[i].b = dead_type_colors[type].b;
     }
   }
-
-  md->changed = true;
 }
 
 
@@ -42,23 +43,19 @@ void reset_spots(map_data* md)
     md->rs[i].g = type_colors[md->ts[i]].g;
     md->rs[i].b = type_colors[md->ts[i]].b;
   }
-
-  md->changed = true;
 }
 
 
 void evaluate(player_data* pd, map_data* md, logic_data* ld)
 {
 
+  ld->n = 0;
 }
 
 
 void update
 (player_data* pd, const float t, const float dt, const input_data* in, map_data* md, logic_data* ld)
 {
-  md->changed = false;
-  pd->pr = pd->r;
-
   update_player_positions(pd, t, dt, in, md);
   check_collisions(pd, md);
 
@@ -133,9 +130,9 @@ void update
   }
 
   // sdtx_printf("%d. found_id: %d\n", ld->n, found_id);
-  printf("%d. found_id: %d\n", ld->n, found_id);
+  printf("%d. found_id: %d -- %d\n", ld->n, found_id, (ld->n + 2) % ld->steps_till_eval);
 
-  if (ld->n > 0 && ld->touch_ids[ld->n - 1] == found_id) {
+  if (ld->touch_ids[(ld->n + 2) % ld->steps_till_eval] == found_id) {
     return;
   }
 
@@ -164,9 +161,9 @@ void update
   }
 
   if (ld->n == ld->steps_till_eval) {
-    ld->n = 0;
     evaluate(pd, md, ld);
     reset_spots(md);
     printf("reset!\n");
+    sdtx_printf("reset!");
   }
 }
