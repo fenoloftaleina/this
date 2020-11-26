@@ -279,6 +279,8 @@ void update_player_positions
     jump_state.in_air = true;
     jump_state.started_at = t;
     jump_state.possible_double_jump = true;
+
+    pd->just_jumped = true;
   } else if (in->v == IN_UP &&
       jump_state.in_air &&
       jump_state.possible_double_jump &&

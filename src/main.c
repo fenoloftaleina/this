@@ -29,7 +29,8 @@ static map_data map;
 static editor_data editor;
 static logic_data logic = (logic_data){
   .default_steps_till_eval = 3,
-  .n = 0
+  .n = 0,
+  .jumped_meantime = false
 };
 
 static sg_pass_action pass_action;

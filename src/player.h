@@ -5,6 +5,8 @@ typedef struct
   rect pr; // prev rect
   float w;
   float h;
+
+  bool just_jumped;
 } player_data;
 
 
@@ -28,6 +30,8 @@ void init_player(player_data* pd)
   rects_write_indices(&pd->bo, 1);
   // update_buffer_vertices(&pd->bo);
   update_buffer_indices(&pd->bo);
+
+  pd->just_jumped = false;
 }
 
 

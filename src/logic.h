@@ -2,6 +2,7 @@ typedef struct
 {
   int touch_ids[3];
   spot_type touch_spot_types[3];
+  bool jumped_meantime;
 
   const int default_steps_till_eval;
   int steps_till_eval;
@@ -12,6 +13,8 @@ typedef struct
 void reload_logic(logic_data* ld)
 {
   ld->steps_till_eval = ld->default_steps_till_eval;
+  ld->n = 0;
+  ld->jumped_meantime = false;
   for (int i = 0; i < ld->steps_till_eval; ++i) {
     ld->touch_ids[i] = -1;
   }
@@ -56,7 +59,15 @@ void evaluate(player_data* pd, map_data* md, logic_data* ld)
 void update
 (player_data* pd, const float t, const float dt, const input_data* in, map_data* md, logic_data* ld)
 {
+  pd->just_jumped = false;
+
   update_player_positions(pd, t, dt, in, md);
+
+  if (pd->just_jumped) {
+    ld->jumped_meantime = true;
+    printf("jumped meantime\n\n");
+  }
+
   check_collisions(pd, md);
 
 
@@ -130,11 +141,15 @@ void update
   }
 
   // sdtx_printf("%d. found_id: %d\n", ld->n, found_id);
-  printf("%d. found_id: %d -- %d\n", ld->n, found_id, (ld->n + 2) % ld->steps_till_eval);
+  // printf("%d. found_id: %d -- %d << %d\n", ld->n, found_id, (ld->n + 2) % ld->steps_till_eval, ld->jumped_meantime);
 
-  if (ld->touch_ids[(ld->n + 2) % ld->steps_till_eval] == found_id) {
+  if (found_id == -1 ||
+      (!ld->jumped_meantime &&
+       ld->touch_ids[(ld->n + 2) % ld->steps_till_eval] == found_id)) {
     return;
   }
+
+  ld->jumped_meantime = false;
 
   // printf("----- %d %d %d %d\n", bottom_id, top_id, left_id, right_id);
 
@@ -163,7 +178,7 @@ void update
   if (ld->n == ld->steps_till_eval) {
     evaluate(pd, md, ld);
     reset_spots(md);
-    printf("reset!\n");
-    sdtx_printf("reset!");
+    // printf("reset!\n");
+    // sdtx_printf("reset!");
   }
 }
