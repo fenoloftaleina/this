@@ -124,7 +124,9 @@ void update
     }
 
     if (temp_overlap > left_overlap &&
-        fabs(pd->r.x1 - md->rs[i].x2) < eps) {
+        fabs(pd->r.x1 - md->rs[i].x2) < eps &&
+        (pd->r.x1 - pd->pr.x1 < 0.0f ||
+         in->h == IN_LEFT)) {
       left_id = i;
       found_id = i;
       left_spot_type = md->ts[i];
@@ -132,7 +134,9 @@ void update
     }
 
     if (temp_overlap > right_overlap &&
-        fabs(md->rs[i].x1 - pd->r.x2) < eps) {
+        fabs(md->rs[i].x1 - pd->r.x2) < eps &&
+        (pd->r.x1 - pd->pr.x1 > 0.0f ||
+         in->h == IN_RIGHT)) {
       right_id = i;
       found_id = i;
       right_spot_type = md->ts[i];
