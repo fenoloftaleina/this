@@ -101,7 +101,6 @@ void update
     if (temp_overlap > bottom_overlap &&
         fabs(pd->r.y1 - md->rs[i].y2) < eps) {
       bottom_id = i;
-      found_id = i;
       bottom_spot_type = md->ts[i];
       bottom_overlap = temp_overlap;
     }
@@ -109,7 +108,6 @@ void update
     if (temp_overlap > top_overlap &&
         fabs(md->rs[i].y1 - pd->r.y2) < eps) {
       top_id = i;
-      found_id = i;
       top_spot_type = md->ts[i];
       top_overlap = temp_overlap;
     }
@@ -128,7 +126,6 @@ void update
         (pd->r.x1 - pd->pr.x1 < 0.0f ||
          in->h == IN_LEFT)) {
       left_id = i;
-      found_id = i;
       left_spot_type = md->ts[i];
       left_overlap = temp_overlap;
     }
@@ -138,7 +135,6 @@ void update
         (pd->r.x1 - pd->pr.x1 > 0.0f ||
          in->h == IN_RIGHT)) {
       right_id = i;
-      found_id = i;
       right_spot_type = md->ts[i];
       right_overlap = temp_overlap;
     }
@@ -146,6 +142,24 @@ void update
 
   // sdtx_printf("%d. found_id: %d\n", ld->n, found_id);
   // printf("%d. found_id: %d -- %d << %d\n", ld->n, found_id, (ld->n + 2) % ld->steps_till_eval, ld->jumped_meantime);
+
+  if ((bottom_id != -1 && top_id != -1) ||
+      (left_id != -1 && right_id != -1)) {
+    // death
+    exit(0);
+  } else if (
+      (left_id != -1 && top_id != -1) ||
+      (left_id != -1 && bottom_id != -1) ||
+      (right_id != -1 && top_id != -1) ||
+      (right_id != -1 && bottom_id != -1)) {
+    // double touch
+
+    printf("double touch\n\n");
+    return;
+  } else {
+    found_id = left_id + right_id + top_id + bottom_id + 3;
+  }
+
 
   if (found_id == -1 ||
       (!ld->jumped_meantime &&
