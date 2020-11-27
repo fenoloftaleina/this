@@ -65,10 +65,12 @@ void update
 
   if (pd->just_jumped) {
     ld->jumped_meantime = true;
-    printf("jumped meantime\n\n");
   }
 
   check_collisions(pd, md);
+
+
+  sdtx_printf("step %d", ld->n);
 
 
   float eps = 0.0011f;
@@ -197,6 +199,5 @@ void update
     evaluate(pd, md, ld);
     reset_spots(md);
     // printf("reset!\n");
-    // sdtx_printf("reset!");
   }
 }
