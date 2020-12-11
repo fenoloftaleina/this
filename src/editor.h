@@ -1,31 +1,31 @@
 typedef struct
 {
   int x, y;
-  rect r;
+  rect rect;
   buffer_object bo;
 } editor_data;
 
 
-void init_editor(editor_data* ed)
+void init_editor(editor_data* editor)
 {
-  init_rects_buffer_object(&ed->bo, 1);
+  init_rects_buffer_object(&editor->bo, 1);
 
-  ed->x = ed->y = 0;
+  editor->x = editor->y = 0;
 
   float tw = tile_width / sapp_width();
   float th = tile_height / sapp_height();
 
-  ed->r = (rect){-1.0f, -1.0f, -1.0f + tw, -1.0f + th, 0.6f, 0.6f, 0.6f, 0.2f};
-  move_rect(&ed->r, ed->x * tw, ed->y * th);
+  editor->rect = (rect){-1.0f, -1.0f, -1.0f + tw, -1.0f + th, 0.6f, 0.6f, 0.6f, 0.2f};
+  move_rect(&editor->rect, editor->x * tw, editor->y * th);
 
-  rects_write_vertices_simple(&ed->r, &ed->bo, 1);
-  rects_write_indices(&ed->bo, 1);
-  update_buffer_indices(&ed->bo);
+  rects_write_vertices_simple(&editor->rect, &editor->bo, 1);
+  rects_write_indices(&editor->bo, 1);
+  update_buffer_indices(&editor->bo);
 }
 
 
 void update_editor
-(editor_data* ed, const float t, const float dt, const input_data* in, map_data* md)
+(editor_data* editor, const float t, const float dt, const input_data* in, map_data* md)
 {
   (void)t; (void)dt; (void) md;
 
@@ -35,28 +35,28 @@ void update_editor
   int px = (- (in->h == IN_LEFT) + (in->h == IN_RIGHT));
   int py = ((in->v == IN_UP) - (in->v == IN_DOWN));
 
-  ed->x += px;
-  ed->y += py;
-  move_rect(&ed->r, px * tw, py * th);
+  editor->x += px;
+  editor->y += py;
+  move_rect(&editor->rect, px * tw, py * th);
 }
 
 
-void draw_editor(editor_data* ed)
+void draw_editor(editor_data* editor)
 {
-  rects_write_vertices_simple(&ed->r, &ed->bo, 1);
-  update_buffer_vertices(&ed->bo);
+  rects_write_vertices_simple(&editor->rect, &editor->bo, 1);
+  update_buffer_vertices(&editor->bo);
 
-  draw_buffer_object(&ed->bo);
+  draw_buffer_object(&editor->bo);
 }
 
 
-void next_spot_type(editor_data* ed, map_data* md)
+void next_spot_type(editor_data* editor, map_data* md)
 {
-  set_spot(md, ed->x, ed->y, (get_spot(md, ed->x, ed->y) + 1) % spot_type_n);
+  set_raw_spot(md, editor->x, editor->y, (get_raw_spot(md, editor->x, editor->y) + 1) % spot_type_n);
 }
 
 
-void kill_spot(editor_data* ed, map_data* md)
+void kill_spot(editor_data* editor, map_data* md)
 {
-  set_spot(md, ed->x, ed->y, spot_empty);
+  set_raw_spot(md, editor->x, editor->y, spot_empty);
 }

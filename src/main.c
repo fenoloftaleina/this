@@ -33,27 +33,27 @@ static logic_data logic = (logic_data){
 
 static sg_pass_action pass_action;
 
-static char cur_map[255];
+static char cur_map_name[255];
 
 
 void run_map(const char* map_name)
 {
-  strcpy(cur_map, map_name);
-  load_map(&map, cur_map);
+  strcpy(cur_map_name, map_name);
+  load_map(&map, cur_map_name);
   reload_logic(&logic);
 }
 
 
 void reload_current_map()
 {
-  load_map(&map, cur_map);
+  load_map(&map, cur_map_name);
   reload_logic(&logic);
 }
 
 
 void save_current_map()
 {
-  save_map(&map, cur_map);
+  save_map(&map, cur_map_name);
 }
 
 
