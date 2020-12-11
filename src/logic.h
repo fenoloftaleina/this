@@ -7,6 +7,8 @@ typedef struct
   const int default_steps_till_eval;
   int steps_till_eval;
   int n;
+
+  bool alive;
 } logic_data;
 
 
@@ -15,6 +17,7 @@ void reload_logic(logic_data* ld)
   ld->steps_till_eval = ld->default_steps_till_eval;
   ld->n = 0;
   ld->jumped_meantime = false;
+  ld->alive = true;
   for (int i = 0; i < ld->steps_till_eval; ++i) {
     ld->touch_ids[i] = -1;
   }
@@ -52,7 +55,6 @@ void reset_spots(map_data* md)
 void evaluate(player_data* pd, map_data* md, logic_data* ld)
 {
 
-  ld->n = 0;
 }
 
 
@@ -70,7 +72,7 @@ void update
   check_collisions(pd, md);
 
 
-  sdtx_printf("step %d", ld->n);
+  sdtx_printf("step %d - %s", ld->n, ld->alive ? "alive" : "dead");
 
 
   float eps = 0.0011f;
@@ -197,6 +199,7 @@ void update
 
   if (ld->n == ld->steps_till_eval) {
     evaluate(pd, md, ld);
+    ld->n = 0;
     reset_spots(md);
     // printf("reset!\n");
   }
