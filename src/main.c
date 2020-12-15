@@ -14,9 +14,11 @@
 
 #include "buffer_object.h"
 #include "rect.h"
+#include "lerp.h"
 #include "map.h"
 #include "input.h"
 #include "player.h"
+#include "death.h"
 #include "logic.h"
 #include "editor.h"
 
@@ -25,11 +27,16 @@ static input_data in = {IN_NONE, IN_NONE};
 static bool in_editor = false;
 
 static player_data player;
-static map_data map;
+static map_data map = (map_data){
+  .matrix_w = 20,
+  .matrix_h = 12,
+  .matrix_size = 20 * 12
+};
 static editor_data editor;
 static logic_data logic = (logic_data){
   .default_steps_till_eval = 3
 };
+static death_data death;
 
 static sg_pass_action pass_action;
 
@@ -40,14 +47,14 @@ void run_map(const char* map_name)
 {
   strcpy(cur_map_name, map_name);
   load_map(&map, cur_map_name);
-  reload_logic(&logic);
+  reload_logic(&logic, &death);
 }
 
 
 void reload_current_map()
 {
   load_map(&map, cur_map_name);
-  reload_logic(&logic);
+  reload_logic(&logic, &death);
 }
 
 
@@ -80,6 +87,7 @@ void init(void)
 
   init_player(&player);
   init_map(&map);
+  init_death(&death, &map);
   init_editor(&editor);
 
   run_map("level0");
@@ -170,7 +178,7 @@ static void input(const sapp_event* ev)
         break;
 
       case SAPP_KEYCODE_N:
-        kill_spot(&editor, &map);
+        clear_spot(&editor, &map);
         break;
 
       case SAPP_KEYCODE_P:
@@ -196,7 +204,7 @@ void frame(void)
 
   while (accumulator >= dt) {
     if (!in_editor) {
-      update(&player, t, dt, &in, &map, &logic);
+      update(&player, t, dt, &in, &map, &logic, &death);
     } else {
       update_editor(&editor, t, dt, &in, &map);
       in.v = in.h = IN_NONE;
@@ -216,6 +224,7 @@ void frame(void)
 
   draw_map(&map, frame_fraction);
   draw_player(&player, frame_fraction);
+  draw_death(&death, frame_fraction);
   if (in_editor) {
     draw_editor(&editor);
   }

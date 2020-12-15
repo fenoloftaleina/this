@@ -56,7 +56,7 @@ void next_spot_type(editor_data* editor, map_data* md)
 }
 
 
-void kill_spot(editor_data* editor, map_data* md)
+void clear_spot(editor_data* editor, map_data* md)
 {
   set_raw_spot(md, editor->x, editor->y, spot_empty);
 }

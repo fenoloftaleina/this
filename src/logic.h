@@ -12,25 +12,28 @@ typedef struct
 } logic_data;
 
 
-void reload_logic(logic_data* logic)
+void reload_logic(logic_data* logic, death_data* death)
 {
   logic->steps_till_eval = logic->default_steps_till_eval;
   logic->n = 0;
   logic->jumped_meantime = false;
   logic->alive = true;
+
+  stop_death(death);
+
   for (int i = 0; i < logic->steps_till_eval; ++i) {
     logic->touch_ids[i] = -1;
   }
 }
 
 
-void kill_spots(const int id, map_data* map)
+void deactivate_spots(const int id, map_data* map)
 {
   spot_type type = map->spot_types[id];
 
   for (int i = 0; i < map->n; ++i) {
     if (map->spot_types[i] == type) {
-      map->spot_statuses[i] = spot_dead;
+      map->spot_statuses[i] = spot_inactive;
 
       map->rects[i].r = dead_type_colors[type].r;
       map->rects[i].g = dead_type_colors[type].g;
@@ -43,7 +46,7 @@ void kill_spots(const int id, map_data* map)
 void reset_spots(map_data* map)
 {
   for (int i = 0; i < map->n; ++i) {
-    map->spot_statuses[i] = spot_alive;
+    map->spot_statuses[i] = spot_active;
 
     map->rects[i].r = type_colors[map->spot_types[i]].r;
     map->rects[i].g = type_colors[map->spot_types[i]].g;
@@ -52,14 +55,23 @@ void reset_spots(map_data* map)
 }
 
 
-void evaluate(player_data* player, map_data* map, logic_data* logic)
+void evaluate
+(player_data* player, const float t, map_data* map, logic_data* logic,
+ death_data* death)
 {
+  // how about start simple?
 
+  int logic_x, logic_y;
+  logic_y = (player->rect.y1 + player->height * 0.5f + 1.0f) / map->raw_tile_height;
+  logic_x = (player->rect.x1 + player->width * 0.5f + 1.0f) / map->raw_tile_width;
+
+  start_death(death, t);
 }
 
 
 void update
-(player_data* player, const float t, const float dt, const input_data* in, map_data* map, logic_data* logic)
+(player_data* player, const float t, const float dt, const input_data* in,
+ map_data* map, logic_data* logic, death_data* death)
 {
   player->just_jumped = false;
 
@@ -72,7 +84,11 @@ void update
   check_collisions(player, map);
 
 
-  sdtx_printf("step %d - %s", logic->n, logic->alive ? "alive" : "dead");
+  int logic_x, logic_y;
+  logic_y = (player->rect.y1 + player->height * 0.5f + 1.0f) / map->raw_tile_height;
+  logic_x = (player->rect.x1 + player->width * 0.5f + 1.0f) / map->raw_tile_width;
+
+  sdtx_printf("step %d - %s\n pos %f %f - %d %d", logic->n, logic->alive ? "alive" : "dead", player->rect.x1, player->rect.y1, logic_x, logic_y);
 
 
   float eps = 0.0011f;
@@ -95,9 +111,9 @@ void update
 
   for (int i = 0; i < map->n; ++i) {
     if (player->rect.x1 < map->rects[i].x1) {
-      temp_overlap = player->rect.x1 + player->w - map->rects[i].x1;
+      temp_overlap = player->rect.x1 + player->width - map->rects[i].x1;
     } else if (player->rect.x2 <= map->rects[i].x2) {
-      temp_overlap = player->w;
+      temp_overlap = player->width;
     } else {
       temp_overlap = map->rects[i].x2 - player->rect.x1;
     }
@@ -118,9 +134,9 @@ void update
 
 
     if (player->rect.y1 < map->rects[i].y1) {
-      temp_overlap = player->rect.y1 + player->h - map->rects[i].y1;
+      temp_overlap = player->rect.y1 + player->height - map->rects[i].y1;
     } else if (player->rect.y2 <= map->rects[i].y2) {
-      temp_overlap = player->w;
+      temp_overlap = player->width;
     } else {
       temp_overlap = map->rects[i].y2 - player->rect.y1;
     }
@@ -178,29 +194,31 @@ void update
   if (bottom_id != -1 && top_id == -1 && left_id == -1 && right_id == -1) {
     logic->touch_ids[logic->n] = bottom_id;
     logic->touch_spot_types[logic->n] = bottom_spot_type;
-    kill_spots(bottom_id, map);
+    deactivate_spots(bottom_id, map);
     logic->n += 1;
   } else if (bottom_id == -1 && top_id != -1 && left_id == -1 && right_id == -1) {
     logic->touch_ids[logic->n] = top_id;
     logic->touch_spot_types[logic->n] = top_spot_type;
-    kill_spots(top_id, map);
+    deactivate_spots(top_id, map);
     logic->n += 1;
   } else if (bottom_id == -1 && top_id == -1 && left_id != -1 && right_id == -1) {
     logic->touch_ids[logic->n] = left_id;
     logic->touch_spot_types[logic->n] = left_spot_type;
-    kill_spots(left_id, map);
+    deactivate_spots(left_id, map);
     logic->n += 1;
   } else if (bottom_id == -1 && top_id == -1 && left_id == -1 && right_id != -1) {
     logic->touch_ids[logic->n] = right_id;
     logic->touch_spot_types[logic->n] = right_spot_type;
-    kill_spots(right_id, map);
+    deactivate_spots(right_id, map);
     logic->n += 1;
   }
 
   if (logic->n == logic->steps_till_eval) {
-    evaluate(player, map, logic);
+    evaluate(player, t, map, logic, death);
     logic->n = 0;
     reset_spots(map);
     // printf("reset!\n");
+  } else {
+    stop_death(death);
   }
 }

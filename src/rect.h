@@ -87,3 +87,25 @@ void move_rect(rect* rect, const float x, const float y)
   rect->x2 += x;
   rect->y2 += y;
 }
+
+
+void init_rects(buffer_object* bo, const int count)
+{
+  init_rects_buffer_object(bo, count);
+  rects_write_indices(bo, count);
+  update_buffer_indices(bo);
+}
+
+
+void draw_rects
+(buffer_object* bo, rect* prev_rects, rect* rects, const int n, const float frame_fraction)
+{
+  set_buffer_counts(
+    bo,
+    rects_write_vertices(prev_rects, rects, bo, n, frame_fraction),
+    n * indices_per_rect
+    );
+  update_buffer_vertices(bo);
+
+  draw_buffer_object(bo);
+}

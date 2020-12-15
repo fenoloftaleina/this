@@ -3,8 +3,8 @@ typedef struct
   buffer_object bo;
   rect rect;
   rect prev_rect;
-  float w;
-  float h;
+  float width;
+  float height;
 
   bool just_jumped;
 } player_data;
@@ -17,11 +17,11 @@ void init_player(player_data* player)
 {
   init_rects_buffer_object(&player->bo, 1);
 
-  player->w = 100.0f / sapp_width();
-  player->h = 120.0f / sapp_height();
+  player->width = 100.0f / sapp_width();
+  player->height = 120.0f / sapp_height();
 
-  const float pw2 = player->w * 0.5f;
-  const float ph2 = player->h * 0.5f;
+  const float pw2 = player->width * 0.5f;
+  const float ph2 = player->height * 0.5f;
 
   player->rect = (rect){-pw2, -ph2, pw2, ph2, 0.3f, 0.3f, 0.3f, 1.0f};
   move_rect(&player->rect, -0.05f, 0.3f);

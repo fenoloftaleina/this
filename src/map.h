@@ -3,8 +3,8 @@
 
 typedef enum spot_status
 {
-  spot_alive,
-  spot_dead
+  spot_active,
+  spot_inactive
 } spot_status;
 
 
@@ -36,6 +36,12 @@ typedef struct map_data
 
   spot_type* raw_spot_types; // alwaus full size, with -1s in empty ones, for editor and serialization
 
+  float raw_tile_width, raw_tile_height;
+
+  const int matrix_w;
+  const int matrix_h;
+  const int matrix_size;
+
   // int offset_x, offsey_y; // for moving between maps potentially
 } map_data;
 
@@ -61,82 +67,75 @@ color dead_type_colors[] = {
 float tile_width = 200.0f;
 float tile_height = 200.0f;
 
-const int matrix_w = 20;
-const int matrix_h = 12;
-const int matrix_size = matrix_w * matrix_h;
 
-
-void init_map(map_data* md)
+void init_map(map_data* map)
 {
-  init_rects_buffer_object(&md->bo, matrix_size);
-  set_buffer_counts(&md->bo, 0, 0);
+  init_rects_buffer_object(&map->bo, map->matrix_size);
+  set_buffer_counts(&map->bo, 0, 0);
 
-  md->prev_rects = (rect*)malloc(matrix_size * sizeof(rect));
-  md->rects = (rect*)malloc(matrix_size * sizeof(rect));
-  md->spot_types = (spot_type*)malloc(matrix_size * sizeof(spot_type));
-  md->spot_statuses = (spot_status*)malloc(matrix_size * sizeof(spot_status));
-  md->matrix = (int*)malloc(matrix_size * sizeof(int));
-  memset(md->matrix, -1, matrix_size * sizeof(int));
-  md->raw_spot_types = (spot_type*)malloc(matrix_size * sizeof(spot_type));
+  map->prev_rects = (rect*)malloc(map->matrix_size * sizeof(rect));
+  map->rects = (rect*)malloc(map->matrix_size * sizeof(rect));
+  map->spot_types = (spot_type*)malloc(map->matrix_size * sizeof(spot_type));
+  map->spot_statuses = (spot_status*)malloc(map->matrix_size * sizeof(spot_status));
+  map->matrix = (int*)malloc(map->matrix_size * sizeof(int));
+  memset(map->matrix, -1, map->matrix_size * sizeof(int));
+  map->raw_spot_types = (spot_type*)malloc(map->matrix_size * sizeof(spot_type));
 }
 
 
-void draw_map(map_data* md, const float frame_fraction)
+void draw_map(map_data* map, const float frame_fraction)
 {
-  rects_write_vertices(md->prev_rects, md->rects, &md->bo, md->n, frame_fraction);
-  update_buffer_vertices(&md->bo);
-
-  draw_buffer_object(&md->bo);
+  draw_rects(&map->bo, map->prev_rects, map->rects, map->n, frame_fraction);
 }
 
 
-void raw_spots_to_matrix(map_data* md)
+void raw_spots_to_matrix(map_data* map)
 {
-  float tw = tile_width / sapp_width();
-  float th = tile_height / sapp_height();
+  map->raw_tile_width = tile_width / sapp_width();
+  map->raw_tile_height = tile_height / sapp_height();
 
   spot_type cur_type;
   float x, y;
   int j = 0;
-  for(int i = 0; i < matrix_size; ++i) {
-    if (md->raw_spot_types[i] != -1) {
-      cur_type = md->raw_spot_types[i];
+  for(int i = 0; i < map->matrix_size; ++i) {
+    if (map->raw_spot_types[i] != -1) {
+      cur_type = map->raw_spot_types[i];
 
-      x = -1.0f + (i % matrix_w * tw);
-      y = -1.0f + (i / matrix_w * th);
+      x = -1.0f + (i % map->matrix_w * map->raw_tile_width);
+      y = -1.0f + (i / map->matrix_w * map->raw_tile_height);
 
-      md->matrix[i] = j;
-      md->rects[j] = (rect){
+      map->matrix[i] = j;
+      map->rects[j] = (rect){
         x,
         y,
-        x + tw,
-        y + th,
+        x + map->raw_tile_width,
+        y + map->raw_tile_height,
         type_colors[cur_type].r,
         type_colors[cur_type].g,
         type_colors[cur_type].b,
         1.0f
       };
-      md->prev_rects[j] = md->rects[j];
-      md->spot_types[j] = cur_type;
-      md->spot_statuses[j] = spot_alive;
+      map->prev_rects[j] = map->rects[j];
+      map->spot_types[j] = cur_type;
+      map->spot_statuses[j] = spot_active;
 
       ++j;
     }
   }
 
-  md->n = j;
+  map->n = j;
 
   set_buffer_counts(
-      &md->bo,
-      rects_write_vertices_simple(md->rects, &md->bo, md->n),
-      rects_write_indices(&md->bo, md->n)
+      &map->bo,
+      rects_write_vertices_simple(map->rects, &map->bo, map->n),
+      rects_write_indices(&map->bo, map->n)
       );
-  // update_buffer_vertices(&md->bo);
-  update_buffer_indices(&md->bo);
+  // update_buffer_vertices(&map->bo);
+  update_buffer_indices(&map->bo);
 }
 
 
-void load_map(map_data* md, const char* map_filename)
+void load_map(map_data* map, const char* map_filename)
 {
   char file_path[255];
   sprintf(file_path, "../../../main/src/maps/%s", map_filename);
@@ -150,16 +149,16 @@ void load_map(map_data* md, const char* map_filename)
     return;
   }
   // int cnt = mpack_tag_array_count(&tag);
-  for (int i = 0; i < matrix_size; ++i) {
+  for (int i = 0; i < map->matrix_size; ++i) {
     tag = mpack_read_tag(&reader);
     if (mpack_reader_error(&reader) != mpack_ok) {
       fprintf(stderr, "An error occurred decoding the data!\n");
       return;
     }
     if (mpack_tag_type(&tag) == mpack_type_uint) {
-      md->raw_spot_types[i] = mpack_tag_uint_value(&tag);
+      map->raw_spot_types[i] = mpack_tag_uint_value(&tag);
     } else {
-      md->raw_spot_types[i] = mpack_tag_int_value(&tag);
+      map->raw_spot_types[i] = mpack_tag_int_value(&tag);
     }
     if (mpack_reader_error(&reader) != mpack_ok) {
       fprintf(stderr, "An error occurred decoding the data!\n");
@@ -169,19 +168,19 @@ void load_map(map_data* md, const char* map_filename)
   mpack_done_array(&reader);
 
 
-  raw_spots_to_matrix(md);
+  raw_spots_to_matrix(map);
 }
 
 
-void save_map(map_data* md, const char* map_filename)
+void save_map(map_data* map, const char* map_filename)
 {
   char file_path[255];
   sprintf(file_path, "../../../main/src/maps/%s", map_filename);
   mpack_writer_t writer;
   mpack_writer_init_filename(&writer, file_path);
-  mpack_start_array(&writer, matrix_size);
-  for (int i = 0; i < matrix_size; ++i) {
-    mpack_write_int(&writer, md->raw_spot_types[i]);
+  mpack_start_array(&writer, map->matrix_size);
+  for (int i = 0; i < map->matrix_size; ++i) {
+    mpack_write_int(&writer, map->raw_spot_types[i]);
   }
   mpack_finish_array(&writer);
   if (mpack_writer_destroy(&writer) != mpack_ok) {
@@ -191,15 +190,15 @@ void save_map(map_data* md, const char* map_filename)
 }
 
 
-void set_raw_spot(map_data* md, const int x, const int y, const spot_type t)
+void set_raw_spot(map_data* map, const int x, const int y, const spot_type t)
 {
-  md->raw_spot_types[y * matrix_w + x] = t;
+  map->raw_spot_types[y * map->matrix_w + x] = t;
 
-  raw_spots_to_matrix(md);
+  raw_spots_to_matrix(map);
 }
 
 
-spot_type get_raw_spot(map_data* md, const int x, const int y)
+spot_type get_raw_spot(map_data* map, const int x, const int y)
 {
-  return md->raw_spot_types[y * matrix_w + x];
+  return map->raw_spot_types[y * map->matrix_w + x];
 }
