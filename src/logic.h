@@ -55,15 +55,79 @@ void reset_spots(map_data* map)
 }
 
 
+void matrix_xy(const rect* rect, const map_data* map, int* x, int* y)
+{
+  *x = ((rect->x1 + rect->x2) * 0.5f + 1.0f) / map->raw_tile_width;
+  *y = ((rect->y1 + rect->y2) * 0.5f + 1.0f) / map->raw_tile_height;
+}
+
+int matrix_i(const map_data* map, const int x, const int y)
+{
+  return y * map->matrix_w + x;
+}
+
+
+bool death_on(const map_data* map, death_data* death, const int k)
+{
+  float x1, y1, x2, y2;
+
+  if (map->matrix[k] != -1) return false;
+
+  if (death->matrix[k] != -1) return true;
+
+  death->matrix[k] = 1;
+  raw_xy12(map, k, &x1, &y1, &x2, &y2);
+  death->rects[death->n] = (rect){
+    x1,
+    y1,
+    x2,
+    y2,
+    0.7f,
+    0.3f,
+    0.3f,
+    1.0f
+  };
+  death->prev_rects[death->n] = death->rects[death->n];
+
+  death->n += 1;
+
+  return true;
+}
+
+
 void evaluate
 (player_data* player, const float t, map_data* map, logic_data* logic,
  death_data* death)
 {
-  // how about start simple?
+  int spot_x, spot_y, j;
+  float x1, y1, x2, y2;
+  for (int i = 0; i < map->n; ++i) {
+    if (map->spot_statuses[i] == spot_active) {
+      matrix_xy(&map->rects[i], map, &spot_x, &spot_y);
 
-  int logic_x, logic_y;
-  logic_y = (player->rect.y1 + player->height * 0.5f + 1.0f) / map->raw_tile_height;
-  logic_x = (player->rect.x1 + player->width * 0.5f + 1.0f) / map->raw_tile_width;
+      // death->matrix[matrix_i(map, spot_x, spot_y)] = 1;
+
+      j = spot_x + 1;
+      while(j < map->matrix_w && death_on(map, death, matrix_i(map, j, spot_y))) {
+        ++j;
+      }
+
+      j = spot_x - 1;
+      while(j >= 0 && death_on(map, death, matrix_i(map, j, spot_y))) {
+        --j;
+      }
+
+      j = spot_y + 1;
+      while(j < map->matrix_h && death_on(map, death, matrix_i(map, spot_x, j))) {
+        ++j;
+      }
+
+      j = spot_y - 1;
+      while(j >= 0 && death_on(map, death, matrix_i(map, spot_x, j))) {
+        --j;
+      }
+    }
+  }
 
   start_death(death, t);
 }
@@ -85,8 +149,7 @@ void update
 
 
   int logic_x, logic_y;
-  logic_y = (player->rect.y1 + player->height * 0.5f + 1.0f) / map->raw_tile_height;
-  logic_x = (player->rect.x1 + player->width * 0.5f + 1.0f) / map->raw_tile_width;
+  matrix_xy(&player->rect, map, &logic_x, &logic_y);
 
   sdtx_printf("step %d - %s\n pos %f %f - %d %d", logic->n, logic->alive ? "alive" : "dead", player->rect.x1, player->rect.y1, logic_x, logic_y);
 

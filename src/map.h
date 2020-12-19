@@ -89,27 +89,35 @@ void draw_map(map_data* map, const float frame_fraction)
 }
 
 
+void raw_xy12(const map_data* map, const int i, float* x1, float* y1, float* x2, float* y2)
+{
+  *x1 = -1.0f + (i % map->matrix_w * map->raw_tile_width);
+  *y1 = -1.0f + (i / map->matrix_w * map->raw_tile_height);
+  *x2 = *x1 + map->raw_tile_width;
+  *y2 = *y1 + map->raw_tile_height;
+}
+
+
 void raw_spots_to_matrix(map_data* map)
 {
   map->raw_tile_width = tile_width / sapp_width();
   map->raw_tile_height = tile_height / sapp_height();
 
   spot_type cur_type;
-  float x, y;
+  float x1, y1, x2, y2;
   int j = 0;
   for(int i = 0; i < map->matrix_size; ++i) {
     if (map->raw_spot_types[i] != -1) {
       cur_type = map->raw_spot_types[i];
 
-      x = -1.0f + (i % map->matrix_w * map->raw_tile_width);
-      y = -1.0f + (i / map->matrix_w * map->raw_tile_height);
+      raw_xy12(map, i, &x1, &y1, &x2, &y2);
 
       map->matrix[i] = j;
       map->rects[j] = (rect){
-        x,
-        y,
-        x + map->raw_tile_width,
-        y + map->raw_tile_height,
+        x1,
+        y1,
+        x2,
+        y2,
         type_colors[cur_type].r,
         type_colors[cur_type].g,
         type_colors[cur_type].b,
