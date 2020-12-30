@@ -17,28 +17,49 @@ void init_player(player_data* player)
 {
   init_rects_buffer_object(&player->bo, 1);
 
-  player->width = 100.0f / sapp_width();
-  player->height = 120.0f / sapp_height();
+  player->width = 100.0f;
+  player->height = 120.0f;
 
   const float pw2 = player->width * 0.5f;
   const float ph2 = player->height * 0.5f;
 
   player->rect = (rect){-pw2, -ph2, pw2, ph2, 0.3f, 0.3f, 0.3f, 1.0f};
-  move_rect(&player->rect, -0.05f, 0.3f);
+  move_rect(&player->rect, 900.0f, 1500.0f);
+  player->prev_rect = player->rect;
 
-  rects_write_vertices_simple(&player->rect, &player->bo, 1);
-  rects_write_indices(&player->bo, 1);
-  // update_buffer_vertices(&player->bo);
-  update_buffer_indices(&player->bo);
+  // rects_write_vertices_simple(&player->rect, &player->bo, 1);
+  // rects_write_indices(&player->bo, 1);
+  // // update_buffer_vertices(&player->bo);
+  // update_buffer_indices(&player->bo);
 
   player->just_jumped = false;
 }
 
 
-void draw_player(player_data* player, const float frame_fraction)
+void draw_player(player_data* player, models_data* models, const float frame_fraction)
 {
-  rects_write_vertices(&player->prev_rect, &player->rect, &player->bo, 1, frame_fraction);
-  update_buffer_vertices(&player->bo);
+  int ids[] = {0};
+  put_models_in_buffer(
+      models,
+      &player->bo,
+      1,
+      ids,
+      1.0f,
+      &player->prev_rect,
+      &player->rect,
+      frame_fraction
+      );
+
+
+  // printf("buf sizes: %d, %d\n\n", player->bo.vertices_count, player->bo.indices_count);
+  // for (int i = 0; i < 4 * 7; ++i) {
+  //   printf("vert %d: %f\n", i, player->bo.vertices[i]);
+  // }
+  // printf("\n\n");
+  // for (int i = 0; i < 6; ++i) {
+  //   printf("ind %d: %d\n", i, player->bo.indices[i]);
+  // }
+  // printf("\n\n\n");
 
   draw_buffer_object(&player->bo);
 }

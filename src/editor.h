@@ -12,8 +12,8 @@ void init_editor(editor_data* editor)
 
   editor->x = editor->y = 0;
 
-  float tw = tile_width / sapp_width();
-  float th = tile_height / sapp_height();
+  float tw = tile_width;
+  float th = tile_height;
 
   editor->rect = (rect){-1.0f, -1.0f, -1.0f + tw, -1.0f + th, 0.6f, 0.6f, 0.6f, 0.2f};
   move_rect(&editor->rect, editor->x * tw, editor->y * th);
@@ -29,8 +29,8 @@ void update_editor
 {
   (void)t; (void)dt; (void) md;
 
-  float tw = tile_width / sapp_width();
-  float th = tile_height / sapp_height();
+  float tw = tile_width;
+  float th = tile_height;
 
   int px = (- (in->h == IN_LEFT) + (in->h == IN_RIGHT));
   int py = ((in->v == IN_UP) - (in->v == IN_DOWN));
@@ -38,6 +38,8 @@ void update_editor
   editor->x += px;
   editor->y += py;
   move_rect(&editor->rect, px * tw, py * th);
+
+  sdtx_printf("editor pos %f %f", editor->rect.x1, editor->rect.y1);
 }
 
 

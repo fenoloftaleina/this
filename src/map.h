@@ -100,8 +100,8 @@ void raw_xy12(const map_data* map, const int i, float* x1, float* y1, float* x2,
 
 void raw_spots_to_matrix(map_data* map)
 {
-  map->raw_tile_width = tile_width / sapp_width();
-  map->raw_tile_height = tile_height / sapp_height();
+  map->raw_tile_width = tile_width;
+  map->raw_tile_height = tile_height;
 
   spot_type cur_type;
   float x1, y1, x2, y2;

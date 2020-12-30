@@ -151,7 +151,8 @@ void update
   int logic_x, logic_y;
   matrix_xy(&player->rect, map, &logic_x, &logic_y);
 
-  sdtx_printf("step %d - %s\n pos %f %f - %d %d", logic->n, logic->alive ? "alive" : "dead", player->rect.x1, player->rect.y1, logic_x, logic_y);
+  // sdtx_printf("step %d - %s\n pos %f %f - %d %d", logic->n, logic->alive ? "alive" : "dead", player->rect.x1, player->rect.y1, logic_x, logic_y);
+  sdtx_printf("w h %d %d", sapp_width(), sapp_height());
 
 
   float eps = 0.0011f;

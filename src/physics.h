@@ -3,11 +3,13 @@
 
 typedef struct
 {
-  const float gravity;
-  const float init_v;
-  const float init_double_v;
+  float gravity;
+  float init_v;
+  float init_double_v;
   float double_jump_threshold;
 
+  float low_clamp;
+  float high_clamp;
 
   float v;
 
@@ -19,12 +21,12 @@ typedef struct
 
 typedef struct
 {
-  const float default_clamp;
-  const float flight_clamp;
-  const float damping;
-
+  float default_clamp;
+  float flight_clamp;
+  float damping;
 
   float v;
+
   float transpose;
   float clamp;
 } walk_data;
@@ -34,10 +36,13 @@ static float e = 0.1f;
 
 
 static jump_data jump_state = (jump_data){
-  .gravity = -5.5f,
-  .init_v = 1.085f,
-  .init_double_v = 1.655f,
+  .gravity = -10000.0f,
+  .init_v = 1600.0f,
+  .init_double_v = 1.655f * 1600.0f,
   .double_jump_threshold = 0.1f,
+
+  .low_clamp = -3.0f * 1600.0f,
+  .high_clamp = 2.0f * 1600.0f,
 
   .v = 0.0f,
 
@@ -45,12 +50,14 @@ static jump_data jump_state = (jump_data){
   .started_at = 0.0f,
   .possible_double_jump = false
 };
+
 static walk_data walk_state = (walk_data){
-  .default_clamp = 0.1f,
-  .flight_clamp = 0.42f,
-  .damping = 20.0f,
+  .default_clamp = 0.6f * 1200.0f,
+  // .default_clamp = 0.1f * 1200.0f, // slow it down for debugging
+  .flight_clamp = 0.42f * 1200.0f,
+  .damping = 20.0f * 1200.0f,
   .v = 0.0f,
-  .transpose = 6.5f
+  .transpose = 6.5f * 1200.0f
 };
 
 
@@ -257,9 +264,9 @@ void check_collisions(player_data* player, map_data* map)
 }
 
 
-float v_clamp(const float val)
+float v_clamp(const float val, const float low_clamp_val, const float high_clamp_val)
 {
-  return HMM_Clamp(-3.0f, val, 2.0f);
+  return HMM_Clamp(low_clamp_val, val, high_clamp_val);
 }
 
 float h_clamp(const float val, const float clamp_val)
@@ -275,7 +282,7 @@ void update_player_positions
 
   // printf("%f\n", t);
   if (in->v == IN_UP && !jump_state.in_air) {
-    jump_state.v = v_clamp(jump_state.init_v);
+    jump_state.v = v_clamp(jump_state.init_v, jump_state.low_clamp, jump_state.high_clamp);
     jump_state.in_air = true;
     jump_state.started_at = t;
     jump_state.possible_double_jump = true;
@@ -286,10 +293,10 @@ void update_player_positions
       jump_state.possible_double_jump &&
       t - jump_state.started_at > jump_state.double_jump_threshold
       ) {
-    jump_state.v = v_clamp(jump_state.init_double_v);
+    jump_state.v = v_clamp(jump_state.init_double_v, jump_state.low_clamp, jump_state.high_clamp);
     jump_state.possible_double_jump = false;
   } else if (t - jump_state.started_at > jump_state.double_jump_threshold) {
-    jump_state.v = v_clamp(jump_state.v + dt * jump_state.gravity);
+    jump_state.v = v_clamp(jump_state.v + dt * jump_state.gravity, jump_state.low_clamp, jump_state.high_clamp);
   }
 
   if (in->v != IN_UP) {

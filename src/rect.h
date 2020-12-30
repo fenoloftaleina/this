@@ -4,6 +4,10 @@ typedef struct rect {
 } rect;
 
 
+const int vertices_per_rect = 4 * 7;
+const int indices_per_rect = 2 * 3;
+
+
 const float blend(const float a, const float b, const float f)
 {
   return (1.0f - f) * a + f * b;
