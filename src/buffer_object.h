@@ -17,6 +17,8 @@ typedef uint16_t index_t;
 const int vertex_size = sizeof(vertex_t);
 const int index_size = sizeof(index_t);
 
+const int vertex_elements_count = 9;
+
 const float flat_z = 1.0f;
 
 
@@ -61,6 +63,22 @@ void init_buffer_object
 
   sg_shader shd = sg_make_shader(main_shader_desc());
 
+    uint32_t pixels[4*4] = {
+        0xFFFFFFFF, 0xFF000000, 0xFFFFFFFF, 0xFF000000,
+        0xFF000000, 0xFFFFFFFF, 0xFF000000, 0xFFFFFFFF,
+        0xFFFFFFFF, 0xFF000000, 0xFFFFFFFF, 0xFF000000,
+        0xFF000000, 0xFFFFFFFF, 0xFF000000, 0xFFFFFFFF,
+    };
+    bo->bind.fs_images[SLOT_tex] = sg_make_image(&(sg_image_desc){
+        .width = 4,
+        .height = 4,
+        .content.subimage[0][0] = {
+            .ptr = pixels,
+            .size = sizeof(pixels)
+        },
+        .label = "cube-texture"
+    });
+
   bo->pip = sg_make_pipeline(&(sg_pipeline_desc){
       .shader = shd,
       .index_type = SG_INDEXTYPE_UINT16,
@@ -72,7 +90,8 @@ void init_buffer_object
       .layout = {
         .attrs = {
           [ATTR_vs_position].format = SG_VERTEXFORMAT_FLOAT3,
-          [ATTR_vs_color0].format   = SG_VERTEXFORMAT_FLOAT4
+          [ATTR_vs_color0].format   = SG_VERTEXFORMAT_FLOAT4,
+          [ATTR_vs_texcoord0].format = SG_VERTEXFORMAT_FLOAT2
         }
       }
       });

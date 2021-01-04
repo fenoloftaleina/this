@@ -52,17 +52,17 @@ void init_models(models_data* models)
   // colors here for now, no tinting, no textures
 
   vertex_t vertices[] = {
-    0.0f,   120.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-    100.0f, 120.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-    100.0f, 0.0f,   1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-    0.0f,   0.0f,   1.0f, 0.0f, 0.0f, 0.0f, 0.0f
+    0.0f,   120.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
+    100.0f, 120.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f,
+    100.0f, 0.0f,   1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+    0.0f,   0.0f,   1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f
   };
   index_t indices[] = {0, 1, 2, 0, 2, 3};
 
   add_model(
       models,
       vertices,
-      4 * 7,
+      4 * vertex_elements_count,
       indices,
       6
       );
@@ -88,7 +88,7 @@ void put_models_in_buffer
       models->indices_offsets[ids[i] + 1] -
       models->indices_offsets[ids[i]];
 
-    for (int j = 0; j < temp_vertices_count; j += 7) {
+    for (int j = 0; j < temp_vertices_count; j += vertex_elements_count) {
       bo->vertices[bo->vertices_count + j + 0] =
         models->vertices[models->vertices_offsets[ids[i]] + j + 0] *
         scale +
@@ -101,21 +101,21 @@ void put_models_in_buffer
         models->vertices[models->vertices_offsets[ids[i]] + j + 2] *
         scale;
       bo->vertices[bo->vertices_count + j + 3] =
-        models->vertices[models->vertices_offsets[ids[i]] + j + 3] *
-        scale +
+        models->vertices[models->vertices_offsets[ids[i]] + j + 3] +
         blend(prev_rects[i].r, rects[i].r, f);
       bo->vertices[bo->vertices_count + j + 4] =
-        models->vertices[models->vertices_offsets[ids[i]] + j + 4] *
-        scale +
+        models->vertices[models->vertices_offsets[ids[i]] + j + 4] +
         blend(prev_rects[i].g, rects[i].g, f);
       bo->vertices[bo->vertices_count + j + 5] =
-        models->vertices[models->vertices_offsets[ids[i]] + j + 5] *
-        scale +
+        models->vertices[models->vertices_offsets[ids[i]] + j + 5] +
         blend(prev_rects[i].b, rects[i].b, f);
       bo->vertices[bo->vertices_count + j + 6] =
-        models->vertices[models->vertices_offsets[ids[i]] + j + 6] *
-        scale +
+        models->vertices[models->vertices_offsets[ids[i]] + j + 6] +
         blend(prev_rects[i].a, rects[i].a, f);
+      bo->vertices[bo->vertices_count + j + 7] =
+        models->vertices[models->vertices_offsets[ids[i]] + j + 7];
+      bo->vertices[bo->vertices_count + j + 8] =
+        models->vertices[models->vertices_offsets[ids[i]] + j + 8];
     }
 
     memcpy(

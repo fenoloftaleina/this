@@ -50,16 +50,5 @@ void draw_player(player_data* player, models_data* models, const float frame_fra
       frame_fraction
       );
 
-
-  // printf("buf sizes: %d, %d\n\n", player->bo.vertices_count, player->bo.indices_count);
-  // for (int i = 0; i < 4 * 7; ++i) {
-  //   printf("vert %d: %f\n", i, player->bo.vertices[i]);
-  // }
-  // printf("\n\n");
-  // for (int i = 0; i < 6; ++i) {
-  //   printf("ind %d: %d\n", i, player->bo.indices[i]);
-  // }
-  // printf("\n\n\n");
-
   draw_buffer_object(&player->bo);
 }
