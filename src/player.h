@@ -15,7 +15,7 @@ typedef struct
 
 void init_player(player_data* player)
 {
-  init_rects_buffer_object(&player->bo, 1);
+  init_buffer_object(&player->bo, 1000, 1000);
 
   player->width = 100.0f;
   player->height = 120.0f;
@@ -38,7 +38,7 @@ void init_player(player_data* player)
 
 void draw_player(player_data* player, models_data* models, const float frame_fraction)
 {
-  int ids[] = {0};
+  int ids[] = {1};
   put_models_in_buffer(
       models,
       &player->bo,
