@@ -21,11 +21,14 @@
 #include "model.h"
 #include "lerp.h"
 #include "map.h"
-#include "input.h"
+#include "in_types.h"
 #include "player.h"
 #include "death.h"
 #include "logic.h"
 #include "editor.h"
+#include "input.h"
+
+#include "generic.h"
 
 
 #define GUI 1
@@ -33,7 +36,6 @@
 
 
 static input_data in = {IN_NONE, IN_NONE};
-static bool in_editor = false;
 
 static models_data models;
 
@@ -49,30 +51,9 @@ static logic_data logic = (logic_data){
 };
 static death_data death;
 
+static generic_data generic;
+
 static sg_pass_action pass_action;
-
-static char cur_map_name[255];
-
-
-void run_map(const char* map_name)
-{
-  strcpy(cur_map_name, map_name);
-  load_map(&map, cur_map_name);
-  reload_logic(&logic, &death);
-}
-
-
-void reload_current_map()
-{
-  load_map(&map, cur_map_name);
-  reload_logic(&logic, &death);
-}
-
-
-void save_current_map()
-{
-  save_map(&map, cur_map_name);
-}
 
 
 void init(void)
@@ -102,113 +83,24 @@ void init(void)
   init_death(&death, &map);
   init_editor(&editor);
 
+  init_generic(&generic, 40000, 60000);
+
 #ifdef GUI
   simgui_setup(&(simgui_desc_t){ .dpi_scale = 2.0f });
 #endif
 
-  run_map("level0");
+  run_map("level0", &map, &logic, &death);
 
   stm_setup();
 
   in.h = in.v = IN_NONE;
+  in.editor = false;
 }
 
 
 static void input(const sapp_event* ev)
 {
-#ifdef GUI
-  simgui_handle_event(ev);
-#endif
-
-  if (ev->type == SAPP_EVENTTYPE_KEY_DOWN) {
-    switch (ev->key_code) {
-      case SAPP_KEYCODE_ESCAPE:
-      case SAPP_KEYCODE_Q:
-        sapp_quit();
-        break;
-
-      case SAPP_KEYCODE_W:
-      case SAPP_KEYCODE_UP:
-        in.v = IN_UP;
-        break;
-
-      case SAPP_KEYCODE_S:
-      case SAPP_KEYCODE_DOWN:
-        in.v = IN_DOWN;
-        break;
-
-      case SAPP_KEYCODE_A:
-      case SAPP_KEYCODE_LEFT:
-        in.h = IN_LEFT;
-        break;
-
-      case SAPP_KEYCODE_D:
-      case SAPP_KEYCODE_RIGHT:
-        in.h = IN_RIGHT;
-        break;
-
-      default:
-        break;
-    }
-  } else if (ev->type == SAPP_EVENTTYPE_KEY_UP) {
-    switch (ev->key_code) {
-      case SAPP_KEYCODE_W:
-      case SAPP_KEYCODE_UP:
-        if (in.v == IN_UP) {
-          in.v = IN_NONE;
-        }
-        break;
-
-      case SAPP_KEYCODE_S:
-      case SAPP_KEYCODE_DOWN:
-        if (in.v == IN_DOWN) {
-          in.v = IN_NONE;
-        }
-        break;
-
-      case SAPP_KEYCODE_A:
-      case SAPP_KEYCODE_LEFT:
-        if (in.h == IN_LEFT) {
-          in.h = IN_NONE;
-        }
-        break;
-
-      case SAPP_KEYCODE_D:
-      case SAPP_KEYCODE_RIGHT:
-        if (in.h == IN_RIGHT) {
-          in.h = IN_NONE;
-        }
-        break;
-
-      case SAPP_KEYCODE_H:
-        if (in_editor) {
-          in_editor = false;
-        } else {
-          reload_current_map();
-          in_editor = true;
-        }
-        break;
-
-      case SAPP_KEYCODE_R:
-        reload_current_map();
-        break;
-
-      case SAPP_KEYCODE_J:
-        next_spot_type(&editor, &map);
-        break;
-
-      case SAPP_KEYCODE_N:
-        clear_spot(&editor, &map);
-        break;
-
-      case SAPP_KEYCODE_P:
-        save_current_map();
-        break;
-
-      default:
-        break;
-    }
-  }
+  handle_input(ev, &in, &editor, &map, &logic, &death);
 }
 
 
@@ -223,7 +115,7 @@ void frame(void)
   accumulator += frame_time;
 
   while (accumulator >= dt) {
-    if (!in_editor) {
+    if (!in.editor) {
       update(&player, t, dt, &in, &map, &logic, &death);
     } else {
       update_editor(&editor, t, dt, &in, &map);
@@ -233,7 +125,7 @@ void frame(void)
     t += dt;
   }
 
-  if (!in_editor) {
+  if (!in.editor) {
     frame_fraction = accumulator / dt;
   } else {
     frame_fraction = 0.0f;
@@ -245,9 +137,11 @@ void frame(void)
   draw_map(&map, frame_fraction);
   draw_player(&player, &models, frame_fraction);
   draw_death(&death, frame_fraction);
-  if (in_editor) {
+  if (in.editor) {
     draw_editor(&editor);
   }
+
+  draw_generic(&generic);
 
   sdtx_draw();
 

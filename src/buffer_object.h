@@ -48,17 +48,17 @@ void inc_buffer_counts
 void init_buffer_object
 (buffer_object* bo, const int vertices_count, const int indices_count)
 {
-  set_buffer_counts(bo, vertices_count, indices_count);
+  reset_buffer_counts(bo);
 
   bo->bind.vertex_buffers[0] = sg_make_buffer(&(sg_buffer_desc){
       .usage = SG_USAGE_DYNAMIC,
-      .size = bo->vertices_count * vertex_size
+      .size = vertices_count * vertex_size
       });
 
   bo->bind.index_buffer = sg_make_buffer(&(sg_buffer_desc){
       .type = SG_BUFFERTYPE_INDEXBUFFER,
       .usage = SG_USAGE_DYNAMIC,
-      .size = bo->indices_count * index_size
+      .size = indices_count * index_size
       });
 
   sg_shader shd = sg_make_shader(main_shader_desc());
@@ -96,8 +96,8 @@ void init_buffer_object
       }
       });
 
-  bo->vertices = (vertex_t*)malloc(bo->vertices_count * vertex_size);
-  bo->indices = (index_t*)malloc(bo->indices_count * index_size);
+  bo->vertices = (vertex_t*)malloc(vertices_count * vertex_size);
+  bo->indices = (index_t*)malloc(indices_count * index_size);
 }
 
 
@@ -131,6 +131,8 @@ void draw_buffer_object(const buffer_object* bo)
     sg_apply_bindings(&bo->bind);
 
     sg_apply_uniforms(SG_SHADERSTAGE_VS, SLOT_vs_params, &vs_params, sizeof(vs_params));
+
+    // printf("\n\nbo indices %d %d\n\n", bo->indices_count, bo->vertices_count);
 
     sg_draw(0, bo->indices_count, 1);
   }

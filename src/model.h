@@ -59,9 +59,14 @@ void add_quad(
     vertex_t* new_vertices,
     index_t* new_indices)
 {
-  memcpy(vertices + *vi, new_vertices, 4 * vertex_elements_count * sizeof(vertex_t));
-  *vi = *vi + 4 * vertex_elements_count;
-  memcpy(indices + *ii, new_indices, 6 * sizeof(index_t));
+  const int vertices_start = *vi;
+
+  memcpy(vertices + *vi * vertex_elements_count, new_vertices, 4 * vertex_elements_count * sizeof(vertex_t));
+  *vi = *vi + 4;
+
+  for (int i = 0; i < 6; ++i) {
+    indices[*ii + i] = new_indices[i] + vertices_start;
+  }
   *ii = *ii + 6;
 }
 
@@ -89,63 +94,28 @@ bool potential_or_real_intersect
 }
 
 
-void init_models(models_data* models)
+index_t quad_indices[] = {0, 1, 2, 0, 2, 3};
+
+
+void line(
+  vertex_t* vertices,
+  int* vertices_count,
+  index_t* indices,
+  int* indices_count,
+  const hmm_vec2* line_points,
+  const int line_points_count,
+  const float width)
 {
-  models->vertices = (vertex_t*)malloc(100000 * vertex_size);
-  models->indices = (index_t*)malloc(100000 * index_size);
+  float half_width = width * 0.5f;
 
-  models->n = 0;
-  models->vertices_offsets = (int*)malloc(50 * sizeof(int));
-  models->indices_offsets = (int*)malloc(50 * sizeof(int));
-  models->vertices_offsets[0] = 0;
-  models->indices_offsets[0] = 0;
-
-
-  // colors here for now, no tinting, no textures
-
-  vertex_t vertices[] = {
-    0.0f,   120.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
-    100.0f, 120.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-    100.0f, 0.0f,   1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-    0.0f,   0.0f,   1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f
-  };
-  index_t indices[] = {0, 1, 2, 0, 2, 3};
-
-  add_model(
-      models,
-      vertices,
-      4 * vertex_elements_count,
-      indices,
-      6
-      );
-
-
-  vertex_t* bezier_vertices = (vertex_t*)malloc(1000 * vertex_size);
-  index_t* bezier_indices = (index_t*)malloc(1000 * index_size);
-  int bezier_vertices_count = 0;
-  int bezier_indices_count = 0;
-
-
-  hmm_vec2 line_points[100] = {
-    0.0f, 15.0f,
-    20.0f, 100.0f,
-    100.0f, 200.0f,
-    200.0f, 200.0f,
-  };
-  int line_points_count = 4;
-
-  float half_width = 15.0f;
-
-  hmm_vec2 XYs[100];
+  hmm_vec2 XYs[4 * line_points_count];
   int XYs_count = 0;
 
   for (int i = 1; i < line_points_count; ++i) {
-    hmm_vec2 sub = HMM_SubtractVec2(
-            line_points[i - 1],
-            line_points[i]);
-    hmm_vec2 cur_normalized_vec =
-      HMM_NormalizeVec2(sub
-          );
+    hmm_vec2 cur_normalized_vec = HMM_NormalizeVec2(
+        HMM_SubtractVec2(
+          line_points[i - 1],
+          line_points[i]));
 
     hmm_vec2 perpendicular =
       HMM_MultiplyVec2f((hmm_vec2){
@@ -191,27 +161,94 @@ void init_models(models_data* models)
 
   for (int i = 0; i < XYs_count; i += 4) {
     add_quad(
-        bezier_vertices, &bezier_vertices_count,
-        bezier_indices, &bezier_indices_count,
+        vertices, vertices_count,
+        indices, indices_count,
         (vertex_t[]){
         XYs[i + 1].X, XYs[i + 1].Y, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
         XYs[i + 3].X, XYs[i + 3].Y, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
         XYs[i + 2].X, XYs[i + 2].Y, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
         XYs[i + 0].X, XYs[i + 0].Y, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f
         },
-        indices);
+        quad_indices);
+  }
+}
 
-    for (int j = 0; j < 6; ++j) {
-      indices[j] += 4;
+
+void init_models(models_data* models)
+{
+  models->vertices = (vertex_t*)malloc(100000 * vertex_size);
+  models->indices = (index_t*)malloc(100000 * index_size);
+
+  models->n = 0;
+  models->vertices_offsets = (int*)malloc(50 * sizeof(int));
+  models->indices_offsets = (int*)malloc(50 * sizeof(int));
+  models->vertices_offsets[0] = 0;
+  models->indices_offsets[0] = 0;
+
+
+  // colors here for now, no tinting, no textures
+
+  vertex_t vertices[] = {
+    0.0f,   120.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
+    100.0f, 120.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f,
+    100.0f, 0.0f,   1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+    0.0f,   0.0f,   1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f
+  };
+  index_t indices[] = {0, 1, 2, 0, 2, 3};
+
+  add_model(
+      models,
+      vertices,
+      4 * vertex_elements_count,
+      indices,
+      6
+      );
+
+
+  vertex_t* line_vertices = (vertex_t*)malloc(1000 * vertex_size);
+  index_t* line_indices = (index_t*)malloc(1000 * index_size);
+  int line_vertices_count = 0;
+  int line_indices_count = 0;
+
+  // hmm_vec2 line_points[100] = {
+  //   0.0f, 15.0f,
+  //   20.0f, 100.0f,
+  //   100.0f, 200.0f,
+  //   200.0f, 200.0f,
+  // };
+  // int line_points_count = 4;
+
+  hmm_vec2 line_points[2];
+  int line_points_count = 2;
+  float line_width = 10.0f;
+
+  float size = 20.0f;
+
+  for (int i = 0; i < 10; ++i ) {
+    for (int j = 0; j < 5; ++j ) {
+      line_points[0].X = i * size;
+      line_points[0].Y = j * size;
+      line_points[1].X = (i + 0.7) * size;
+      line_points[1].Y = (j + 0.7) * size;
+
+      line(
+          line_vertices,
+          &line_vertices_count,
+          line_indices,
+          &line_indices_count,
+          line_points,
+          line_points_count,
+          line_width
+          );
     }
   }
 
   add_model(
       models,
-      bezier_vertices,
-      bezier_vertices_count,
-      bezier_indices,
-      bezier_indices_count
+      line_vertices,
+      line_vertices_count * vertex_elements_count,
+      line_indices,
+      line_indices_count
       );
 }
 
@@ -225,7 +262,7 @@ void put_models_in_buffer
 {
   reset_buffer_counts(bo);
 
-  int temp_vertices_count, temp_indices_count;
+  int temp_vertices_count, temp_indices_count, temp_vertices_start = 0;
 
   for (int i = 0; i < n; ++i) {
     temp_vertices_count =
@@ -234,6 +271,8 @@ void put_models_in_buffer
     temp_indices_count =
       models->indices_offsets[ids[i] + 1] -
       models->indices_offsets[ids[i]];
+
+    temp_vertices_start = bo->vertices_count;
 
     for (int j = 0; j < temp_vertices_count; j += vertex_elements_count) {
       bo->vertices[bo->vertices_count + j + 0] =
@@ -265,11 +304,11 @@ void put_models_in_buffer
         models->vertices[models->vertices_offsets[ids[i]] + j + 8];
     }
 
-    memcpy(
-        bo->indices + bo->indices_count,
-        models->indices + models->indices_offsets[ids[i]],
-        temp_indices_count * index_size
-        );
+    for (int j = 0; j < temp_indices_count; ++j) {
+      bo->indices[bo->indices_count + j] =
+        models->indices[models->indices_offsets[ids[i]] + j] +
+        temp_vertices_start;
+    }
 
     prev_rects[i] = rects[i];
 
