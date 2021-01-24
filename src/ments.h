@@ -37,7 +37,7 @@ void line(
   buffer_object* bo,
   const hmm_vec2* line_points,
   const int line_points_count,
-  const hmm_vec3* colors,
+  const hmm_vec4* colors,
   const float width)
 {
   float half_width = width * 0.5f;
@@ -97,18 +97,25 @@ void line(
     add_quad(
         bo,
         (vertex_t[]){
-        XYs[i * 4 + 1].X, XYs[i * 4 + 1].Y, 1.0f, colors[i].X, colors[i].Y, colors[i].Z, 1.0f, 0.0f, 0.0f,
-        XYs[i * 4 + 3].X, XYs[i * 4 + 3].Y, 1.0f, colors[i + 1].X, colors[i + 1].Y, colors[i + 1].Z, 1.0f, 0.0f, 0.0f,
-        XYs[i * 4 + 2].X, XYs[i * 4 + 2].Y, 1.0f, colors[i + 1].X, colors[i + 1].Y, colors[i + 1].Z, 1.0f, 0.0f, 0.0f,
-        XYs[i * 4 + 0].X, XYs[i * 4 + 0].Y, 1.0f, colors[i].X, colors[i].Y, colors[i].Z, 1.0f, 0.0f, 0.0f
+        XYs[i * 4 + 1].X, XYs[i * 4 + 1].Y, 1.0f, colors[i].X, colors[i].Y, colors[i].Z, colors[i].W, 0.0f, 0.0f,
+        XYs[i * 4 + 3].X, XYs[i * 4 + 3].Y, 1.0f, colors[i + 1].X, colors[i + 1].Y, colors[i + 1].Z, colors[i + 1].W, 0.0f, 0.0f,
+        XYs[i * 4 + 2].X, XYs[i * 4 + 2].Y, 1.0f, colors[i + 1].X, colors[i + 1].Y, colors[i + 1].Z, colors[i + 1].W, 0.0f, 0.0f,
+        XYs[i * 4 + 0].X, XYs[i * 4 + 0].Y, 1.0f, colors[i].X, colors[i].Y, colors[i].Z, colors[i].W, 0.0f, 0.0f
         },
         quad_indices);
   }
 }
 
 
+static const int n = 100;
+static float rs[n];
+
+
 void init_ments()
 {
+  for (int i = 0; i < n; ++i) {
+    rs[i] = rand() / (float)RAND_MAX;
+  }
 }
 
 
@@ -116,50 +123,72 @@ void update_ments()
 {
 }
 
+#include <time.h>
 #define PI 3.14159265
+
+float up_sin180(const float s)
+{
+  float a = s * 1.15f + 1.0f;
+
+  if (a < 0.0f) {
+    a = 0.0f;
+  } else if (a > 2.0f) {
+    a = 2.0f;
+  }
+
+  return a * 90.0f;
+}
 
 void draw_ments(const float t)
 {
+  srand(time(0));
+
   hmm_vec2 line_points[2];
-  hmm_vec3 line_colors[2];
+  hmm_vec4 line_colors[2];
   int line_points_count = 2;
   float line_width = 2.0f;
 
-  float size = 20.0f;
+  float size;
 
   reset_buffer_counts(&generic.bo);
 
-  float ang;
+  float ang, ang2;
 
-  for (int i = 0; i < 100; ++i ) {
-    for (int j = 0; j < 100; ++j ) {
-      float x1, y1, x2, y2, add_x, add_y;
-      x1 = (i + 5) * size;
-      y1 = (j + 5) * size;
-      add_x = 1.0f * size;
-      add_y = 0.0f * size;
-      x2 = x1 + add_x;
-      y2 = y1 + add_y;
+  for (int i = 0; i < n; ++i) {
+    float x1, y1, x2, y2, add_x, add_y;
+    x1 = 1100.0f;
+    y1 = 50.0f;
+    size = 500.0f;
 
-      ang = t;
-      // ang = 100.0f;
+    float ii = i * 0.01f;
 
-      line_points[0].X = x1;
-      line_points[0].Y = y1;
-      line_points[1].X = x1 + add_x * cos(ang) - add_y * sin(ang);
-      line_points[1].Y = y1 + add_x * sin(ang) + add_y * cos(ang);
+    add_x = (1.0f + ii) * size;
+    add_y = 0.0f * size;
 
-      line_colors[0] = (hmm_vec3){0.6f, 0.6f, 0.6f};
-      line_colors[1] = (hmm_vec3){0.6f, 0.8f, 1.0f};
+    // x2 = x1 + add_x;
+    // y2 = y1 + add_y;
 
-      line(
-          &generic.bo,
-          line_points,
-          line_points_count,
-          line_colors,
-          line_width
-          );
-    }
+    float ang2_offset = 0.1f;
+
+    ang = (180.0f - up_sin180(sin(t + rs[i]))) * PI / 180.0f;
+    ang2 = (180.0f - up_sin180(sin(t + rs[i] + ang2_offset))) * PI / 180.0f;
+    // ang = 100.0f;
+
+    line_points[0].X = x1 + add_x * cos(ang) - add_y * sin(ang);
+    line_points[0].Y = y1 + add_x * sin(ang) + add_y * cos(ang);
+    line_points[1].X = x1 + add_x * cos(ang2) - add_y * sin(ang2);
+    line_points[1].Y = y1 + add_x * sin(ang2) + add_y * cos(ang2);
+
+    line_colors[0] = (hmm_vec4){0, 0, 0, 1};
+    line_colors[1] = line_colors[0];
+
+    line(
+        &generic.bo,
+        line_points,
+        line_points_count,
+        line_colors,
+        line_width
+        );
   }
 
   update_buffer_vertices(&generic.bo);
