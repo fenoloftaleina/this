@@ -152,7 +152,7 @@ void update
   matrix_xy(&player->rect, map, &logic_x, &logic_y);
 
   // sdtx_printf("step %d - %s\n pos %f %f - %d %d", logic->n, logic->alive ? "alive" : "dead", player->rect.x1, player->rect.y1, logic_x, logic_y);
-  sdtx_printf("w h %d %d", sapp_width(), sapp_height());
+  // sdtx_printf("w h %d %d", sapp_width(), sapp_height());
 
 
   float eps = 0.0011f;
@@ -238,7 +238,7 @@ void update
       (right_id != -1 && bottom_id != -1)) {
     // double touch
 
-    printf("double touch\n\n");
+    // printf("double touch\n\n");
     return;
   } else {
     found_id = left_id + right_id + top_id + bottom_id + 3;

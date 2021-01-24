@@ -132,8 +132,39 @@ void draw_buffer_object(const buffer_object* bo)
 
     sg_apply_uniforms(SG_SHADERSTAGE_VS, SLOT_vs_params, &vs_params, sizeof(vs_params));
 
-    // printf("\n\nbo indices %d %d\n\n", bo->indices_count, bo->vertices_count);
+    // printf("\n\nbo indices %d vertices %d\n\n", bo->indices_count, bo->vertices_count);
+
+    // for (int i = 0; i < bo->vertices_count; ++i) {
+    //   printf("%f, ", bo->vertices[i]);
+    // }
 
     sg_draw(0, bo->indices_count, 1);
   }
+}
+
+
+void put_in_buffer(
+    buffer_object* bo,
+    const vertex_t* new_vertices,
+    const int new_vertices_count,
+    index_t* new_indices,
+    const int new_indices_count)
+{
+  const int vertices_start = bo->vertices_count / vertex_elements_count;
+
+  memcpy(
+      bo->vertices + bo->vertices_count,
+      new_vertices,
+      new_vertices_count * vertex_elements_count * sizeof(vertex_t));
+
+  memcpy(
+      bo->indices + bo->indices_count,
+      new_indices,
+      new_indices_count * sizeof(index_t));
+
+  for (int i = 0; i < new_indices_count; ++i) {
+    bo->indices[bo->indices_count + i] += vertices_start;
+  }
+
+  inc_buffer_counts(bo, new_vertices_count * vertex_elements_count, new_indices_count);
 }

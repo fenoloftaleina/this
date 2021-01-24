@@ -38,7 +38,7 @@ void init_player(player_data* player)
 
 void draw_player(player_data* player, models_data* models, const float frame_fraction)
 {
-  int ids[] = {1};
+  int ids[] = {0};
   put_models_in_buffer(
       models,
       &player->bo,

@@ -31,7 +31,7 @@
 #include "generic.h"
 
 
-#define GUI 1
+/* #define GUI */
 
 
 
@@ -51,9 +51,13 @@ static logic_data logic = (logic_data){
 };
 static death_data death;
 
-static generic_data generic;
+generic_data generic;
+generic_data generic2;
 
 static sg_pass_action pass_action;
+
+
+#include "ments.h"
 
 
 void init(void)
@@ -83,7 +87,10 @@ void init(void)
   init_death(&death, &map);
   init_editor(&editor);
 
-  init_generic(&generic, 40000, 60000);
+  init_generic(&generic, 5000000 * vertex_elements_count, 7000000);
+  /* init_generic(&generic2, 5000000 * vertex_elements_count, 7000000); */
+
+  init_ments();
 
 #ifdef GUI
   simgui_setup(&(simgui_desc_t){ .dpi_scale = 2.0f });
@@ -109,14 +116,21 @@ static const float dt = 1.0f / 60.0f;
 static float t = 0.0f, frame_time, accumulator = 0.0f;
 static float frame_fraction;
 
+/* bool once = false; */
+
 void frame(void)
 {
+  /* if (once) return; */
+  /* once = true; */
+
   frame_time = stm_laptime(&last_time) / 1000000000.0f;
   accumulator += frame_time;
 
   while (accumulator >= dt) {
     if (!in.editor) {
       update(&player, t, dt, &in, &map, &logic, &death);
+
+      update_ments();
     } else {
       update_editor(&editor, t, dt, &in, &map);
       in.v = in.h = IN_NONE;
@@ -134,14 +148,17 @@ void frame(void)
 
   sg_begin_default_pass(&pass_action, sapp_width(), sapp_height());
 
-  draw_map(&map, frame_fraction);
-  draw_player(&player, &models, frame_fraction);
-  draw_death(&death, frame_fraction);
+  /* draw_map(&map, frame_fraction); */
+  /* draw_player(&player, &models, frame_fraction); */
+  /* draw_death(&death, frame_fraction); */
   if (in.editor) {
     draw_editor(&editor);
   }
 
+  draw_ments(t);
+
   draw_generic(&generic);
+  /* draw_generic(&generic2); */
 
   sdtx_draw();
 
@@ -192,7 +209,7 @@ sapp_desc sokol_main(int argc, char* argv[]) {
     .fullscreen = true,
     .high_dpi = true,
     .alpha = true,
-    .gl_force_gles2 = true,
+    .gl_force_gles2 = false,
     .window_title = "Old",
   };
 }
