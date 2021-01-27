@@ -104,7 +104,7 @@ void move_rect(rect* rect, const float x, const float y)
 void init_rects(buffer_object* bo, const int count)
 {
   init_rects_buffer_object(bo, count);
-  rects_write_indices(bo, count);
+  bo->indices_count = rects_write_indices(bo, count);
   update_buffer_indices(bo);
 }
 
