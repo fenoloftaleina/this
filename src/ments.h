@@ -119,10 +119,6 @@ void init_ments()
 }
 
 
-void update_ments()
-{
-}
-
 #include <time.h>
 #define PI 3.14159265
 

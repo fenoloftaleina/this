@@ -51,13 +51,14 @@ static logic_data logic = (logic_data){
 };
 static death_data death;
 
-generic_data generic;
-generic_data generic2;
+// TODO: make something that makes spawning and using new BOs easier.
+/* generic_data generic; */
+/* generic_data generic2; */
 
 static sg_pass_action pass_action;
 
 
-#include "ments.h"
+/* #include "ments.h" */
 
 
 void init(void)
@@ -87,10 +88,9 @@ void init(void)
   init_death(&death, &map);
   init_editor(&editor);
 
-  init_generic(&generic, 5000000 * vertex_elements_count, 7000000);
+  /* init_generic(&generic, 5000000 * vertex_elements_count, 7000000); */
   /* init_generic(&generic2, 5000000 * vertex_elements_count, 7000000); */
-
-  init_ments();
+  /* init_ments(); */
 
 #ifdef GUI
   simgui_setup(&(simgui_desc_t){ .dpi_scale = 2.0f });
@@ -129,8 +129,6 @@ void frame(void)
   while (accumulator >= dt) {
     if (!in.editor) {
       update(&player, t, dt, &in, &map, &logic, &death);
-
-      update_ments();
     } else {
       update_editor(&editor, t, dt, &in, &map);
       in.v = in.h = IN_NONE;
@@ -148,16 +146,15 @@ void frame(void)
 
   sg_begin_default_pass(&pass_action, sapp_width(), sapp_height());
 
-  /* draw_map(&map, frame_fraction); */
-  /* draw_player(&player, &models, frame_fraction); */
-  /* draw_death(&death, frame_fraction); */
+  draw_map(&map, frame_fraction);
+  draw_player(&player, &models, frame_fraction);
+  draw_death(&death, frame_fraction);
   if (in.editor) {
     draw_editor(&editor);
   }
 
-  draw_ments(t);
-
-  draw_generic(&generic);
+  /* draw_ments(t); */
+  /* draw_generic(&generic); */
   /* draw_generic(&generic2); */
 
   sdtx_draw();
