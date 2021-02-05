@@ -121,7 +121,9 @@ void raw_spots_to_matrix(map_data* map)
         type_colors[cur_type].r,
         type_colors[cur_type].g,
         type_colors[cur_type].b,
-        1.0f
+        1.0f,
+        -1.0f,
+        -1.0f
       };
       map->prev_rects[j] = map->rects[j];
       map->spot_types[j] = cur_type;

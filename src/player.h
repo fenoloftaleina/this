@@ -15,7 +15,7 @@ typedef struct
 
 void init_player(player_data* player)
 {
-  init_buffer_object(&player->bo, 10000, 10000);
+  init_rects_buffer_object(&player->bo, 1);
 
   player->width = 100.0f;
   player->height = 120.0f;

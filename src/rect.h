@@ -1,6 +1,7 @@
 typedef struct rect {
   float x1, y1, x2, y2;
   float r, g, b, a;
+  float u1, v1, u2, v2;
 } rect;
 
 
@@ -23,6 +24,8 @@ void init_rects_buffer_object(buffer_object* bo, const int count)
 const int rects_write_vertices
 (rect* prev_rects, const rect* rects, buffer_object* bo, const int count, const float f)
 {
+  float rounded_f = floor(f + 0.5f);
+
   for(int i = 0; i < count; ++i) {
     bo->vertices[i * vertices_per_rect +  0] = blend(prev_rects[i].x1, rects[i].x1, f);
     bo->vertices[i * vertices_per_rect +  1] = blend(prev_rects[i].y2, rects[i].y2, f);
@@ -31,8 +34,8 @@ const int rects_write_vertices
     bo->vertices[i * vertices_per_rect +  4] = blend(prev_rects[i].g, rects[i].g, f);
     bo->vertices[i * vertices_per_rect +  5] = blend(prev_rects[i].b, rects[i].b, f);
     bo->vertices[i * vertices_per_rect +  6] = blend(prev_rects[i].a, rects[i].a, f);
-    bo->vertices[i * vertices_per_rect +  7] = 0.0f;
-    bo->vertices[i * vertices_per_rect +  8] = 0.0f;
+    bo->vertices[i * vertices_per_rect +  7] = blend(prev_rects[i].u1, rects[i].u1, rounded_f);
+    bo->vertices[i * vertices_per_rect +  8] = blend(prev_rects[i].v2, rects[i].v2, rounded_f);
 
     bo->vertices[i * vertices_per_rect +  9] = blend(prev_rects[i].x2, rects[i].x2, f);
     bo->vertices[i * vertices_per_rect + 10] = blend(prev_rects[i].y2, rects[i].y2, f);
@@ -41,8 +44,8 @@ const int rects_write_vertices
     bo->vertices[i * vertices_per_rect + 13] = blend(prev_rects[i].g, rects[i].g, f);
     bo->vertices[i * vertices_per_rect + 14] = blend(prev_rects[i].b, rects[i].b, f);
     bo->vertices[i * vertices_per_rect + 15] = blend(prev_rects[i].a, rects[i].a, f);
-    bo->vertices[i * vertices_per_rect + 16] = 0.0f;
-    bo->vertices[i * vertices_per_rect + 17] = 0.0f;
+    bo->vertices[i * vertices_per_rect + 16] = blend(prev_rects[i].u2, rects[i].u2, rounded_f);
+    bo->vertices[i * vertices_per_rect + 17] = blend(prev_rects[i].v2, rects[i].v2, rounded_f);
 
     bo->vertices[i * vertices_per_rect + 18] = blend(prev_rects[i].x2, rects[i].x2, f);
     bo->vertices[i * vertices_per_rect + 19] = blend(prev_rects[i].y1, rects[i].y1, f);
@@ -51,8 +54,8 @@ const int rects_write_vertices
     bo->vertices[i * vertices_per_rect + 22] = blend(prev_rects[i].g, rects[i].g, f);
     bo->vertices[i * vertices_per_rect + 23] = blend(prev_rects[i].b, rects[i].b, f);
     bo->vertices[i * vertices_per_rect + 24] = blend(prev_rects[i].a, rects[i].a, f);
-    bo->vertices[i * vertices_per_rect + 25] = 0.0f;
-    bo->vertices[i * vertices_per_rect + 26] = 0.0f;
+    bo->vertices[i * vertices_per_rect + 25] = blend(prev_rects[i].u2, rects[i].u2, rounded_f);
+    bo->vertices[i * vertices_per_rect + 26] = blend(prev_rects[i].v1, rects[i].v1, rounded_f);
 
     bo->vertices[i * vertices_per_rect + 27] = blend(prev_rects[i].x1, rects[i].x1, f);
     bo->vertices[i * vertices_per_rect + 28] = blend(prev_rects[i].y1, rects[i].y1, f);
@@ -61,8 +64,8 @@ const int rects_write_vertices
     bo->vertices[i * vertices_per_rect + 31] = blend(prev_rects[i].g, rects[i].g, f);
     bo->vertices[i * vertices_per_rect + 32] = blend(prev_rects[i].b, rects[i].b, f);
     bo->vertices[i * vertices_per_rect + 33] = blend(prev_rects[i].a, rects[i].a, f);
-    bo->vertices[i * vertices_per_rect + 34] = 0.0f;
-    bo->vertices[i * vertices_per_rect + 35] = 0.0f;
+    bo->vertices[i * vertices_per_rect + 34] = blend(prev_rects[i].u1, rects[i].u1, rounded_f);
+    bo->vertices[i * vertices_per_rect + 35] = blend(prev_rects[i].v1, rects[i].v1, rounded_f);
 
     prev_rects[i] = rects[i];
   }
@@ -120,4 +123,13 @@ void draw_rects
   update_buffer_vertices(bo);
 
   draw_buffer_object(bo);
+}
+
+
+void set_sprite(rect* rect, texture_data* texture, const int sprite_id)
+{
+  rect->u1 = texture->mappings[sprite_id].x1;
+  rect->v1 = texture->mappings[sprite_id].y1;
+  rect->u2 = texture->mappings[sprite_id].x2;
+  rect->v2 = texture->mappings[sprite_id].y2;
 }

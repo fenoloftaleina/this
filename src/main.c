@@ -13,9 +13,21 @@
 #include "cimgui/cimgui.h"
 #define SOKOL_IMGUI_IMPL
 #include "sokol_imgui.h"
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb/stb_image.h"
 
 #include "main.glsl.h"
 
+
+const char* main_dir = "../../../main/";
+
+/* #define RUN 0 */
+/* #define RUN1 1 */
+/* #define RUN_COUNT 2 */
+/* #define SPRITES_COUNT 2 */
+
+#include "texture.h"
+texture_data texture;
 #include "buffer_object.h"
 #include "rect.h"
 #include "model.h"
@@ -32,7 +44,6 @@
 
 
 /* #define GUI */
-
 
 
 static input_data in = {IN_NONE, IN_NONE};
@@ -54,6 +65,7 @@ static death_data death;
 // TODO: make something that makes spawning and using new BOs easier.
 /* generic_data generic; */
 /* generic_data generic2; */
+
 
 static sg_pass_action pass_action;
 
@@ -88,8 +100,20 @@ void init(void)
   init_death(&death, &map);
   init_editor(&editor);
 
+  const char* paths[2];
+  paths[0] = "zero.png";
+  paths[1] = "one.png";
+  init_texture(&texture, paths, 2);
+
+  set_texture(&player.bo, &texture);
+  set_empty_texture(&map.bo);
+  set_empty_texture(&death.bo);
+  set_empty_texture(&editor.bo);
+
   /* init_generic(&generic, 5000000 * vertex_elements_count, 7000000); */
+  /* set_empty_texture(&generic.bo); */
   /* init_generic(&generic2, 5000000 * vertex_elements_count, 7000000); */
+  /* set_empty_texture(&generic2.bo); */
   /* init_ments(); */
 
 #ifdef GUI

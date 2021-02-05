@@ -37,6 +37,9 @@ void import_model(models_data* models, const char* name)
 }
 
 
+const int vertex_model_elements_count = 3;
+
+
 void init_models(models_data* models)
 {
   models->vertices = (vertex_t*)malloc(100000 * vertex_size);
@@ -52,9 +55,9 @@ void init_models(models_data* models)
   // colors here for now, no tinting, no textures
 
   vertex_t vertices[] = {
-    0.0f,   120.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
-    100.0f, 120.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-    100.0f, 0.0f,   1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+    0.0f,   120.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.1f,
+    100.0f, 120.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.1f, 0.1f,
+    100.0f, 0.0f,   1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.1f, 0.0f,
     0.0f,   0.0f,   1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f
   };
   index_t indices[] = {0, 1, 2, 0, 2, 3};

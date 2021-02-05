@@ -30,7 +30,13 @@ in vec2 uv;
 out vec4 frag_color;
 
 void main() {
-    frag_color = texture(tex, uv) * color;
+  if (uv.x >= 0.0) {
+    frag_color = texture(tex, uv);
+    if (frag_color.a < 0.1)
+      discard;
+  } else {
+    frag_color = color;
+  }
 }
 @end
 

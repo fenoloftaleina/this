@@ -63,21 +63,7 @@ void init_buffer_object
 
   sg_shader shd = sg_make_shader(main_shader_desc());
 
-    uint32_t pixels[4*4] = {
-        0xFFFFFFFF, 0xFF000000, 0xFFFFFFFF, 0xFF000000,
-        0xFF000000, 0xFFFFFFFF, 0xFF000000, 0xFFFFFFFF,
-        0xFFFFFFFF, 0xFF000000, 0xFFFFFFFF, 0xFF000000,
-        0xFF000000, 0xFFFFFFFF, 0xFF000000, 0xFFFFFFFF,
-    };
-    bo->bind.fs_images[SLOT_tex] = sg_make_image(&(sg_image_desc){
-        .width = 4,
-        .height = 4,
-        .content.subimage[0][0] = {
-            .ptr = pixels,
-            .size = sizeof(pixels)
-        },
-        .label = "cube-texture"
-    });
+  bo->bind.fs_images[SLOT_tex] = sg_alloc_image();
 
   bo->pip = sg_make_pipeline(&(sg_pipeline_desc){
       .shader = shd,
@@ -93,8 +79,7 @@ void init_buffer_object
           [ATTR_vs_color0].format   = SG_VERTEXFORMAT_FLOAT4,
           [ATTR_vs_texcoord0].format = SG_VERTEXFORMAT_FLOAT2
         }
-      }
-      });
+      }});
 
   bo->vertices = (vertex_t*)malloc(vertices_count * vertex_size);
   bo->indices = (index_t*)malloc(indices_count * index_size);
@@ -167,4 +152,37 @@ void put_in_buffer(
   }
 
   inc_buffer_counts(bo, new_vertices_count * vertex_elements_count, new_indices_count);
+}
+
+
+void set_texture(buffer_object* bo, texture_data* texture)
+{
+  sg_init_image(bo->bind.fs_images[SLOT_tex], &(sg_image_desc){
+      .width = texture_size,
+      .height = texture_size,
+      .pixel_format = SG_PIXELFORMAT_RGBA8,
+      .min_filter = SG_FILTER_LINEAR,
+      .mag_filter = SG_FILTER_LINEAR,
+      .content.subimage[0][0] = {
+          .ptr = texture->pixels,
+          .size = texture_size * texture_size * 4
+      }
+  });
+
+  free(texture->pixels);
+}
+
+
+void set_empty_texture(buffer_object* bo)
+{
+  uint32_t pixels[1] = {
+    0xFFFFFFFF
+  };
+  bo->bind.fs_images[SLOT_tex] = sg_make_image(&(sg_image_desc){
+      .width = 1,
+      .height = 1,
+      .content.subimage[0][0] = {
+        .ptr = pixels,
+        .size = sizeof(pixels)
+      }});
 }

@@ -85,7 +85,9 @@ bool death_on(const map_data* map, death_data* death, const int k)
     0.7f,
     0.3f,
     0.3f,
-    1.0f
+    1.0f,
+    -1.0f,
+    -1.0f
   };
   death->prev_rects[death->n] = death->rects[death->n];
 
