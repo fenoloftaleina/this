@@ -6,6 +6,9 @@ typedef struct
   float height;
 
   bool just_jumped;
+
+
+  // schedule_data_t twitch_schedule;
 } player_data_t;
 
 player_data_t player_data;
@@ -27,6 +30,9 @@ void init_player()
   player_data.prev_rect = player_data.rect;
 
   player_data.just_jumped = false;
+
+
+  // reset_schedule(&player_data.twitch_schedule);
 }
 
 

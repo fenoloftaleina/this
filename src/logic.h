@@ -137,6 +137,20 @@ void evaluate(const float t)
 }
 
 
+// const float twitch_size = 20.0f;
+//
+// void twitch_fn()
+// {
+//   player_data.rect.x1 += twitch_size;
+// }
+//
+//
+// void twitch_back_fn()
+// {
+//   player_data.rect.x1 -= twitch_size;
+// }
+
+
 void update
 (const float t, const float dt)
 {
@@ -156,6 +170,15 @@ void update
 
   // sdtx_printf("step %d - %s\n pos %f %f - %d %d", logic.n, logic.alive ? "alive" : "dead", player_data.rect.x1, player_data.rect.y1, logic_x, logic_y);
   // sdtx_printf("w h %d %d", sapp_width(), sapp_height());
+
+
+
+  // if (in_data.v == IN_UP) {
+  //   add_schedule(&player_data.twitch_schedule, t + dt * 20.0f, twitch_fn);
+  //   add_schedule(&player_data.twitch_schedule, t + dt * 30.0f, twitch_back_fn);
+  // }
+  // execute_schedule(&player_data.twitch_schedule, t);
+
 
 
   float eps = 0.0011f;

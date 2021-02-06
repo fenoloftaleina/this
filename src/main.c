@@ -26,6 +26,7 @@ const char* main_dir = "../../../main/";
 /* #define RUN_COUNT 2 */
 /* #define SPRITES_COUNT 2 */
 
+#include "schedule.h"
 #include "texture.h"
 texture_data texture;
 #include "buffer_object.h"
