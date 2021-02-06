@@ -21,12 +21,16 @@
 
 const char* main_dir = "../../../main/";
 
+const float dt = 1.0f / 60.0f;
+
 /* #define RUN 0 */
 /* #define RUN1 1 */
 /* #define RUN_COUNT 2 */
 /* #define SPRITES_COUNT 2 */
 
 #include "schedule.h"
+#include "tween.h"
+
 #include "texture.h"
 texture_data texture;
 #include "buffer_object.h"
@@ -34,7 +38,7 @@ buffer_object rects_bo;
 buffer_object sprites_bo;
 buffer_object other_bo;
 #include "rect.h"
-#include "lerp.h"
+
 #include "map.h"
 #include "in_types.h"
 #include "player.h"
@@ -43,7 +47,7 @@ buffer_object other_bo;
 #include "editor.h"
 #include "input.h"
 
-#include "generic.h"
+/* #include "generic.h" */
 
 
 /* #define GUI */
@@ -92,14 +96,14 @@ void init(void)
   init_death();
   init_editor();
 
-  const paths_count = 5;
-  const char* paths[paths_count];
+  const int PATHS_COUNT = 5;
+  const char* paths[PATHS_COUNT];
   paths[0] = "zero.png";
   paths[1] = "one.png";
   paths[2] = "mondrian.png";
   paths[3] = "picasso.png";
   paths[4] = "rothko.png";
-  init_texture(&texture, paths, paths_count);
+  init_texture(&texture, paths, PATHS_COUNT);
 
   set_empty_texture(&rects_bo);
   set_texture(&sprites_bo, &texture);
@@ -131,7 +135,6 @@ static void input(const sapp_event* ev)
 
 
 static uint64_t last_time = 0;
-static const float dt = 1.0f / 60.0f;
 static float t = 0.0f, frame_time, accumulator = 0.0f;
 static float frame_fraction;
 
@@ -167,6 +170,15 @@ void frame(void)
 
   reset_buffer_counts(&rects_bo);
   reset_buffer_counts(&sprites_bo);
+
+
+  /* rect bg = { */
+  /*   0.0f, 0.0f, 1000.0f, 1000.0f, */
+  /*   1.0f, 1.0f, 1.0f, 1.0f, */
+  /*   -1.0f, -1.0f, -1.0f, -1.0f, */
+  /* }; */
+  /* set_sprite(&bg, &texture, 2); */
+  /* add_rects(&sprites_bo, &bg, &bg, 1, frame_fraction); */
 
   draw_player(frame_fraction);
   draw_map(frame_fraction);

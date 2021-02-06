@@ -68,10 +68,18 @@ void init_buffer_object
   bo->pip = sg_make_pipeline(&(sg_pipeline_desc){
       .shader = shd,
       .index_type = SG_INDEXTYPE_UINT16,
+      .depth_stencil = {
+        .depth_compare_func = SG_COMPAREFUNC_LESS,
+        .depth_write_enabled = true,
+      },
       .blend = {
         .enabled = true,
-        .src_factor_rgb = SG_BLENDFACTOR_SRC_COLOR,
-        .dst_factor_rgb = SG_BLENDFACTOR_DST_COLOR
+        .src_factor_rgb = SG_BLENDFACTOR_SRC_ALPHA,
+        .dst_factor_rgb = SG_BLENDFACTOR_ONE_MINUS_SRC_ALPHA,
+        .op_rgb = SG_BLENDOP_ADD,
+        .src_factor_alpha = SG_BLENDFACTOR_SRC_ALPHA,
+        .dst_factor_alpha = SG_BLENDFACTOR_ONE_MINUS_SRC_ALPHA,
+        .op_alpha = SG_BLENDOP_ADD
       },
       .layout = {
         .attrs = {

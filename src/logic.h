@@ -90,7 +90,7 @@ bool death_on(const int k)
     0.7f,
     0.3f,
     0.3f,
-    1.0f,
+    0.0f,
     -1.0f,
     -1.0f
   };
@@ -163,6 +163,9 @@ void update
   }
 
   check_collisions();
+
+
+  update_death(t);
 
 
   int logic_x, logic_y;
@@ -309,6 +312,6 @@ void update
     reset_spots();
     // printf("reset!\n");
   } else {
-    stop_death();
+    // stop_death();
   }
 }

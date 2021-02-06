@@ -32,8 +32,10 @@ out vec4 frag_color;
 void main() {
   if (uv.x >= 0.0) {
     frag_color = texture(tex, uv) * color;
-    if (frag_color.a < 0.1)
+
+    if (frag_color.a < 0.1) {
       discard;
+    }
   } else {
     frag_color = color;
   }
