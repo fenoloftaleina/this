@@ -114,8 +114,8 @@ void init(void)
 
   stm_setup();
 
-  in.h = in.v = IN_NONE;
-  in.editor = false;
+  in_data.h = in_data.v = IN_NONE;
+  in_data.editor = false;
 }
 
 
@@ -141,17 +141,17 @@ void frame(void)
   accumulator += frame_time;
 
   while (accumulator >= dt) {
-    if (!in.editor) {
+    if (!in_data.editor) {
       update(t, dt);
     } else {
       update_editor(t, dt);
-      in.v = in.h = IN_NONE;
+      in_data.v = in_data.h = IN_NONE;
     }
     accumulator -= dt;
     t += dt;
   }
 
-  if (!in.editor) {
+  if (!in_data.editor) {
     frame_fraction = accumulator / dt;
   } else {
     frame_fraction = 0.0f;
@@ -165,7 +165,7 @@ void frame(void)
   draw_player(frame_fraction);
   draw_map(frame_fraction);
   draw_death(frame_fraction);
-  if (in.editor) {
+  if (in_data.editor) {
     draw_editor(frame_fraction);
   }
 

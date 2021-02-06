@@ -36,22 +36,22 @@ void handle_input(const sapp_event* ev)
 
       case SAPP_KEYCODE_W:
       case SAPP_KEYCODE_UP:
-        in.v = IN_UP;
+        in_data.v = IN_UP;
         break;
 
       case SAPP_KEYCODE_S:
       case SAPP_KEYCODE_DOWN:
-        in.v = IN_DOWN;
+        in_data.v = IN_DOWN;
         break;
 
       case SAPP_KEYCODE_A:
       case SAPP_KEYCODE_LEFT:
-        in.h = IN_LEFT;
+        in_data.h = IN_LEFT;
         break;
 
       case SAPP_KEYCODE_D:
       case SAPP_KEYCODE_RIGHT:
-        in.h = IN_RIGHT;
+        in_data.h = IN_RIGHT;
         break;
 
       default:
@@ -61,38 +61,38 @@ void handle_input(const sapp_event* ev)
     switch (ev->key_code) {
       case SAPP_KEYCODE_W:
       case SAPP_KEYCODE_UP:
-        if (in.v == IN_UP) {
-          in.v = IN_NONE;
+        if (in_data.v == IN_UP) {
+          in_data.v = IN_NONE;
         }
         break;
 
       case SAPP_KEYCODE_S:
       case SAPP_KEYCODE_DOWN:
-        if (in.v == IN_DOWN) {
-          in.v = IN_NONE;
+        if (in_data.v == IN_DOWN) {
+          in_data.v = IN_NONE;
         }
         break;
 
       case SAPP_KEYCODE_A:
       case SAPP_KEYCODE_LEFT:
-        if (in.h == IN_LEFT) {
-          in.h = IN_NONE;
+        if (in_data.h == IN_LEFT) {
+          in_data.h = IN_NONE;
         }
         break;
 
       case SAPP_KEYCODE_D:
       case SAPP_KEYCODE_RIGHT:
-        if (in.h == IN_RIGHT) {
-          in.h = IN_NONE;
+        if (in_data.h == IN_RIGHT) {
+          in_data.h = IN_NONE;
         }
         break;
 
       case SAPP_KEYCODE_H:
-        if (in.editor) {
-          in.editor = false;
+        if (in_data.editor) {
+          in_data.editor = false;
         } else {
           reload_current_map();
-          in.editor = true;
+          in_data.editor = true;
         }
         break;
 

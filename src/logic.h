@@ -34,15 +34,15 @@ void reload_logic()
 
 void deactivate_spots(const int id)
 {
-  spot_type type = map.spot_types[id];
+  spot_type type = map_data.spot_types[id];
 
-  for (int i = 0; i < map.n; ++i) {
-    if (map.spot_types[i] == type) {
-      map.spot_statuses[i] = spot_inactive;
+  for (int i = 0; i < map_data.n; ++i) {
+    if (map_data.spot_types[i] == type) {
+      map_data.spot_statuses[i] = spot_inactive;
 
-      map.rects[i].r = dead_type_colors[type].r;
-      map.rects[i].g = dead_type_colors[type].g;
-      map.rects[i].b = dead_type_colors[type].b;
+      map_data.rects[i].r = dead_type_colors[type].r;
+      map_data.rects[i].g = dead_type_colors[type].g;
+      map_data.rects[i].b = dead_type_colors[type].b;
     }
   }
 }
@@ -50,25 +50,25 @@ void deactivate_spots(const int id)
 
 void reset_spots()
 {
-  for (int i = 0; i < map.n; ++i) {
-    map.spot_statuses[i] = spot_active;
+  for (int i = 0; i < map_data.n; ++i) {
+    map_data.spot_statuses[i] = spot_active;
 
-    map.rects[i].r = type_colors[map.spot_types[i]].r;
-    map.rects[i].g = type_colors[map.spot_types[i]].g;
-    map.rects[i].b = type_colors[map.spot_types[i]].b;
+    map_data.rects[i].r = type_colors[map_data.spot_types[i]].r;
+    map_data.rects[i].g = type_colors[map_data.spot_types[i]].g;
+    map_data.rects[i].b = type_colors[map_data.spot_types[i]].b;
   }
 }
 
 
 void matrix_xy(const rect* rect, int* x, int* y)
 {
-  *x = ((rect->x1 + rect->x2) * 0.5f + 1.0f) / map.raw_tile_width;
-  *y = ((rect->y1 + rect->y2) * 0.5f + 1.0f) / map.raw_tile_height;
+  *x = ((rect->x1 + rect->x2) * 0.5f + 1.0f) / map_data.raw_tile_width;
+  *y = ((rect->y1 + rect->y2) * 0.5f + 1.0f) / map_data.raw_tile_height;
 }
 
 int matrix_i(const int x, const int y)
 {
-  return y * map.matrix_w + x;
+  return y * map_data.matrix_w + x;
 }
 
 
@@ -76,13 +76,13 @@ bool death_on(const int k)
 {
   float x1, y1, x2, y2;
 
-  if (map.matrix[k] != -1) return false;
+  if (map_data.matrix[k] != -1) return false;
 
-  if (death.matrix[k] != -1) return true;
+  if (death_data.matrix[k] != -1) return true;
 
-  death.matrix[k] = 1;
+  death_data.matrix[k] = 1;
   raw_xy12(k, &x1, &y1, &x2, &y2);
-  death.rects[death.n] = (rect){
+  death_data.rects[death_data.n] = (rect){
     x1,
     y1,
     x2,
@@ -94,9 +94,9 @@ bool death_on(const int k)
     -1.0f,
     -1.0f
   };
-  death.prev_rects[death.n] = death.rects[death.n];
+  death_data.prev_rects[death_data.n] = death_data.rects[death_data.n];
 
-  death.n += 1;
+  death_data.n += 1;
 
   return true;
 }
@@ -105,14 +105,14 @@ bool death_on(const int k)
 void evaluate(const float t)
 {
   int spot_x, spot_y, j;
-  for (int i = 0; i < map.n; ++i) {
-    if (map.spot_statuses[i] == spot_active) {
-      matrix_xy(&map.rects[i], &spot_x, &spot_y);
+  for (int i = 0; i < map_data.n; ++i) {
+    if (map_data.spot_statuses[i] == spot_active) {
+      matrix_xy(&map_data.rects[i], &spot_x, &spot_y);
 
       // death->matrix[matrix_i(spot_x, spot_y)] = 1;
 
       j = spot_x + 1;
-      while(j < map.matrix_w && death_on(matrix_i(j, spot_y))) {
+      while(j < map_data.matrix_w && death_on(matrix_i(j, spot_y))) {
         ++j;
       }
 
@@ -122,7 +122,7 @@ void evaluate(const float t)
       }
 
       j = spot_y + 1;
-      while(j < map.matrix_h && death_on(matrix_i(spot_x, j))) {
+      while(j < map_data.matrix_h && death_on(matrix_i(spot_x, j))) {
         ++j;
       }
 
@@ -140,11 +140,11 @@ void evaluate(const float t)
 void update
 (const float t, const float dt)
 {
-  player.just_jumped = false;
+  player_data.just_jumped = false;
 
   update_player_positions(t, dt);
 
-  if (player.just_jumped) {
+  if (player_data.just_jumped) {
     logic.jumped_meantime = true;
   }
 
@@ -152,9 +152,9 @@ void update
 
 
   int logic_x, logic_y;
-  matrix_xy(&player.rect, &logic_x, &logic_y);
+  matrix_xy(&player_data.rect, &logic_x, &logic_y);
 
-  // sdtx_printf("step %d - %s\n pos %f %f - %d %d", logic.n, logic.alive ? "alive" : "dead", player.rect.x1, player.rect.y1, logic_x, logic_y);
+  // sdtx_printf("step %d - %s\n pos %f %f - %d %d", logic.n, logic.alive ? "alive" : "dead", player_data.rect.x1, player_data.rect.y1, logic_x, logic_y);
   // sdtx_printf("w h %d %d", sapp_width(), sapp_height());
 
 
@@ -176,53 +176,53 @@ void update
   float temp_overlap;
   int found_id = -1;
 
-  for (int i = 0; i < map.n; ++i) {
-    if (player.rect.x1 < map.rects[i].x1) {
-      temp_overlap = player.rect.x1 + player.width - map.rects[i].x1;
-    } else if (player.rect.x2 <= map.rects[i].x2) {
-      temp_overlap = player.width;
+  for (int i = 0; i < map_data.n; ++i) {
+    if (player_data.rect.x1 < map_data.rects[i].x1) {
+      temp_overlap = player_data.rect.x1 + player_data.width - map_data.rects[i].x1;
+    } else if (player_data.rect.x2 <= map_data.rects[i].x2) {
+      temp_overlap = player_data.width;
     } else {
-      temp_overlap = map.rects[i].x2 - player.rect.x1;
+      temp_overlap = map_data.rects[i].x2 - player_data.rect.x1;
     }
 
     if (temp_overlap > bottom_overlap &&
-        fabs(player.rect.y1 - map.rects[i].y2) < eps) {
+        fabs(player_data.rect.y1 - map_data.rects[i].y2) < eps) {
       bottom_id = i;
-      bottom_spot_type = map.spot_types[i];
+      bottom_spot_type = map_data.spot_types[i];
       bottom_overlap = temp_overlap;
     }
 
     if (temp_overlap > top_overlap &&
-        fabs(map.rects[i].y1 - player.rect.y2) < eps) {
+        fabs(map_data.rects[i].y1 - player_data.rect.y2) < eps) {
       top_id = i;
-      top_spot_type = map.spot_types[i];
+      top_spot_type = map_data.spot_types[i];
       top_overlap = temp_overlap;
     }
 
 
-    if (player.rect.y1 < map.rects[i].y1) {
-      temp_overlap = player.rect.y1 + player.height - map.rects[i].y1;
-    } else if (player.rect.y2 <= map.rects[i].y2) {
-      temp_overlap = player.width;
+    if (player_data.rect.y1 < map_data.rects[i].y1) {
+      temp_overlap = player_data.rect.y1 + player_data.height - map_data.rects[i].y1;
+    } else if (player_data.rect.y2 <= map_data.rects[i].y2) {
+      temp_overlap = player_data.width;
     } else {
-      temp_overlap = map.rects[i].y2 - player.rect.y1;
+      temp_overlap = map_data.rects[i].y2 - player_data.rect.y1;
     }
 
     if (temp_overlap > left_overlap &&
-        fabs(player.rect.x1 - map.rects[i].x2) < eps &&
-        (player.rect.x1 - player.prev_rect.x1 < 0.0f ||
-         in.h == IN_LEFT)) {
+        fabs(player_data.rect.x1 - map_data.rects[i].x2) < eps &&
+        (player_data.rect.x1 - player_data.prev_rect.x1 < 0.0f ||
+         in_data.h == IN_LEFT)) {
       left_id = i;
-      left_spot_type = map.spot_types[i];
+      left_spot_type = map_data.spot_types[i];
       left_overlap = temp_overlap;
     }
 
     if (temp_overlap > right_overlap &&
-        fabs(map.rects[i].x1 - player.rect.x2) < eps &&
-        (player.rect.x1 - player.prev_rect.x1 > 0.0f ||
-         in.h == IN_RIGHT)) {
+        fabs(map_data.rects[i].x1 - player_data.rect.x2) < eps &&
+        (player_data.rect.x1 - player_data.prev_rect.x1 > 0.0f ||
+         in_data.h == IN_RIGHT)) {
       right_id = i;
-      right_spot_type = map.spot_types[i];
+      right_spot_type = map_data.spot_types[i];
       right_overlap = temp_overlap;
     }
   }

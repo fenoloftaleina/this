@@ -9,36 +9,36 @@ typedef struct
   int matrix_size;
 
   bool display;
-} death_data;
+} death_data_t;
 
 
-death_data death;
+death_data_t death_data;
 
 
 void start_death(const float t)
 {
   (void)t;
 
-  death.display = true;
+  death_data.display = true;
 }
 
 
 void stop_death()
 {
-  death.display = false;
-  death.n = 0;
-  memset(death.matrix, -1, death.matrix_size * sizeof(int));
+  death_data.display = false;
+  death_data.n = 0;
+  memset(death_data.matrix, -1, death_data.matrix_size * sizeof(int));
 }
 
 
 void init_death()
 {
-  death.matrix_size = map.matrix_size;
+  death_data.matrix_size = map_data.matrix_size;
 
-  death.prev_rects = (rect*)malloc(death.matrix_size * sizeof(rect));
-  death.rects = (rect*)malloc(death.matrix_size * sizeof(rect));
+  death_data.prev_rects = (rect*)malloc(death_data.matrix_size * sizeof(rect));
+  death_data.rects = (rect*)malloc(death_data.matrix_size * sizeof(rect));
 
-  death.matrix = (int*)malloc(death.matrix_size * sizeof(int));
+  death_data.matrix = (int*)malloc(death_data.matrix_size * sizeof(int));
 
   stop_death();
 }
@@ -46,7 +46,7 @@ void init_death()
 
 void draw_death(const float frame_fraction)
 {
-  if (!death.display) return;
+  if (!death_data.display) return;
 
-  add_rects(&rects_bo, death.rects, death.prev_rects, death.n, frame_fraction);
+  add_rects(&rects_bo, death_data.rects, death_data.prev_rects, death_data.n, frame_fraction);
 }
