@@ -40,9 +40,9 @@ void deactivate_spots(const int id)
     if (map_data.spot_types[i] == type) {
       map_data.spot_statuses[i] = spot_inactive;
 
-      map_data.rects[i].r = dead_type_colors[type].r;
-      map_data.rects[i].g = dead_type_colors[type].g;
-      map_data.rects[i].b = dead_type_colors[type].b;
+      map_data.rects[i].r = death_tint_color.r;
+      map_data.rects[i].g = death_tint_color.g;
+      map_data.rects[i].b = death_tint_color.b;
     }
   }
 }
@@ -53,9 +53,9 @@ void reset_spots()
   for (int i = 0; i < map_data.n; ++i) {
     map_data.spot_statuses[i] = spot_active;
 
-    map_data.rects[i].r = type_colors[map_data.spot_types[i]].r;
-    map_data.rects[i].g = type_colors[map_data.spot_types[i]].g;
-    map_data.rects[i].b = type_colors[map_data.spot_types[i]].b;
+    map_data.rects[i].r = 1.0f;
+    map_data.rects[i].g = 1.0f;
+    map_data.rects[i].b = 1.0f;
   }
 }
 

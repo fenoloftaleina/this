@@ -13,11 +13,10 @@ typedef enum spot_type
   spot_empty = -1,
   spot_red,
   spot_green,
-  spot_blue,
-  spot_red_dead,
-  spot_green_dead,
-  spot_blue_dead
+  spot_blue
 } spot_type;
+
+const int SPRITE_OFFSET = 2;
 
 const int spot_type_n = 3;
 
@@ -56,17 +55,8 @@ typedef struct color
   float r, g, b;
 } color;
 
-color type_colors[] = {
-  {0.5f, 0.35f, 0.47f},
-  {0.4f, 0.6f, 0.4f},
-  {0.3f, 0.6f, 0.7f}
-};
 
-color dead_type_colors[] = {
-  {1.0f, 0.0f, 0.0f},
-  {0.0f, 1.0f, 0.0f},
-  {0.0f, 0.0f, 1.0f}
-};
+const color death_tint_color = (color){0.3f, 0.3f, 0.3f};
 
 
 float tile_width = 200.0f;
@@ -87,7 +77,7 @@ void init_map()
 
 void draw_map(const float frame_fraction)
 {
-  add_rects(&rects_bo, map_data.rects, map_data.prev_rects, map_data.n, frame_fraction);
+  add_rects(&sprites_bo, map_data.rects, map_data.prev_rects, map_data.n, frame_fraction);
 }
 
 
@@ -120,13 +110,13 @@ void raw_spots_to_matrix()
         y1,
         x2,
         y2,
-        type_colors[cur_type].r,
-        type_colors[cur_type].g,
-        type_colors[cur_type].b,
         1.0f,
-        -1.0f,
-        -1.0f
+        1.0f,
+        1.0f,
+        1.0f
       };
+      set_sprite(&map_data.rects[j], &texture, cur_type + SPRITE_OFFSET);
+
       map_data.prev_rects[j] = map_data.rects[j];
       map_data.spot_types[j] = cur_type;
       map_data.spot_statuses[j] = spot_active;
@@ -136,14 +126,6 @@ void raw_spots_to_matrix()
   }
 
   map_data.n = j;
-
-  // set_buffer_counts(
-  //     &map_data.bo,
-  //     rects_write_vertices_simple(map_data.rects, &map_data.bo, map_data.n),
-  //     rects_write_indices(&map_data.bo, map_data.n)
-  //     );
-  // // update_buffer_vertices(&map_data.bo);
-  // update_buffer_indices(&map_data.bo);
 }
 
 

@@ -91,10 +91,14 @@ void init(void)
   init_death();
   init_editor();
 
-  const char* paths[2];
+  const paths_count = 5;
+  const char* paths[paths_count];
   paths[0] = "zero.png";
   paths[1] = "one.png";
-  init_texture(&texture, paths, 2);
+  paths[2] = "mondrian.png";
+  paths[3] = "picasso.png";
+  paths[4] = "rothko.png";
+  init_texture(&texture, paths, paths_count);
 
   set_empty_texture(&rects_bo);
   set_texture(&sprites_bo, &texture);
@@ -161,6 +165,7 @@ void frame(void)
   sg_begin_default_pass(&pass_action, sapp_width(), sapp_height());
 
   reset_buffer_counts(&rects_bo);
+  reset_buffer_counts(&sprites_bo);
 
   draw_player(frame_fraction);
   draw_map(frame_fraction);
@@ -172,6 +177,11 @@ void frame(void)
   update_buffer_vertices(&rects_bo);
   update_buffer_indices(&rects_bo);
   draw_buffer_object(&rects_bo);
+
+  update_buffer_vertices(&sprites_bo);
+  update_buffer_indices(&sprites_bo);
+  draw_buffer_object(&sprites_bo);
+
 
   /* draw_ments(t); */
   /* draw_generic(&generic); */
