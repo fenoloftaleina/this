@@ -14,8 +14,8 @@ typedef struct
   sg_image image_id;
 } texture_data;
 
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "stb_image_write.h"
+// #define STB_IMAGE_WRITE_IMPLEMENTATION
+// #include "stb_image_write.h"
 
 
 void init_texture(texture_data* texture, const char** paths, const int paths_n)
@@ -39,7 +39,7 @@ void init_texture(texture_data* texture, const char** paths, const int paths_n)
 
     image = stbi_load(temp_path, &width, &height, &nrChannels, 0);
 
-    printf("%d %d %d\n", width, height, nrChannels);
+    // printf("%d %d %d\n", width, height, nrChannels);
 
     for(int m = 0; m < height; ++m) {
       memcpy(texture->pixels + i * 4 + j * texture_size * 4 + m * texture_size * 4, image + m * width * 4, width * 4);

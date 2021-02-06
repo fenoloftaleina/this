@@ -29,8 +29,10 @@ const char* main_dir = "../../../main/";
 #include "texture.h"
 texture_data texture;
 #include "buffer_object.h"
+buffer_object rects_bo;
+buffer_object sprites_bo;
+buffer_object other_bo;
 #include "rect.h"
-#include "model.h"
 #include "lerp.h"
 #include "map.h"
 #include "in_types.h"
@@ -45,22 +47,6 @@ texture_data texture;
 
 /* #define GUI */
 
-
-static input_data in = {IN_NONE, IN_NONE};
-
-static models_data models;
-
-static player_data player;
-static map_data map = (map_data){
-  .matrix_w = 20,
-  .matrix_h = 12,
-  .matrix_size = 20 * 12
-};
-static editor_data editor;
-static logic_data logic = (logic_data){
-  .default_steps_till_eval = 3
-};
-static death_data death;
 
 // TODO: make something that makes spawning and using new BOs easier.
 /* generic_data generic; */
@@ -94,21 +80,25 @@ void init(void)
     .colors[0] = { .action=SG_ACTION_CLEAR, .val={0.5f, 0.5f, 0.5f, 1.0f } }
   };
 
-  init_models(&models);
-  init_player(&player);
-  init_map(&map);
-  init_death(&death, &map);
-  init_editor(&editor);
+
+  init_buffer_object(&rects_bo, 40000, 60000);
+  init_buffer_object(&sprites_bo, 40000, 60000);
+  init_buffer_object(&other_bo, 40000, 60000);
+
+
+  init_player();
+  init_map();
+  init_death();
+  init_editor();
 
   const char* paths[2];
   paths[0] = "zero.png";
   paths[1] = "one.png";
   init_texture(&texture, paths, 2);
 
-  set_texture(&player.bo, &texture);
-  set_empty_texture(&map.bo);
-  set_empty_texture(&death.bo);
-  set_empty_texture(&editor.bo);
+  set_empty_texture(&rects_bo);
+  set_texture(&sprites_bo, &texture);
+  set_empty_texture(&other_bo);
 
   /* init_generic(&generic, 5000000 * vertex_elements_count, 7000000); */
   /* set_empty_texture(&generic.bo); */
@@ -120,7 +110,7 @@ void init(void)
   simgui_setup(&(simgui_desc_t){ .dpi_scale = 2.0f });
 #endif
 
-  run_map("level0", &map, &logic, &death);
+  run_map("level0");
 
   stm_setup();
 
@@ -131,7 +121,7 @@ void init(void)
 
 static void input(const sapp_event* ev)
 {
-  handle_input(ev, &in, &editor, &map, &logic, &death);
+  handle_input(ev);
 }
 
 
@@ -152,9 +142,9 @@ void frame(void)
 
   while (accumulator >= dt) {
     if (!in.editor) {
-      update(&player, t, dt, &in, &map, &logic, &death);
+      update(t, dt);
     } else {
-      update_editor(&editor, t, dt, &in, &map);
+      update_editor(t, dt);
       in.v = in.h = IN_NONE;
     }
     accumulator -= dt;
@@ -170,12 +160,18 @@ void frame(void)
 
   sg_begin_default_pass(&pass_action, sapp_width(), sapp_height());
 
-  draw_map(&map, frame_fraction);
-  draw_player(&player, &models, frame_fraction);
-  draw_death(&death, frame_fraction);
+  reset_buffer_counts(&rects_bo);
+
+  draw_player(frame_fraction);
+  draw_map(frame_fraction);
+  draw_death(frame_fraction);
   if (in.editor) {
-    draw_editor(&editor);
+    draw_editor(frame_fraction);
   }
+
+  update_buffer_vertices(&rects_bo);
+  update_buffer_indices(&rects_bo);
+  draw_buffer_object(&rects_bo);
 
   /* draw_ments(t); */
   /* draw_generic(&generic); */

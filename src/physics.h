@@ -98,71 +98,71 @@ typedef struct
 
 
 void recalc_collision_points
-(collision_points_data* collision, const player_data* player, const bool up, const bool left)
+(collision_points_data* collision, const bool up, const bool left)
 {
   bool down = !up;
   bool right = !left;
 
   if (left && down) {
-    collision->hanging_x = player->rect.x1;
-    collision->p_hanging_x = player->prev_rect.x1;
-    collision->hanging_y = player->rect.y2;
-    collision->p_hanging_y = player->prev_rect.y2;
+    collision->hanging_x = player.rect.x1;
+    collision->p_hanging_x = player.prev_rect.x1;
+    collision->hanging_y = player.rect.y2;
+    collision->p_hanging_y = player.prev_rect.y2;
 
-    collision->dragging_x = player->rect.x2;
-    collision->p_dragging_x = player->prev_rect.x2;
-    collision->dragging_y = player->rect.y1;
-    collision->p_dragging_y = player->prev_rect.y1;
+    collision->dragging_x = player.rect.x2;
+    collision->p_dragging_x = player.prev_rect.x2;
+    collision->dragging_y = player.rect.y1;
+    collision->p_dragging_y = player.prev_rect.y1;
 
-    collision->main_x = player->rect.x1;
-    collision->p_main_x = player->prev_rect.x1;
-    collision->main_y = player->rect.y1;
-    collision->p_main_y = player->prev_rect.y1;
+    collision->main_x = player.rect.x1;
+    collision->p_main_x = player.prev_rect.x1;
+    collision->main_y = player.rect.y1;
+    collision->p_main_y = player.prev_rect.y1;
   } else if (left && up) {
-    collision->hanging_x = player->rect.x1;
-    collision->p_hanging_x = player->prev_rect.x1;
-    collision->hanging_y = player->rect.y1;
-    collision->p_hanging_y = player->prev_rect.y1;
+    collision->hanging_x = player.rect.x1;
+    collision->p_hanging_x = player.prev_rect.x1;
+    collision->hanging_y = player.rect.y1;
+    collision->p_hanging_y = player.prev_rect.y1;
 
-    collision->dragging_x = player->rect.x2;
-    collision->p_dragging_x = player->prev_rect.x2;
-    collision->dragging_y = player->rect.y2;
-    collision->p_dragging_y = player->prev_rect.y2;
+    collision->dragging_x = player.rect.x2;
+    collision->p_dragging_x = player.prev_rect.x2;
+    collision->dragging_y = player.rect.y2;
+    collision->p_dragging_y = player.prev_rect.y2;
 
-    collision->main_x = player->rect.x1;
-    collision->p_main_x = player->prev_rect.x1;
-    collision->main_y = player->rect.y2;
-    collision->p_main_y = player->prev_rect.y2;
+    collision->main_x = player.rect.x1;
+    collision->p_main_x = player.prev_rect.x1;
+    collision->main_y = player.rect.y2;
+    collision->p_main_y = player.prev_rect.y2;
   } else if (right && down) {
-    collision->hanging_x = player->rect.x2;
-    collision->p_hanging_x = player->prev_rect.x2;
-    collision->hanging_y = player->rect.y2;
-    collision->p_hanging_y = player->prev_rect.y2;
+    collision->hanging_x = player.rect.x2;
+    collision->p_hanging_x = player.prev_rect.x2;
+    collision->hanging_y = player.rect.y2;
+    collision->p_hanging_y = player.prev_rect.y2;
 
-    collision->dragging_x = player->rect.x1;
-    collision->p_dragging_x = player->prev_rect.x1;
-    collision->dragging_y = player->rect.y1;
-    collision->p_dragging_y = player->prev_rect.y1;
+    collision->dragging_x = player.rect.x1;
+    collision->p_dragging_x = player.prev_rect.x1;
+    collision->dragging_y = player.rect.y1;
+    collision->p_dragging_y = player.prev_rect.y1;
 
-    collision->main_x = player->rect.x2;
-    collision->p_main_x = player->prev_rect.x2;
-    collision->main_y = player->rect.y1;
-    collision->p_main_y = player->prev_rect.y1;
+    collision->main_x = player.rect.x2;
+    collision->p_main_x = player.prev_rect.x2;
+    collision->main_y = player.rect.y1;
+    collision->p_main_y = player.prev_rect.y1;
   } else if (right && up) {
-    collision->hanging_x = player->rect.x2;
-    collision->p_hanging_x = player->prev_rect.x2;
-    collision->hanging_y = player->rect.y1;
-    collision->p_hanging_y = player->prev_rect.y1;
+    collision->hanging_x = player.rect.x2;
+    collision->p_hanging_x = player.prev_rect.x2;
+    collision->hanging_y = player.rect.y1;
+    collision->p_hanging_y = player.prev_rect.y1;
 
-    collision->dragging_x = player->rect.x1;
-    collision->p_dragging_x = player->prev_rect.x1;
-    collision->dragging_y = player->rect.y2;
-    collision->p_dragging_y = player->prev_rect.y2;
+    collision->dragging_x = player.rect.x1;
+    collision->p_dragging_x = player.prev_rect.x1;
+    collision->dragging_y = player.rect.y2;
+    collision->p_dragging_y = player.prev_rect.y2;
 
-    collision->main_x = player->rect.x2;
-    collision->p_main_x = player->prev_rect.x2;
-    collision->main_y = player->rect.y2;
-    collision->p_main_y = player->prev_rect.y2;
+    collision->main_x = player.rect.x2;
+    collision->p_main_x = player.prev_rect.x2;
+    collision->main_y = player.rect.y2;
+    collision->p_main_y = player.prev_rect.y2;
   }
 }
 
@@ -195,7 +195,7 @@ void recalc_rect_side_end
 }
 
 
-void check_collisions(player_data* player, map_data* map)
+void check_collisions()
 {
   float eps = 0.001f;
 
@@ -208,27 +208,27 @@ void check_collisions(player_data* player, map_data* map)
   float e_end = up ? -eps : eps;
 
   collision_points_data collision;
-  recalc_collision_points(&collision, player, up, left);
+  recalc_collision_points(&collision, up, left);
 
   rect_side_end_data rect_side_end;
 
-  for (int i = 0; i < map->n; ++i) {
-    recalc_rect_side_end(&rect_side_end, &map->rects[i], up, left);
+  for (int i = 0; i < map.n; ++i) {
+    recalc_rect_side_end(&rect_side_end, &map.rects[i], up, left);
     if (lines_intersect(
           collision.p_hanging_x, collision.p_hanging_y, collision.hanging_x, collision.hanging_y,
           rect_side_end.side_x, rect_side_end.side_y1, rect_side_end.side_x, rect_side_end.side_y2)) {
-      move_rect(&player->rect, rect_side_end.side_x - collision.hanging_x + e_side, 0.0f);
-      recalc_collision_points(&collision, player, up, left);
+      move_rect(&player.rect, rect_side_end.side_x - collision.hanging_x + e_side, 0.0f);
+      recalc_collision_points(&collision, up, left);
     }
   }
 
-  for (int i = 0; i < map->n; ++i) {
-    recalc_rect_side_end(&rect_side_end, &map->rects[i], up, left);
+  for (int i = 0; i < map.n; ++i) {
+    recalc_rect_side_end(&rect_side_end, &map.rects[i], up, left);
     if (lines_intersect(
           collision.p_dragging_x, collision.p_dragging_y, collision.dragging_x, collision.dragging_y,
           rect_side_end.end_x1, rect_side_end.end_y, rect_side_end.end_x2, rect_side_end.end_y)) {
-      move_rect(&player->rect, 0.0f, rect_side_end.end_y - collision.dragging_y + e_end);
-      recalc_collision_points(&collision, player, up, left);
+      move_rect(&player.rect, 0.0f, rect_side_end.end_y - collision.dragging_y + e_end);
+      recalc_collision_points(&collision, up, left);
 
       jump_state.v = 0.0f;
       jump_state.in_air = up;
@@ -237,23 +237,23 @@ void check_collisions(player_data* player, map_data* map)
     }
   }
 
-  for (int i = 0; i < map->n; ++i) {
-    recalc_rect_side_end(&rect_side_end, &map->rects[i], up, left);
+  for (int i = 0; i < map.n; ++i) {
+    recalc_rect_side_end(&rect_side_end, &map.rects[i], up, left);
     if (lines_intersect(
           collision.p_main_x, collision.p_main_y, collision.main_x, collision.main_y,
           rect_side_end.side_x, rect_side_end.side_y1, rect_side_end.side_x, rect_side_end.side_y2)) {
-      move_rect(&player->rect, rect_side_end.side_x - collision.main_x + e_side, 0.0f);
-      recalc_collision_points(&collision, player, up, left);
+      move_rect(&player.rect, rect_side_end.side_x - collision.main_x + e_side, 0.0f);
+      recalc_collision_points(&collision, up, left);
     }
   }
 
-  for (int i = 0; i < map->n; ++i) {
-    recalc_rect_side_end(&rect_side_end, &map->rects[i], up, left);
+  for (int i = 0; i < map.n; ++i) {
+    recalc_rect_side_end(&rect_side_end, &map.rects[i], up, left);
     if (lines_intersect(
           collision.p_main_x, collision.p_main_y, collision.main_x, collision.main_y,
           rect_side_end.end_x1, rect_side_end.end_y, rect_side_end.end_x2, rect_side_end.end_y)) {
-      move_rect(&player->rect, 0.0f, rect_side_end.end_y - collision.main_y + e_end);
-      recalc_collision_points(&collision, player, up, left);
+      move_rect(&player.rect, 0.0f, rect_side_end.end_y - collision.main_y + e_end);
+      recalc_collision_points(&collision, up, left);
 
       jump_state.v = 0.0f;
       jump_state.in_air = up;
@@ -276,19 +276,19 @@ float h_clamp(const float val, const float clamp_val)
 
 
 void update_player_positions
-(player_data* player, const float t, const float dt, const input_data* in, map_data* map)
+(const float t, const float dt)
 {
   (void)map;
 
   // printf("%f\n", t);
-  if (in->v == IN_UP && !jump_state.in_air) {
+  if (in.v == IN_UP && !jump_state.in_air) {
     jump_state.v = v_clamp(jump_state.init_v, jump_state.low_clamp, jump_state.high_clamp);
     jump_state.in_air = true;
     jump_state.started_at = t;
     jump_state.possible_double_jump = true;
 
-    player->just_jumped = true;
-  } else if (in->v == IN_UP &&
+    player.just_jumped = true;
+  } else if (in.v == IN_UP &&
       jump_state.in_air &&
       jump_state.possible_double_jump &&
       t - jump_state.started_at > jump_state.double_jump_threshold
@@ -299,7 +299,7 @@ void update_player_positions
     jump_state.v = v_clamp(jump_state.v + dt * jump_state.gravity, jump_state.low_clamp, jump_state.high_clamp);
   }
 
-  if (in->v != IN_UP) {
+  if (in.v != IN_UP) {
     jump_state.possible_double_jump = false;
   }
 
@@ -309,9 +309,9 @@ void update_player_positions
     walk_state.clamp = walk_state.default_clamp;
   }
 
-  if (in->h == IN_LEFT) {
+  if (in.h == IN_LEFT) {
     walk_state.v = h_clamp(walk_state.v - dt * walk_state.transpose, walk_state.clamp);
-  } else if (in->h == IN_RIGHT) {
+  } else if (in.h == IN_RIGHT) {
     walk_state.v = h_clamp(walk_state.v + dt * walk_state.transpose, walk_state.clamp);
   } else {
     walk_state.v /= (1.0f + walk_state.damping * dt);
@@ -320,5 +320,5 @@ void update_player_positions
     }
   }
 
-  move_rect(&player->rect, dt * walk_state.v, dt * jump_state.v);
+  move_rect(&player.rect, dt * walk_state.v, dt * jump_state.v);
 }

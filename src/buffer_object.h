@@ -52,7 +52,7 @@ void init_buffer_object
 
   bo->bind.vertex_buffers[0] = sg_make_buffer(&(sg_buffer_desc){
       .usage = SG_USAGE_DYNAMIC,
-      .size = vertices_count * vertex_size
+      .size = vertices_count * vertex_elements_count * vertex_size
       });
 
   bo->bind.index_buffer = sg_make_buffer(&(sg_buffer_desc){
@@ -81,14 +81,14 @@ void init_buffer_object
         }
       }});
 
-  bo->vertices = (vertex_t*)malloc(vertices_count * vertex_size);
+  bo->vertices = (vertex_t*)malloc(vertices_count * vertex_elements_count * vertex_size);
   bo->indices = (index_t*)malloc(indices_count * index_size);
 }
 
 
 void update_buffer_vertices(buffer_object* bo)
 {
-  sg_update_buffer(bo->bind.vertex_buffers[0], bo->vertices, bo->vertices_count * vertex_size);
+  sg_update_buffer(bo->bind.vertex_buffers[0], bo->vertices, bo->vertices_count * vertex_elements_count * vertex_size);
 }
 
 
@@ -135,23 +135,27 @@ void put_in_buffer(
     index_t* new_indices,
     const int new_indices_count)
 {
-  const int vertices_start = bo->vertices_count / vertex_elements_count;
+  const int vertices_start = bo->vertices_count;
 
   memcpy(
       bo->vertices + bo->vertices_count,
       new_vertices,
-      new_vertices_count * vertex_elements_count * sizeof(vertex_t));
+      new_vertices_count * vertex_elements_count * vertex_size);
 
   memcpy(
       bo->indices + bo->indices_count,
       new_indices,
-      new_indices_count * sizeof(index_t));
+      new_indices_count * index_size);
 
   for (int i = 0; i < new_indices_count; ++i) {
     bo->indices[bo->indices_count + i] += vertices_start;
   }
 
-  inc_buffer_counts(bo, new_vertices_count * vertex_elements_count, new_indices_count);
+  inc_buffer_counts(
+      bo,
+      new_vertices_count,
+      new_indices_count
+      );
 }
 
 

@@ -1,7 +1,5 @@
 typedef struct
 {
-  buffer_object bo;
-
   int n;
   rect* prev_rects;
   rect* rects;
@@ -14,38 +12,41 @@ typedef struct
 } death_data;
 
 
-void start_death(death_data* death, const float t)
+death_data death;
+
+
+void start_death(const float t)
 {
-  death->display = true;
+  (void)t;
+
+  death.display = true;
 }
 
 
-void stop_death(death_data* death)
+void stop_death()
 {
-  death->display = false;
-  death->n = 0;
-  memset(death->matrix, -1, death->matrix_size * sizeof(int));
+  death.display = false;
+  death.n = 0;
+  memset(death.matrix, -1, death.matrix_size * sizeof(int));
 }
 
 
-void init_death(death_data* death, const map_data* map)
+void init_death()
 {
-  death->matrix_size = map->matrix_size;
+  death.matrix_size = map.matrix_size;
 
-  death->prev_rects = (rect*)malloc(death->matrix_size * sizeof(rect));
-  death->rects = (rect*)malloc(death->matrix_size * sizeof(rect));
+  death.prev_rects = (rect*)malloc(death.matrix_size * sizeof(rect));
+  death.rects = (rect*)malloc(death.matrix_size * sizeof(rect));
 
-  death->matrix = (int*)malloc(death->matrix_size * sizeof(int));
+  death.matrix = (int*)malloc(death.matrix_size * sizeof(int));
 
-  stop_death(death);
-
-  init_rects(&death->bo, map->matrix_size);
+  stop_death();
 }
 
 
-void draw_death(death_data* death, const float frame_fraction)
+void draw_death(const float frame_fraction)
 {
-  if (!death->display) return;
+  if (!death.display) return;
 
-  draw_rects(&death->bo, death->prev_rects, death->rects, death->n, frame_fraction);
+  add_rects(&rects_bo, death.rects, death.prev_rects, death.n, frame_fraction);
 }

@@ -2,63 +2,56 @@ typedef struct
 {
   int x, y;
   rect rect;
-  buffer_object bo;
 } editor_data;
 
 
-void init_editor(editor_data* editor)
-{
-  init_rects_buffer_object(&editor->bo, 1);
+editor_data editor;
 
-  editor->x = editor->y = 0;
+
+void init_editor()
+{
+  editor.x = editor.y = 0;
 
   float tw = tile_width;
   float th = tile_height;
 
-  editor->rect = (rect){-1.0f, -1.0f, -1.0f + tw, -1.0f + th, 0.6f, 0.6f, 0.6f, 0.2f};
-  move_rect(&editor->rect, editor->x * tw, editor->y * th);
-
-  rects_write_vertices_simple(&editor->rect, &editor->bo, 1);
-  rects_write_indices(&editor->bo, 1);
-  update_buffer_indices(&editor->bo);
+  editor.rect = (rect){-1.0f, -1.0f, -1.0f + tw, -1.0f + th, 0.6f, 0.6f, 0.6f, 0.2f};
+  move_rect(&editor.rect, editor.x * tw, editor.y * th);
 }
 
 
 void update_editor
-(editor_data* editor, const float t, const float dt, const input_data* in, map_data* md)
+(const float t, const float dt)
 {
-  (void)t; (void)dt; (void) md;
+  (void)t; (void)dt;
 
   float tw = tile_width;
   float th = tile_height;
 
-  int px = (- (in->h == IN_LEFT) + (in->h == IN_RIGHT));
-  int py = ((in->v == IN_UP) - (in->v == IN_DOWN));
+  int px = (- (in.h == IN_LEFT) + (in.h == IN_RIGHT));
+  int py = ((in.v == IN_UP) - (in.v == IN_DOWN));
 
-  editor->x += px;
-  editor->y += py;
-  move_rect(&editor->rect, px * tw, py * th);
+  editor.x += px;
+  editor.y += py;
+  move_rect(&editor.rect, px * tw, py * th);
 
-  sdtx_printf("editor pos %f %f", editor->rect.x1, editor->rect.y1);
+  sdtx_printf("editor pos %f %f", editor.rect.x1, editor.rect.y1);
 }
 
 
-void draw_editor(editor_data* editor)
+void draw_editor(const float frame_fraction)
 {
-  rects_write_vertices_simple(&editor->rect, &editor->bo, 1);
-  update_buffer_vertices(&editor->bo);
-
-  draw_buffer_object(&editor->bo);
+  add_rects(&rects_bo, &editor.rect, &editor.rect, 1, frame_fraction);
 }
 
 
-void next_spot_type(editor_data* editor, map_data* md)
+void next_spot_type()
 {
-  set_raw_spot(md, editor->x, editor->y, (get_raw_spot(md, editor->x, editor->y) + 1) % spot_type_n);
+  set_raw_spot(editor.x, editor.y, (get_raw_spot(editor.x, editor.y) + 1) % spot_type_n);
 }
 
 
-void clear_spot(editor_data* editor, map_data* md)
+void clear_spot()
 {
-  set_raw_spot(md, editor->x, editor->y, spot_empty);
+  set_raw_spot(editor.x, editor.y, spot_empty);
 }
