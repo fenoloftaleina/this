@@ -183,6 +183,10 @@ void update
   // execute_schedule(&player_data.twitch_schedule, t);
 
 
+  update_animation(&player_data.animation, t);
+  set_sprite(&player_data.rect, &texture, player_data.animation.cur_sprite_id);
+
+
 
   float eps = 0.0011f;
 

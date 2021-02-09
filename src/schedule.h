@@ -1,4 +1,4 @@
-static const int N = 100;
+static const int N = 10;
 
 typedef struct
 {

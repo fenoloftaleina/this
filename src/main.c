@@ -30,6 +30,7 @@ const float dt = 1.0f / 60.0f;
 
 #include "schedule.h"
 #include "tween.h"
+#include "animation.h"
 
 #include "texture.h"
 texture_data texture;
