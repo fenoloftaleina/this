@@ -113,6 +113,7 @@ void raw_spots_to_matrix()
         1.0f,
         1.0f,
         1.0f,
+        1.0f,
         1.0f
       };
       set_sprite(&map_data.rects[j], &texture, cur_type + SPRITE_OFFSET);

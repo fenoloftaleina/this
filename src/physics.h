@@ -308,8 +308,17 @@ void update_player_positions
   }
 
   if (in_data.h == IN_LEFT) {
+    if (player_animations_data.state != RUN_LEFT) {
+      player_animations_data.state = RUN_LEFT;
+      player_data.animation = player_animations_data.animations[RUN_LEFT];
+    }
+
     walk_state.v = h_clamp(walk_state.v - dt * walk_state.transpose, walk_state.clamp);
   } else if (in_data.h == IN_RIGHT) {
+    if (player_animations_data.state != RUN_RIGHT) {
+      player_animations_data.state = RUN_RIGHT;
+      player_data.animation = player_animations_data.animations[RUN_RIGHT];
+    }
     walk_state.v = h_clamp(walk_state.v + dt * walk_state.transpose, walk_state.clamp);
   } else {
     walk_state.v /= (1.0f + walk_state.damping * dt);

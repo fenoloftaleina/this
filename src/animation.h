@@ -46,3 +46,28 @@ void update_animation(animation_data_t* animation_data, const float t)
   animation_data->cur_sprite_id =
     animation_data->start_sprite_id + animation_data->keyframes.frame;
 }
+
+
+typedef enum {
+  RUN_RIGHT,
+  RUN_LEFT
+} animation_state_t;
+
+static const int ANIMATION_STATES_N = 2;
+
+typedef struct
+{
+  animation_data_t animations[ANIMATION_STATES_N];
+  animation_state_t state;
+} player_animations_data_t;
+
+player_animations_data_t player_animations_data;
+
+
+void init_player_animations()
+{
+  player_animations_data.state = RUN_RIGHT;
+
+  init_animation(&player_animations_data.animations[RUN_RIGHT], 0, 2);
+  init_animation(&player_animations_data.animations[RUN_LEFT], 5, 2);
+}

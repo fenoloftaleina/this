@@ -198,3 +198,11 @@ void set_empty_texture(buffer_object* bo)
         .size = sizeof(pixels)
       }});
 }
+
+
+void tick_buffer_object(buffer_object* bo)
+{
+  update_buffer_vertices(bo);
+  update_buffer_indices(bo);
+  draw_buffer_object(bo);
+}

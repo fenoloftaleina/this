@@ -15,7 +15,7 @@ void init_editor()
   float tw = tile_width;
   float th = tile_height;
 
-  editor_data.rect = (rect){-1.0f, -1.0f, -1.0f + tw, -1.0f + th, 0.6f, 0.6f, 0.6f, 0.2f};
+  editor_data.rect = (rect){-1.0f, -1.0f, -1.0f + tw, -1.0f + th, 0.6f, 0.6f, 0.6f, 0.2f, flat_z, -1.0f, -1.0f, -1.0f, -1.0f};
   move_rect(&editor_data.rect, editor_data.x * tw, editor_data.y * th);
 }
 

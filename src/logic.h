@@ -91,6 +91,7 @@ bool death_on(const int k)
     0.3f,
     0.3f,
     0.0f,
+    flat_z,
     -1.0f,
     -1.0f
   };
@@ -151,7 +152,7 @@ void evaluate(const float t)
 // }
 
 
-void update
+void update_logic
 (const float t, const float dt)
 {
   player_data.just_jumped = false;
@@ -163,9 +164,6 @@ void update
   }
 
   check_collisions();
-
-
-  update_death(t);
 
 
   int logic_x, logic_y;
@@ -181,10 +179,6 @@ void update
   //   add_schedule(&player_data.twitch_schedule, t + dt * 30.0f, twitch_back_fn);
   // }
   // execute_schedule(&player_data.twitch_schedule, t);
-
-
-  update_animation(&player_data.animation, t);
-  set_sprite(&player_data.rect, &texture, player_data.animation.cur_sprite_id);
 
 
 

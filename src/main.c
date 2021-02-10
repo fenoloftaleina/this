@@ -42,8 +42,8 @@ buffer_object other_bo;
 
 #include "map.h"
 #include "in_types.h"
-#include "player.h"
 #include "death.h"
+#include "player.h"
 #include "logic.h"
 #include "editor.h"
 #include "input.h"
@@ -92,19 +92,24 @@ void init(void)
   init_buffer_object(&other_bo, 40000, 60000);
 
 
+  const int PATHS_COUNT = 7;
+  const char* paths[PATHS_COUNT];
+  paths[0] = "right0.png";
+  paths[1] = "right1.png";
+  paths[2] = "mondrian.png";
+  paths[3] = "picasso.png";
+  paths[4] = "rothko.png";
+  paths[5] = "left0.png";
+  paths[6] = "left1.png";
+  init_texture(&texture, paths, PATHS_COUNT);
+
+
+  init_player_animations();
   init_player();
   init_map();
   init_death();
   init_editor();
 
-  const int PATHS_COUNT = 5;
-  const char* paths[PATHS_COUNT];
-  paths[0] = "zero.png";
-  paths[1] = "one.png";
-  paths[2] = "mondrian.png";
-  paths[3] = "picasso.png";
-  paths[4] = "rothko.png";
-  init_texture(&texture, paths, PATHS_COUNT);
 
   set_empty_texture(&rects_bo);
   set_texture(&sprites_bo, &texture);
@@ -151,7 +156,9 @@ void frame(void)
 
   while (accumulator >= dt) {
     if (!in_data.editor) {
-      update(t, dt);
+      update_logic(t, dt);
+      update_player(t);
+      update_death(t);
     } else {
       update_editor(t, dt);
       in_data.v = in_data.h = IN_NONE;
@@ -171,6 +178,7 @@ void frame(void)
 
   reset_buffer_counts(&rects_bo);
   reset_buffer_counts(&sprites_bo);
+  reset_buffer_counts(&other_bo);
 
 
   /* rect bg = { */
@@ -188,13 +196,9 @@ void frame(void)
     draw_editor(frame_fraction);
   }
 
-  update_buffer_vertices(&rects_bo);
-  update_buffer_indices(&rects_bo);
-  draw_buffer_object(&rects_bo);
-
-  update_buffer_vertices(&sprites_bo);
-  update_buffer_indices(&sprites_bo);
-  draw_buffer_object(&sprites_bo);
+  tick_buffer_object(&rects_bo);
+  tick_buffer_object(&sprites_bo);
+  tick_buffer_object(&other_bo);
 
 
   /* draw_ments(t); */

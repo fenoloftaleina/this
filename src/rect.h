@@ -1,6 +1,7 @@
 typedef struct rect {
   float x1, y1, x2, y2;
   float r, g, b, a;
+  float z;
   float u1, v1, u2, v2;
 } rect;
 
@@ -25,7 +26,7 @@ const int rects_write_vertices
   for (int i = 0; i < count; ++i) {
     bo->vertices[i * 4 * vertex_elements_count +  0] = blend(prev_rects[i].x1, rects[i].x1, f);
     bo->vertices[i * 4 * vertex_elements_count +  1] = blend(prev_rects[i].y2, rects[i].y2, f);
-    bo->vertices[i * 4 * vertex_elements_count +  2] = flat_z;
+    bo->vertices[i * 4 * vertex_elements_count +  2] = rects[i].z;
     bo->vertices[i * 4 * vertex_elements_count +  3] = blend(prev_rects[i].r, rects[i].r, f);
     bo->vertices[i * 4 * vertex_elements_count +  4] = blend(prev_rects[i].g, rects[i].g, f);
     bo->vertices[i * 4 * vertex_elements_count +  5] = blend(prev_rects[i].b, rects[i].b, f);
@@ -35,7 +36,7 @@ const int rects_write_vertices
 
     bo->vertices[i * 4 * vertex_elements_count +  9] = blend(prev_rects[i].x2, rects[i].x2, f);
     bo->vertices[i * 4 * vertex_elements_count + 10] = blend(prev_rects[i].y2, rects[i].y2, f);
-    bo->vertices[i * 4 * vertex_elements_count + 11] = flat_z;
+    bo->vertices[i * 4 * vertex_elements_count + 11] = rects[i].z;
     bo->vertices[i * 4 * vertex_elements_count + 12] = blend(prev_rects[i].r, rects[i].r, f);
     bo->vertices[i * 4 * vertex_elements_count + 13] = blend(prev_rects[i].g, rects[i].g, f);
     bo->vertices[i * 4 * vertex_elements_count + 14] = blend(prev_rects[i].b, rects[i].b, f);
@@ -45,7 +46,7 @@ const int rects_write_vertices
 
     bo->vertices[i * 4 * vertex_elements_count + 18] = blend(prev_rects[i].x2, rects[i].x2, f);
     bo->vertices[i * 4 * vertex_elements_count + 19] = blend(prev_rects[i].y1, rects[i].y1, f);
-    bo->vertices[i * 4 * vertex_elements_count + 20] = flat_z;
+    bo->vertices[i * 4 * vertex_elements_count + 20] = rects[i].z;
     bo->vertices[i * 4 * vertex_elements_count + 21] = blend(prev_rects[i].r, rects[i].r, f);
     bo->vertices[i * 4 * vertex_elements_count + 22] = blend(prev_rects[i].g, rects[i].g, f);
     bo->vertices[i * 4 * vertex_elements_count + 23] = blend(prev_rects[i].b, rects[i].b, f);
@@ -55,7 +56,7 @@ const int rects_write_vertices
 
     bo->vertices[i * 4 * vertex_elements_count + 27] = blend(prev_rects[i].x1, rects[i].x1, f);
     bo->vertices[i * 4 * vertex_elements_count + 28] = blend(prev_rects[i].y1, rects[i].y1, f);
-    bo->vertices[i * 4 * vertex_elements_count + 29] = flat_z;
+    bo->vertices[i * 4 * vertex_elements_count + 29] = rects[i].z;
     bo->vertices[i * 4 * vertex_elements_count + 30] = blend(prev_rects[i].r, rects[i].r, f);
     bo->vertices[i * 4 * vertex_elements_count + 31] = blend(prev_rects[i].g, rects[i].g, f);
     bo->vertices[i * 4 * vertex_elements_count + 32] = blend(prev_rects[i].b, rects[i].b, f);
@@ -144,7 +145,7 @@ void add_rects
   for (int i = 0; i < count; ++i) {
     bo->vertices[(vertices_start + i * 4) * vertex_elements_count +  0] = blend(prev_rects[i].x1, rects[i].x1, f);
     bo->vertices[(vertices_start + i * 4) * vertex_elements_count +  1] = blend(prev_rects[i].y2, rects[i].y2, f);
-    bo->vertices[(vertices_start + i * 4) * vertex_elements_count +  2] = flat_z;
+    bo->vertices[(vertices_start + i * 4) * vertex_elements_count +  2] = rects[i].z;
     bo->vertices[(vertices_start + i * 4) * vertex_elements_count +  3] = blend(prev_rects[i].r, rects[i].r, f);
     bo->vertices[(vertices_start + i * 4) * vertex_elements_count +  4] = blend(prev_rects[i].g, rects[i].g, f);
     bo->vertices[(vertices_start + i * 4) * vertex_elements_count +  5] = blend(prev_rects[i].b, rects[i].b, f);
@@ -154,7 +155,7 @@ void add_rects
 
     bo->vertices[(vertices_start + i * 4) * vertex_elements_count +  9] = blend(prev_rects[i].x2, rects[i].x2, f);
     bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 10] = blend(prev_rects[i].y2, rects[i].y2, f);
-    bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 11] = flat_z;
+    bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 11] = rects[i].z;
     bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 12] = blend(prev_rects[i].r, rects[i].r, f);
     bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 13] = blend(prev_rects[i].g, rects[i].g, f);
     bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 14] = blend(prev_rects[i].b, rects[i].b, f);
@@ -164,7 +165,7 @@ void add_rects
 
     bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 18] = blend(prev_rects[i].x2, rects[i].x2, f);
     bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 19] = blend(prev_rects[i].y1, rects[i].y1, f);
-    bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 20] = flat_z;
+    bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 20] = rects[i].z;
     bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 21] = blend(prev_rects[i].r, rects[i].r, f);
     bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 22] = blend(prev_rects[i].g, rects[i].g, f);
     bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 23] = blend(prev_rects[i].b, rects[i].b, f);
@@ -174,7 +175,7 @@ void add_rects
 
     bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 27] = blend(prev_rects[i].x1, rects[i].x1, f);
     bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 28] = blend(prev_rects[i].y1, rects[i].y1, f);
-    bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 29] = flat_z;
+    bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 29] = rects[i].z;
     bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 30] = blend(prev_rects[i].r, rects[i].r, f);
     bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 31] = blend(prev_rects[i].g, rects[i].g, f);
     bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 32] = blend(prev_rects[i].b, rects[i].b, f);
