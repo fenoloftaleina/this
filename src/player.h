@@ -24,7 +24,7 @@ void init_player()
   const float pw2 = player_data.width * 0.5f;
   const float ph2 = player_data.height * 0.5f;
 
-  player_data.rect = (rect){-pw2, -ph2, pw2, ph2, 1.0f, 1.0f, 1.0f, 1.0f, 3.0f, -1.0f, -1.0f, -1.0f, -1.0f};
+  player_data.rect = (rect){-pw2, -ph2, pw2, ph2, 1.0f, 1.0f, 1.0f, 1.0f, flat_z - 0.5f, -1.0f, -1.0f, -1.0f, -1.0f};
   move_rect(&player_data.rect, 900.0f, 1500.0f);
   player_data.prev_rect = player_data.rect;
 

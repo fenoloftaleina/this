@@ -31,7 +31,7 @@ void start_death(const float t)
   death_data.tween.start_t = t;
   death_data.tween.end_t = t + death_length;
   death_data.tween.start_v = 0.0f;
-  death_data.tween.end_v = 1.0f;
+  death_data.tween.end_v = 0.5f;
 }
 
 

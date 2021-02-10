@@ -196,8 +196,8 @@ void frame(void)
     draw_editor(frame_fraction);
   }
 
-  tick_buffer_object(&rects_bo);
   tick_buffer_object(&sprites_bo);
+  tick_buffer_object(&rects_bo);
   tick_buffer_object(&other_bo);
 
 
