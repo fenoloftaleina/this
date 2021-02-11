@@ -83,7 +83,7 @@ void init(void)
   sdtx_color3f(1.0f, 0.0f, 0.0f);
 
   pass_action = (sg_pass_action) {
-    .colors[0] = { .action=SG_ACTION_CLEAR, .val={0.5f, 0.5f, 0.5f, 1.0f } }
+    .colors[0] = { .action=SG_ACTION_CLEAR, .val={0.8f, 0.8f, 0.8f, 1.0f } }
   };
 
 
@@ -92,15 +92,17 @@ void init(void)
   init_buffer_object(&other_bo, 40000, 60000);
 
 
-  const int PATHS_COUNT = 7;
+  const int PATHS_COUNT = 9;
   const char* paths[PATHS_COUNT];
-  paths[0] = "right0.png";
-  paths[1] = "right1.png";
-  paths[2] = "mondrian.png";
-  paths[3] = "picasso.png";
-  paths[4] = "rothko.png";
-  paths[5] = "left0.png";
-  paths[6] = "left1.png";
+  paths[0] = "mondrian.png";
+  paths[1] = "picasso.png";
+  paths[2] = "rothko.png";
+  paths[3] = "mondrian.png";
+  paths[4] = "picasso.png";
+  paths[5] = "right0.png";
+  paths[6] = "right1.png";
+  paths[7] = "left0.png";
+  paths[8] = "left1.png";
   init_texture(&texture, paths, PATHS_COUNT);
 
 

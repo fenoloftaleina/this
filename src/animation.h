@@ -68,6 +68,6 @@ void init_player_animations()
 {
   player_animations_data.state = RUN_RIGHT;
 
-  init_animation(&player_animations_data.animations[RUN_RIGHT], 0, 2);
-  init_animation(&player_animations_data.animations[RUN_LEFT], 5, 2);
+  init_animation(&player_animations_data.animations[RUN_RIGHT], 5, 2);
+  init_animation(&player_animations_data.animations[RUN_LEFT], 7, 2);
 }

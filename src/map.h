@@ -11,14 +11,16 @@ typedef enum spot_status
 typedef enum spot_type
 {
   spot_empty = -1,
-  spot_red,
-  spot_green,
-  spot_blue
+  spot_one,
+  spot_two,
+  spot_three,
+  spot_four,
+  spot_five
 } spot_type;
 
-const int SPRITE_OFFSET = 2;
+const int SPRITE_OFFSET = 0;
 
-const int spot_type_n = 3;
+const int spot_type_n = 5;
 
 
 typedef struct
