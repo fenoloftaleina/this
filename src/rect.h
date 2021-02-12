@@ -14,7 +14,7 @@ const float blend(const float a, const float b, const float f)
 
 void init_rects_buffer_object(buffer_object* bo, const int count)
 {
-  init_buffer_object(bo, count * 4, count * 6);
+  init_buffer_object(bo, count * 4, count * 6, &main_shader);
 }
 
 
