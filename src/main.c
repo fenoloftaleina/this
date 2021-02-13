@@ -1,20 +1,21 @@
 #include "stdio.h"
 #include "string.h"
 
+#include "cr.h"
+
+static unsigned int CR_STATE version = 1;
+
+#define SOKOL_DLL
 #include "sokol_app.h"
 #include "sokol_gfx.h"
-#include "sokol_glue.h"
 #include "sokol_time.h"
-#define SOKOL_DEBUGTEXT_IMPL
-#include "sokol_debugtext.h"
+#include "sokol_glue.h"
 #define HANDMADE_MATH_IMPLEMENTATION
 #include "HandmadeMath.h"
-#define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
-#include "cimgui/cimgui.h"
-#define SOKOL_IMGUI_IMPL
-#include "sokol_imgui.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb/stb_image.h"
+#define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
+#include "cimgui/cimgui.h"
 
 #include "main.glsl.h"
 
@@ -25,21 +26,21 @@ const float dt = 1.0f / 60.0f;
 
 
 #include "texture.h"
-texture_data texture;
+texture_data CR_STATE texture;
 
 
-sg_shader main_shader;
-sg_shader uv_frag_shader;
+sg_shader CR_STATE main_shader;
+sg_shader CR_STATE uv_frag_shader;
 
 
 #include "buffer_object.h"
-buffer_object rects_bo;
-buffer_object sprites_bo;
-buffer_object other_bo;
+buffer_object CR_STATE rects_bo;
+buffer_object CR_STATE sprites_bo;
+buffer_object CR_STATE other_bo;
 #include "rect.h"
 
 
-static sg_pass_action pass_action;
+static sg_pass_action CR_STATE pass_action;
 
 
 void init(void)
@@ -94,22 +95,9 @@ void init(void)
 }
 
 
-static void input(const sapp_event* ev)
-{
-  if (ev->type == SAPP_EVENTTYPE_KEY_DOWN) {
-    switch (ev->key_code) {
-      case SAPP_KEYCODE_ESCAPE:
-      case SAPP_KEYCODE_Q:
-        sapp_quit();
-        break;
-    }
-  }
-}
-
-
-static uint64_t last_time = 0;
-static float t = 0.0f, frame_time, accumulator = 0.0f;
-static float frame_fraction;
+static uint64_t CR_STATE last_time = 0;
+static float CR_STATE t = 0.0f, frame_time, accumulator = 0.0f;
+static float CR_STATE frame_fraction;
 
 void frame(void)
 {
@@ -160,24 +148,42 @@ void frame(void)
 }
 
 
-void cleanup(void) {
-  sg_shutdown();
+CR_EXPORT int cr_main(struct cr_plugin *ctx, enum cr_op operation)
+{
+  if (operation == CR_LOAD) {
+    init();
+  }
+
+  if (operation != CR_STEP) {
+    sg_shutdown();
+    return 0;
+  }
+
+  // crash protection may cause the version to decrement. So we can test current version against one
+  // tracked between instances with CR_STATE to signal that we're not running the most recent instance.
+  if (ctx->version < version) {
+    // a failure code is acessible in the `failure` variable from the `cr_plugin` context.
+    // on windows this is the structured exception error code, for more info:
+    //      https://msdn.microsoft.com/en-us/library/windows/desktop/ms679356(v=vs.85).aspx
+    fprintf(stdout, "A rollback happened due to failure: %x!\n", ctx->failure);
+  }
+  version = ctx->version;
+
+  // Not this does not carry state between instances (no CR_STATE), this means each time we load an instance
+  // this value will be reset to its initial state (true), and then we can print the loaded instance version
+  // one time only by instance version.
+  static bool print_version = true;
+  if (print_version) {
+    fprintf(stdout, "loaded version: %d\n", ctx->version);
+
+    // disable further printing for this instance only
+    print_version = false;
+  }
+  frame();
+  //std::this_thread::sleep_for(std::chrono::milliseconds(500));
+  return 0;
 }
 
-
-sapp_desc sokol_main(int argc, char* argv[]) {
-  (void)argc; (void)argv;
-  return (sapp_desc){
-    .init_cb = init,
-    .frame_cb = frame,
-    .cleanup_cb = cleanup,
-    .event_cb = input,
-    /* .width = 800, */
-    /* .height = 600, */
-    .fullscreen = true,
-    .high_dpi = true,
-    .alpha = true,
-    .gl_force_gles2 = false,
-    .window_title = "Old",
-  };
-}
+/* sapp_desc sokol_main(int argc, char* argv[]) { */
+/*   printf("HEREEEEEEEEEEEEEEEE!!!\n\n\n"); */
+/* } */

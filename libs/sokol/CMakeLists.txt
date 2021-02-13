@@ -60,9 +60,9 @@ fips_end_lib()
 
 # the sokol implementations library as DLL
 # FIXME: implement this also for other platforms
-if (FIPS_WINDOWS)
+# if (FIPS_WINDOWS)
 fips_begin_sharedlib(sokol-dll)
     fips_vs_warning_level(4)
     fips_files(sokol-dll.c)
 fips_end_sharedlib()
-endif()
+# endif()
