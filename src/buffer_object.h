@@ -46,7 +46,7 @@ void inc_buffer_counts
 
 
 void init_buffer_object
-(buffer_object* bo, const int vertices_count, const int indices_count)
+(buffer_object* bo, const int vertices_count, const int indices_count, sg_shader* shd)
 {
   reset_buffer_counts(bo);
 
@@ -61,12 +61,10 @@ void init_buffer_object
       .size = indices_count * index_size
       });
 
-  sg_shader shd = sg_make_shader(main_shader_desc());
-
   bo->bind.fs_images[SLOT_tex] = sg_alloc_image();
 
   bo->pip = sg_make_pipeline(&(sg_pipeline_desc){
-      .shader = shd,
+      .shader = *shd,
       .index_type = SG_INDEXTYPE_UINT16,
       .depth_stencil = {
         .depth_compare_func = SG_COMPAREFUNC_LESS,

@@ -34,6 +34,12 @@ const float dt = 1.0f / 60.0f;
 
 #include "texture.h"
 texture_data texture;
+
+
+sg_shader main_shader;
+sg_shader uv_frag_shader;
+
+
 #include "buffer_object.h"
 buffer_object rects_bo;
 buffer_object sprites_bo;
@@ -87,9 +93,12 @@ void init(void)
   };
 
 
-  init_buffer_object(&rects_bo, 40000, 60000);
-  init_buffer_object(&sprites_bo, 40000, 60000);
-  init_buffer_object(&other_bo, 40000, 60000);
+  main_shader = sg_make_shader(main_shader_desc());
+  uv_frag_shader = sg_make_shader(uv_frag_shader_desc());
+
+  init_buffer_object(&rects_bo, 40000, 60000, &main_shader);
+  init_buffer_object(&sprites_bo, 40000, 60000, &main_shader);
+  init_buffer_object(&other_bo, 40000, 60000, &uv_frag_shader);
 
 
   const int PATHS_COUNT = 9;
@@ -197,6 +206,13 @@ void frame(void)
   if (in_data.editor) {
     draw_editor(frame_fraction);
   }
+
+
+  rect r = (rect){2300.0f, 1100.0f, 2800.0f, 1600.0f, 0.5f, 0.5f, 0.5f, 1.0f, flat_z + 0.5f, 0.0f, 0.0f, 1.0f, 1.0f};
+  add_rects(&other_bo, &r, &r, 1, frame_fraction);
+  /* other_bo.indices_count = 3; */
+
+
 
   tick_buffer_object(&sprites_bo);
   tick_buffer_object(&rects_bo);
