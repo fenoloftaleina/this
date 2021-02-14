@@ -8,7 +8,7 @@
 #define SOKOL_DEBUGTEXT_IMPL
 #include "sokol_debugtext.h"
 #define HANDMADE_MATH_IMPLEMENTATION
-#include "HandmadeMath.h"
+#include "external/HandmadeMath.h"
 #define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
 #include "cimgui/cimgui.h"
 #define SOKOL_IMGUI_IMPL

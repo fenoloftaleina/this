@@ -16,7 +16,7 @@ typedef struct
 
 
 // #define STB_IMAGE_WRITE_IMPLEMENTATION
-// #include "stb_image_write.h"
+// #include "external/stb_image_write.h"
 
 
 void init_texture(texture_data* texture, const char** paths, const int paths_n)
