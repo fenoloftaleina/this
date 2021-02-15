@@ -11,7 +11,7 @@ typedef struct
 } tween_data_t;
 
 
-float lerp
+float lerp_tween
 (const float t, const float start_t, const float end_t, const float start_v, const float end_v)
 {
   float a = (t - start_t) / (end_t - start_t);

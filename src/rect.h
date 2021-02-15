@@ -6,7 +6,7 @@ typedef struct rect {
 } rect;
 
 
-const float blend(const float a, const float b, const float f)
+const float lerp(const float a, const float b, const float f)
 {
   return (1.0f - f) * a + f * b;
 }
@@ -24,45 +24,45 @@ const int rects_write_vertices
   float rounded_f = floor(f + 0.5f);
 
   for (int i = 0; i < count; ++i) {
-    bo->vertices[i * 4 * vertex_elements_count +  0] = blend(prev_rects[i].x1, rects[i].x1, f);
-    bo->vertices[i * 4 * vertex_elements_count +  1] = blend(prev_rects[i].y2, rects[i].y2, f);
+    bo->vertices[i * 4 * vertex_elements_count +  0] = lerp(prev_rects[i].x1, rects[i].x1, f);
+    bo->vertices[i * 4 * vertex_elements_count +  1] = lerp(prev_rects[i].y2, rects[i].y2, f);
     bo->vertices[i * 4 * vertex_elements_count +  2] = rects[i].z;
-    bo->vertices[i * 4 * vertex_elements_count +  3] = blend(prev_rects[i].r, rects[i].r, f);
-    bo->vertices[i * 4 * vertex_elements_count +  4] = blend(prev_rects[i].g, rects[i].g, f);
-    bo->vertices[i * 4 * vertex_elements_count +  5] = blend(prev_rects[i].b, rects[i].b, f);
-    bo->vertices[i * 4 * vertex_elements_count +  6] = blend(prev_rects[i].a, rects[i].a, f);
-    bo->vertices[i * 4 * vertex_elements_count +  7] = blend(prev_rects[i].u1, rects[i].u1, rounded_f);
-    bo->vertices[i * 4 * vertex_elements_count +  8] = blend(prev_rects[i].v2, rects[i].v2, rounded_f);
+    bo->vertices[i * 4 * vertex_elements_count +  3] = lerp(prev_rects[i].r, rects[i].r, f);
+    bo->vertices[i * 4 * vertex_elements_count +  4] = lerp(prev_rects[i].g, rects[i].g, f);
+    bo->vertices[i * 4 * vertex_elements_count +  5] = lerp(prev_rects[i].b, rects[i].b, f);
+    bo->vertices[i * 4 * vertex_elements_count +  6] = lerp(prev_rects[i].a, rects[i].a, f);
+    bo->vertices[i * 4 * vertex_elements_count +  7] = lerp(prev_rects[i].u1, rects[i].u1, rounded_f);
+    bo->vertices[i * 4 * vertex_elements_count +  8] = lerp(prev_rects[i].v2, rects[i].v2, rounded_f);
 
-    bo->vertices[i * 4 * vertex_elements_count +  9] = blend(prev_rects[i].x2, rects[i].x2, f);
-    bo->vertices[i * 4 * vertex_elements_count + 10] = blend(prev_rects[i].y2, rects[i].y2, f);
+    bo->vertices[i * 4 * vertex_elements_count +  9] = lerp(prev_rects[i].x2, rects[i].x2, f);
+    bo->vertices[i * 4 * vertex_elements_count + 10] = lerp(prev_rects[i].y2, rects[i].y2, f);
     bo->vertices[i * 4 * vertex_elements_count + 11] = rects[i].z;
-    bo->vertices[i * 4 * vertex_elements_count + 12] = blend(prev_rects[i].r, rects[i].r, f);
-    bo->vertices[i * 4 * vertex_elements_count + 13] = blend(prev_rects[i].g, rects[i].g, f);
-    bo->vertices[i * 4 * vertex_elements_count + 14] = blend(prev_rects[i].b, rects[i].b, f);
-    bo->vertices[i * 4 * vertex_elements_count + 15] = blend(prev_rects[i].a, rects[i].a, f);
-    bo->vertices[i * 4 * vertex_elements_count + 16] = blend(prev_rects[i].u2, rects[i].u2, rounded_f);
-    bo->vertices[i * 4 * vertex_elements_count + 17] = blend(prev_rects[i].v2, rects[i].v2, rounded_f);
+    bo->vertices[i * 4 * vertex_elements_count + 12] = lerp(prev_rects[i].r, rects[i].r, f);
+    bo->vertices[i * 4 * vertex_elements_count + 13] = lerp(prev_rects[i].g, rects[i].g, f);
+    bo->vertices[i * 4 * vertex_elements_count + 14] = lerp(prev_rects[i].b, rects[i].b, f);
+    bo->vertices[i * 4 * vertex_elements_count + 15] = lerp(prev_rects[i].a, rects[i].a, f);
+    bo->vertices[i * 4 * vertex_elements_count + 16] = lerp(prev_rects[i].u2, rects[i].u2, rounded_f);
+    bo->vertices[i * 4 * vertex_elements_count + 17] = lerp(prev_rects[i].v2, rects[i].v2, rounded_f);
 
-    bo->vertices[i * 4 * vertex_elements_count + 18] = blend(prev_rects[i].x2, rects[i].x2, f);
-    bo->vertices[i * 4 * vertex_elements_count + 19] = blend(prev_rects[i].y1, rects[i].y1, f);
+    bo->vertices[i * 4 * vertex_elements_count + 18] = lerp(prev_rects[i].x2, rects[i].x2, f);
+    bo->vertices[i * 4 * vertex_elements_count + 19] = lerp(prev_rects[i].y1, rects[i].y1, f);
     bo->vertices[i * 4 * vertex_elements_count + 20] = rects[i].z;
-    bo->vertices[i * 4 * vertex_elements_count + 21] = blend(prev_rects[i].r, rects[i].r, f);
-    bo->vertices[i * 4 * vertex_elements_count + 22] = blend(prev_rects[i].g, rects[i].g, f);
-    bo->vertices[i * 4 * vertex_elements_count + 23] = blend(prev_rects[i].b, rects[i].b, f);
-    bo->vertices[i * 4 * vertex_elements_count + 24] = blend(prev_rects[i].a, rects[i].a, f);
-    bo->vertices[i * 4 * vertex_elements_count + 25] = blend(prev_rects[i].u2, rects[i].u2, rounded_f);
-    bo->vertices[i * 4 * vertex_elements_count + 26] = blend(prev_rects[i].v1, rects[i].v1, rounded_f);
+    bo->vertices[i * 4 * vertex_elements_count + 21] = lerp(prev_rects[i].r, rects[i].r, f);
+    bo->vertices[i * 4 * vertex_elements_count + 22] = lerp(prev_rects[i].g, rects[i].g, f);
+    bo->vertices[i * 4 * vertex_elements_count + 23] = lerp(prev_rects[i].b, rects[i].b, f);
+    bo->vertices[i * 4 * vertex_elements_count + 24] = lerp(prev_rects[i].a, rects[i].a, f);
+    bo->vertices[i * 4 * vertex_elements_count + 25] = lerp(prev_rects[i].u2, rects[i].u2, rounded_f);
+    bo->vertices[i * 4 * vertex_elements_count + 26] = lerp(prev_rects[i].v1, rects[i].v1, rounded_f);
 
-    bo->vertices[i * 4 * vertex_elements_count + 27] = blend(prev_rects[i].x1, rects[i].x1, f);
-    bo->vertices[i * 4 * vertex_elements_count + 28] = blend(prev_rects[i].y1, rects[i].y1, f);
+    bo->vertices[i * 4 * vertex_elements_count + 27] = lerp(prev_rects[i].x1, rects[i].x1, f);
+    bo->vertices[i * 4 * vertex_elements_count + 28] = lerp(prev_rects[i].y1, rects[i].y1, f);
     bo->vertices[i * 4 * vertex_elements_count + 29] = rects[i].z;
-    bo->vertices[i * 4 * vertex_elements_count + 30] = blend(prev_rects[i].r, rects[i].r, f);
-    bo->vertices[i * 4 * vertex_elements_count + 31] = blend(prev_rects[i].g, rects[i].g, f);
-    bo->vertices[i * 4 * vertex_elements_count + 32] = blend(prev_rects[i].b, rects[i].b, f);
-    bo->vertices[i * 4 * vertex_elements_count + 33] = blend(prev_rects[i].a, rects[i].a, f);
-    bo->vertices[i * 4 * vertex_elements_count + 34] = blend(prev_rects[i].u1, rects[i].u1, rounded_f);
-    bo->vertices[i * 4 * vertex_elements_count + 35] = blend(prev_rects[i].v1, rects[i].v1, rounded_f);
+    bo->vertices[i * 4 * vertex_elements_count + 30] = lerp(prev_rects[i].r, rects[i].r, f);
+    bo->vertices[i * 4 * vertex_elements_count + 31] = lerp(prev_rects[i].g, rects[i].g, f);
+    bo->vertices[i * 4 * vertex_elements_count + 32] = lerp(prev_rects[i].b, rects[i].b, f);
+    bo->vertices[i * 4 * vertex_elements_count + 33] = lerp(prev_rects[i].a, rects[i].a, f);
+    bo->vertices[i * 4 * vertex_elements_count + 34] = lerp(prev_rects[i].u1, rects[i].u1, rounded_f);
+    bo->vertices[i * 4 * vertex_elements_count + 35] = lerp(prev_rects[i].v1, rects[i].v1, rounded_f);
 
     prev_rects[i] = rects[i];
   }
@@ -143,45 +143,45 @@ void add_rects
   float rounded_f = floor(f + 0.5f);
 
   for (int i = 0; i < count; ++i) {
-    bo->vertices[(vertices_start + i * 4) * vertex_elements_count +  0] = blend(prev_rects[i].x1, rects[i].x1, f);
-    bo->vertices[(vertices_start + i * 4) * vertex_elements_count +  1] = blend(prev_rects[i].y2, rects[i].y2, f);
+    bo->vertices[(vertices_start + i * 4) * vertex_elements_count +  0] = lerp(prev_rects[i].x1, rects[i].x1, f);
+    bo->vertices[(vertices_start + i * 4) * vertex_elements_count +  1] = lerp(prev_rects[i].y2, rects[i].y2, f);
     bo->vertices[(vertices_start + i * 4) * vertex_elements_count +  2] = rects[i].z;
-    bo->vertices[(vertices_start + i * 4) * vertex_elements_count +  3] = blend(prev_rects[i].r, rects[i].r, f);
-    bo->vertices[(vertices_start + i * 4) * vertex_elements_count +  4] = blend(prev_rects[i].g, rects[i].g, f);
-    bo->vertices[(vertices_start + i * 4) * vertex_elements_count +  5] = blend(prev_rects[i].b, rects[i].b, f);
-    bo->vertices[(vertices_start + i * 4) * vertex_elements_count +  6] = blend(prev_rects[i].a, rects[i].a, f);
-    bo->vertices[(vertices_start + i * 4) * vertex_elements_count +  7] = blend(prev_rects[i].u1, rects[i].u1, rounded_f);
-    bo->vertices[(vertices_start + i * 4) * vertex_elements_count +  8] = blend(prev_rects[i].v2, rects[i].v2, rounded_f);
+    bo->vertices[(vertices_start + i * 4) * vertex_elements_count +  3] = lerp(prev_rects[i].r, rects[i].r, f);
+    bo->vertices[(vertices_start + i * 4) * vertex_elements_count +  4] = lerp(prev_rects[i].g, rects[i].g, f);
+    bo->vertices[(vertices_start + i * 4) * vertex_elements_count +  5] = lerp(prev_rects[i].b, rects[i].b, f);
+    bo->vertices[(vertices_start + i * 4) * vertex_elements_count +  6] = lerp(prev_rects[i].a, rects[i].a, f);
+    bo->vertices[(vertices_start + i * 4) * vertex_elements_count +  7] = lerp(prev_rects[i].u1, rects[i].u1, rounded_f);
+    bo->vertices[(vertices_start + i * 4) * vertex_elements_count +  8] = lerp(prev_rects[i].v2, rects[i].v2, rounded_f);
 
-    bo->vertices[(vertices_start + i * 4) * vertex_elements_count +  9] = blend(prev_rects[i].x2, rects[i].x2, f);
-    bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 10] = blend(prev_rects[i].y2, rects[i].y2, f);
+    bo->vertices[(vertices_start + i * 4) * vertex_elements_count +  9] = lerp(prev_rects[i].x2, rects[i].x2, f);
+    bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 10] = lerp(prev_rects[i].y2, rects[i].y2, f);
     bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 11] = rects[i].z;
-    bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 12] = blend(prev_rects[i].r, rects[i].r, f);
-    bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 13] = blend(prev_rects[i].g, rects[i].g, f);
-    bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 14] = blend(prev_rects[i].b, rects[i].b, f);
-    bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 15] = blend(prev_rects[i].a, rects[i].a, f);
-    bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 16] = blend(prev_rects[i].u2, rects[i].u2, rounded_f);
-    bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 17] = blend(prev_rects[i].v2, rects[i].v2, rounded_f);
+    bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 12] = lerp(prev_rects[i].r, rects[i].r, f);
+    bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 13] = lerp(prev_rects[i].g, rects[i].g, f);
+    bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 14] = lerp(prev_rects[i].b, rects[i].b, f);
+    bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 15] = lerp(prev_rects[i].a, rects[i].a, f);
+    bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 16] = lerp(prev_rects[i].u2, rects[i].u2, rounded_f);
+    bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 17] = lerp(prev_rects[i].v2, rects[i].v2, rounded_f);
 
-    bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 18] = blend(prev_rects[i].x2, rects[i].x2, f);
-    bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 19] = blend(prev_rects[i].y1, rects[i].y1, f);
+    bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 18] = lerp(prev_rects[i].x2, rects[i].x2, f);
+    bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 19] = lerp(prev_rects[i].y1, rects[i].y1, f);
     bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 20] = rects[i].z;
-    bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 21] = blend(prev_rects[i].r, rects[i].r, f);
-    bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 22] = blend(prev_rects[i].g, rects[i].g, f);
-    bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 23] = blend(prev_rects[i].b, rects[i].b, f);
-    bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 24] = blend(prev_rects[i].a, rects[i].a, f);
-    bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 25] = blend(prev_rects[i].u2, rects[i].u2, rounded_f);
-    bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 26] = blend(prev_rects[i].v1, rects[i].v1, rounded_f);
+    bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 21] = lerp(prev_rects[i].r, rects[i].r, f);
+    bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 22] = lerp(prev_rects[i].g, rects[i].g, f);
+    bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 23] = lerp(prev_rects[i].b, rects[i].b, f);
+    bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 24] = lerp(prev_rects[i].a, rects[i].a, f);
+    bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 25] = lerp(prev_rects[i].u2, rects[i].u2, rounded_f);
+    bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 26] = lerp(prev_rects[i].v1, rects[i].v1, rounded_f);
 
-    bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 27] = blend(prev_rects[i].x1, rects[i].x1, f);
-    bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 28] = blend(prev_rects[i].y1, rects[i].y1, f);
+    bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 27] = lerp(prev_rects[i].x1, rects[i].x1, f);
+    bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 28] = lerp(prev_rects[i].y1, rects[i].y1, f);
     bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 29] = rects[i].z;
-    bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 30] = blend(prev_rects[i].r, rects[i].r, f);
-    bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 31] = blend(prev_rects[i].g, rects[i].g, f);
-    bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 32] = blend(prev_rects[i].b, rects[i].b, f);
-    bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 33] = blend(prev_rects[i].a, rects[i].a, f);
-    bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 34] = blend(prev_rects[i].u1, rects[i].u1, rounded_f);
-    bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 35] = blend(prev_rects[i].v1, rects[i].v1, rounded_f);
+    bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 30] = lerp(prev_rects[i].r, rects[i].r, f);
+    bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 31] = lerp(prev_rects[i].g, rects[i].g, f);
+    bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 32] = lerp(prev_rects[i].b, rects[i].b, f);
+    bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 33] = lerp(prev_rects[i].a, rects[i].a, f);
+    bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 34] = lerp(prev_rects[i].u1, rects[i].u1, rounded_f);
+    bo->vertices[(vertices_start + i * 4) * vertex_elements_count + 35] = lerp(prev_rects[i].v1, rects[i].v1, rounded_f);
 
 
     bo->indices[indices_start + i * 6 + 0] = vertices_start + i * 4 + 0;

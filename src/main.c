@@ -9,6 +9,9 @@
 #include "sokol_debugtext.h"
 #define HANDMADE_MATH_IMPLEMENTATION
 #include "external/HandmadeMath.h"
+#define PAR_STREAMLINES_IMPLEMENTATION
+#include "external/par_streamlines.h"
+typedef parsl_position pos_t;
 #define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
 #include "cimgui/cimgui.h"
 #define SOKOL_IMGUI_IMPL
@@ -44,7 +47,9 @@ sg_shader uv_frag_shader;
 buffer_object rects_bo;
 buffer_object sprites_bo;
 buffer_object other_bo;
+buffer_object lines_bo;
 #include "rect.h"
+#include "lines.h"
 
 #include "map.h"
 #include "in_types.h"
@@ -89,7 +94,7 @@ void init(void)
   sdtx_color3f(1.0f, 0.0f, 0.0f);
 
   pass_action = (sg_pass_action) {
-    .colors[0] = { .action=SG_ACTION_CLEAR, .val={0.8f, 0.8f, 0.8f, 1.0f } }
+    .colors[0] = { .action=SG_ACTION_CLEAR, .val={0.9f, 0.9f, 0.9f, 1.0f } }
   };
 
 
@@ -99,6 +104,7 @@ void init(void)
   init_buffer_object(&rects_bo, 40000, 60000, &main_shader);
   init_buffer_object(&sprites_bo, 40000, 60000, &main_shader);
   init_buffer_object(&other_bo, 40000, 60000, &uv_frag_shader);
+  init_buffer_object(&lines_bo, 40000, 60000, &main_shader);
 
 
   const int PATHS_COUNT = 9;
@@ -121,10 +127,13 @@ void init(void)
   init_death();
   init_editor();
 
+  init_lines();
+
 
   set_empty_texture(&rects_bo);
   set_texture(&sprites_bo, &texture);
   set_empty_texture(&other_bo);
+  set_empty_texture(&lines_bo);
 
   /* init_generic(&generic, 5000000 * vertex_elements_count, 7000000); */
   /* set_empty_texture(&generic.bo); */
@@ -190,6 +199,7 @@ void frame(void)
   reset_buffer_counts(&rects_bo);
   reset_buffer_counts(&sprites_bo);
   reset_buffer_counts(&other_bo);
+  reset_buffer_counts(&lines_bo);
 
 
   /* rect bg = { */
@@ -208,15 +218,21 @@ void frame(void)
   }
 
 
-  rect r = (rect){2300.0f, 1100.0f, 2800.0f, 1600.0f, 0.5f, 0.5f, 0.5f, 1.0f, flat_z + 0.5f, 0.0f, 0.0f, 1.0f, 1.0f};
-  add_rects(&other_bo, &r, &r, 1, frame_fraction);
-  /* other_bo.indices_count = 3; */
+  // uv rect outline via shader
+  /* rect r = (rect){2300.0f, 1100.0f, 2800.0f, 1600.0f, 0.5f, 0.5f, 0.5f, 1.0f, flat_z + 0.5f, 0.0f, 0.0f, 1.0f, 1.0f}; */
+  /* add_rects(&other_bo, &r, &r, 1, frame_fraction); */
+
+
+  lines_data.thickness = 10;
+  pos_t positions[] = { {100, 100}, {300, 200}, {500, 100} };
+  add_lines(&lines_bo, positions, positions, 3, &(col_t){0.1f, 0.1f, 0.1f, 1.0f}, frame_fraction);
 
 
 
   tick_buffer_object(&sprites_bo);
   tick_buffer_object(&rects_bo);
   tick_buffer_object(&other_bo);
+  tick_buffer_object(&lines_bo);
 
 
   /* draw_ments(t); */
@@ -256,6 +272,7 @@ void cleanup(void) {
 #ifdef GUI
   simgui_shutdown();
 #endif
+  /* parsl_destroy_context(lines_data.ctx); */
   sg_shutdown();
 }
 
