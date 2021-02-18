@@ -59,13 +59,10 @@ fips_begin_lib(sokol-memtrack)
 fips_end_lib()
 
 # the sokol implementations library as DLL
-if ((FIPS_WINDOWS OR FIPS_MACOS OR FIPS_LINUX) AND NOT FIPS_UWP)
+# FIXME: implement this also for other platforms
+if (FIPS_WINDOWS)
 fips_begin_sharedlib(sokol-dll)
     fips_vs_warning_level(4)
     fips_files(sokol-dll.c)
-    sokol_system_deps()
 fips_end_sharedlib()
-if (FIPS_OSX)
-    target_compile_options("sokol-dll" PRIVATE -x objective-c)
-endif()
 endif()

@@ -10,7 +10,7 @@ typedef struct
   animation_data_t animation;
 } player_data_t;
 
-player_data_t CR_STATE player_data;
+player_data_t player_data;
 
 
 #include "physics.h"

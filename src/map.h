@@ -45,7 +45,7 @@ typedef struct
 } map_data_t;
 
 
-map_data_t CR_STATE map_data = (map_data_t){
+map_data_t map_data = (map_data_t){
   .matrix_w = 20,
   .matrix_h = 12,
   .matrix_size = 20 * 12

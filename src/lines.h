@@ -4,7 +4,7 @@ typedef struct
   int thickness;
 } lines_data_t;
 
-lines_data_t CR_STATE lines_data;
+lines_data_t lines_data;
 
 
 typedef struct

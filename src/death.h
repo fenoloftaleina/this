@@ -12,7 +12,7 @@ typedef struct
 } death_data_t;
 
 
-death_data_t CR_STATE death_data;
+death_data_t death_data;
 
 
 void stop_death()

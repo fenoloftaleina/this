@@ -1,7 +1,4 @@
-#include "input_raw.h"
-
-
-static char CR_STATE cur_map_name[255];
+static char cur_map_name[255];
 
 void run_map(const char* map_name)
 {
@@ -24,8 +21,7 @@ void save_current_map()
 }
 
 
-// void handle_input(const sapp_event* ev)
-void handle_input_raw(input_raw_t* ev)
+void handle_input(const sapp_event* ev)
 {
 #ifdef GUI
   simgui_handle_event(ev);
@@ -33,6 +29,11 @@ void handle_input_raw(input_raw_t* ev)
 
   if (ev->type == SAPP_EVENTTYPE_KEY_DOWN) {
     switch (ev->key_code) {
+      case SAPP_KEYCODE_ESCAPE:
+      case SAPP_KEYCODE_Q:
+        sapp_quit();
+        break;
+
       case SAPP_KEYCODE_W:
       case SAPP_KEYCODE_UP:
         in_data.v = IN_UP;

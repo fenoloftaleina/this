@@ -35,7 +35,7 @@ typedef struct
 static float e = 0.1f;
 
 
-static jump_data CR_STATE jump_state = (jump_data){
+static jump_data jump_state = (jump_data){
   .gravity = -10000.0f,
   .init_v = 1600.0f,
   .init_double_v = 1.655f * 1600.0f,
@@ -51,7 +51,7 @@ static jump_data CR_STATE jump_state = (jump_data){
   .possible_double_jump = false
 };
 
-static walk_data CR_STATE walk_state = (walk_data){
+static walk_data walk_state = (walk_data){
   .default_clamp = 0.6f * 1200.0f,
   // .default_clamp = 0.1f * 1200.0f, // slow it down for debugging
   .flight_clamp = 0.42f * 1200.0f,

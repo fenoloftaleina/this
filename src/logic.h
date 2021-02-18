@@ -12,7 +12,7 @@ typedef struct
 } logic_data;
 
 
-logic_data CR_STATE logic = (logic_data){
+logic_data logic = (logic_data){
   .default_steps_till_eval = 3
 };
 

@@ -5,7 +5,7 @@ typedef struct
 } editor_data_t;
 
 
-editor_data_t CR_STATE editor_data;
+editor_data_t editor_data;
 
 
 void init_editor()
