@@ -1,1 +1,1 @@
-./fips build && ./fips run main
+./fips build

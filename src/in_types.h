@@ -9,4 +9,4 @@ typedef struct
   bool editor;
 } input_data_t;
 
-input_data_t in_data = {IN_NONE, IN_NONE};
+input_data_t CR_STATE in_data = {IN_NONE, IN_NONE};

@@ -1,6 +1,9 @@
+#include "external/cr.h"
+
 #include "stdio.h"
 #include "string.h"
 
+#define SOKOL_DLL
 #include "sokol_app.h"
 #include "sokol_gfx.h"
 #include "sokol_glue.h"
@@ -36,18 +39,18 @@ const float dt = 1.0f / 60.0f;
 #include "animation.h"
 
 #include "texture.h"
-texture_data texture;
+texture_data CR_STATE texture;
 
 
-sg_shader main_shader;
-sg_shader uv_frag_shader;
+sg_shader CR_STATE main_shader;
+sg_shader CR_STATE uv_frag_shader;
 
 
 #include "buffer_object.h"
-buffer_object rects_bo;
-buffer_object sprites_bo;
-buffer_object other_bo;
-buffer_object lines_bo;
+buffer_object CR_STATE rects_bo;
+buffer_object CR_STATE sprites_bo;
+buffer_object CR_STATE other_bo;
+buffer_object CR_STATE lines_bo;
 #include "rect.h"
 #include "lines.h"
 
@@ -70,7 +73,7 @@ buffer_object lines_bo;
 /* generic_data generic2; */
 
 
-static sg_pass_action pass_action;
+static sg_pass_action CR_STATE pass_action;
 
 
 /* #include "ments.h" */
@@ -154,10 +157,10 @@ void init(void)
 }
 
 
-static void input(const sapp_event* ev)
-{
-  handle_input(ev);
-}
+/* static void input(const sapp_event* ev) */
+/* { */
+/*   handle_input(ev); */
+/* } */
 
 
 static uint64_t last_time = 0;
@@ -224,7 +227,7 @@ void frame(void)
 
 
   lines_data.thickness = 10;
-  pos_t positions[] = { {100, 100}, {300, 200}, {500, 100} };
+  pos_t positions[] = { {100, 100}, {300, 300}, {500, 100} };
   add_lines(&lines_bo, positions, positions, 3, &(col_t){0.1f, 0.1f, 0.1f, 1.0f}, frame_fraction);
 
 
@@ -277,19 +280,58 @@ void cleanup(void) {
 }
 
 
-sapp_desc sokol_main(int argc, char* argv[]) {
-  (void)argc; (void)argv;
-  return (sapp_desc){
-    .init_cb = init,
-    .frame_cb = frame,
-    .cleanup_cb = cleanup,
-    .event_cb = input,
-    /* .width = 800, */
-    /* .height = 600, */
-    .fullscreen = true,
-    .high_dpi = true,
-    .alpha = true,
-    .gl_force_gles2 = false,
-    .window_title = "Old",
-  };
+static unsigned int CR_STATE version = 1;
+static bool CR_STATE initialized = false;
+
+CR_EXPORT int cr_main(struct cr_plugin *ctx, enum cr_op operation) {
+  switch(operation) {
+    case CR_STEP:
+      if (ctx->version < version) {
+        fprintf(stdout, "A rollback happened due to failure: %x!\n", ctx->failure);
+      } else {
+        version = ctx->version;
+      }
+
+      handle_input_raw((input_raw_t*)ctx->userdata);
+
+      frame();
+      break;
+
+    case CR_LOAD:
+      if (!initialized) {
+        init();
+        initialized = true;
+      }
+
+      handle_input_raw((input_raw_t*)ctx->userdata);
+      break;
+
+    case CR_UNLOAD:
+      break;
+
+    case CR_CLOSE:
+      cleanup();
+      break;
+  }
+
+  return 0;
 }
+
+
+/* int main() */
+/* { */
+/*   sapp_desc desc; */
+/*   desc.init_cb = init; */
+/*   desc.frame_cb = frame; */
+/*   desc.cleanup_cb = cleanup; */
+/*   desc.event_cb = input; */
+/*   desc.fullscreen = true; */
+/*   desc.high_dpi = true; */
+/*   desc.alpha = true; */
+/*   desc.gl_force_gles2 = false; */
+/*   desc.window_title = "Old"; */
+/*  */
+/*   sapp_run(&desc); */
+/*  */
+/*   return 0; */
+/* } */
