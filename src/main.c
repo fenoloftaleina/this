@@ -49,6 +49,7 @@ buffer_object sprites_bo;
 buffer_object other_bo;
 buffer_object lines_bo;
 #include "rect.h"
+#include "models.h"
 #include "lines.h"
 
 #include "map.h"
@@ -120,14 +121,15 @@ void init(void)
   paths[8] = "left1.png";
   init_texture(&texture, paths, PATHS_COUNT);
 
+  init_models();
+  init_lines();
+
 
   init_player_animations();
   init_player();
   init_map();
   init_death();
   init_editor();
-
-  init_lines();
 
 
   set_empty_texture(&rects_bo);
@@ -227,6 +229,10 @@ void frame(void)
   pos_t positions[] = { {100, 100}, {300, 200}, {500, 100} };
   add_lines(&lines_bo, positions, positions, 3, &(col_t){0.1f, 0.1f, 0.1f, 1.0f}, frame_fraction);
 
+
+  int ids[1] = {0};
+  rect rects[1] = {{100.0f, 100.0f, 300.0f, 300.0f, 0.5f, 0.7f, 0.9f, 1.0f}};
+  add_models(&rects_bo, ids, 1, 1.0f, rects, rects, frame_fraction);
 
 
   tick_buffer_object(&sprites_bo);
