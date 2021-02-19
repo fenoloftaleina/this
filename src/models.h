@@ -71,7 +71,8 @@ void add_models
  const int* ids,
  const int n,
  const float scale,
- rect* prev_rects, const rect* rects, // TODO: change rects into pos/scale pair
+ const rect* rects,
+ rect* prev_rects,
  const float f)
 {
   int temp_vertices_count, temp_indices_count, vertices_start, indices_start;

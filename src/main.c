@@ -124,6 +124,52 @@ void init(void)
   init_models();
   init_lines();
 
+  float thickness = 4.0f;
+  lines_data.thickness = (int)thickness;
+  float frame_size = 200.0f;
+  float inset = 25.0f;
+  introduce_lines_model(
+      (pos_t[]){
+        {0, 0},
+        {frame_size, 0},
+        {frame_size, frame_size},
+        {0, frame_size},
+        {0, - thickness * 0.5f},
+
+        {0, 0},
+        {inset, inset},
+
+        {0, frame_size},
+        {inset, frame_size - inset},
+
+        {frame_size, frame_size},
+        {frame_size - inset, frame_size - inset},
+
+        {frame_size, 0},
+        {frame_size - inset, inset},
+
+        {inset, inset},
+        {frame_size - inset, inset},
+        {frame_size - inset, frame_size - inset},
+        {inset, frame_size - inset},
+        {inset, inset - thickness * 0.5f},
+      },
+      (uint16_t[]){5, 2, 2, 2, 2, 5},
+      6);
+
+  float mid_size = 25.0f;
+  float mid_beginning = (frame_size - mid_size) * 0.5f;
+  introduce_lines_model(
+      (pos_t[]){
+        {mid_beginning, mid_beginning},
+        {mid_beginning + mid_size, mid_beginning},
+        {mid_beginning + mid_size, mid_beginning + mid_size},
+        {mid_beginning, mid_beginning + mid_size},
+        {mid_beginning, mid_beginning - thickness * 0.5f},
+      },
+      (uint16_t[]){5},
+      1);
+
 
   init_player_animations();
   init_player();
@@ -225,14 +271,15 @@ void frame(void)
   /* add_rects(&other_bo, &r, &r, 1, frame_fraction); */
 
 
-  lines_data.thickness = 10;
-  pos_t positions[] = { {100, 100}, {300, 200}, {500, 100} };
-  add_lines(&lines_bo, positions, positions, 3, &(col_t){0.1f, 0.1f, 0.1f, 1.0f}, frame_fraction);
+  /* lines_data.thickness = 10; */
+  /* pos_t positions[] = { {100, 100}, {300, 200}, {500, 100} }; */
+  /* add_lines(&lines_bo, positions, positions, 3, &(col_t){0.1f, 0.1f, 0.1f, 1.0f}, frame_fraction); */
 
 
-  int ids[1] = {0};
-  rect rects[1] = {{100.0f, 100.0f, 300.0f, 300.0f, 0.5f, 0.7f, 0.9f, 1.0f}};
-  add_models(&rects_bo, ids, 1, 1.0f, rects, rects, frame_fraction);
+  rect rects[1] = {{300.0f, 100.0f, 500.0f, 300.0f, 0.1f, 0.1f, 0.1f, 1.0f}};
+  add_models(&rects_bo, (int[]){1}, 1, 1.0f, rects, rects, frame_fraction);
+  rects[0] = (rect){300.0f, 100.0f, 500.0f, 300.0f, 0.9f, 0.3f, 0.5f, 1.0f};
+  add_models(&rects_bo, (int[]){2}, 1, 1.0f, rects, rects, frame_fraction);
 
 
   tick_buffer_object(&sprites_bo);

@@ -55,13 +55,12 @@ void add_lines
  const col_t* color,
  const float frame_fraction)
 {
-  lines_data.ctx->config.thickness = lines_data.thickness;
-
   for (int i = 0; i < count; ++i) {
     // prev_positions used as temp, turned into new positions below
     prev_positions[i].x = lerp(prev_positions[i].x, positions[i].x, frame_fraction);
   }
 
+  lines_data.ctx->config.thickness = lines_data.thickness;
   spine_lengths[0] = count;
 
   parsl_mesh* mesh = parsl_mesh_from_lines(lines_data.ctx, (parsl_spine_list){
@@ -77,4 +76,49 @@ void add_lines
   }
 
   add_lines_mesh(bo, mesh, color);
+}
+
+
+void introduce_lines_model
+(parsl_position* positions,
+ uint16_t* counts,
+ int n)
+{
+  lines_data.ctx->config.thickness = lines_data.thickness;
+
+  int full_count = 0;
+  for (int i = 0; i < n; ++i) {
+    full_count += counts[i];
+  }
+
+  parsl_mesh* mesh = parsl_mesh_from_lines(lines_data.ctx, (parsl_spine_list){
+      .num_vertices = full_count,
+      .num_spines = n,
+      .vertices = positions,
+      .spine_lengths = counts,
+      .closed = false
+      });
+
+  vertex_t* vertices = (vertex_t*)malloc(mesh->num_vertices * vertex_elements_count * vertex_size);
+  index_t* indices = (index_t*)malloc(mesh->num_triangles * 3 * index_size);
+
+  for (uint32_t i = 0; i < mesh->num_vertices; ++i) {
+    vertices[i * vertex_elements_count + 0] = mesh->positions[i].x;
+    vertices[i * vertex_elements_count + 1] = mesh->positions[i].y;
+    vertices[i * vertex_elements_count + 2] = flat_z;
+    vertices[i * vertex_elements_count + 3] = 0.0f;
+    vertices[i * vertex_elements_count + 4] = 0.0f;
+    vertices[i * vertex_elements_count + 5] = 0.0f;
+    vertices[i * vertex_elements_count + 6] = 0.0f;
+    vertices[i * vertex_elements_count + 7] = -1.0f;
+    vertices[i * vertex_elements_count + 8] = -1.0f;
+  }
+
+  for (uint32_t i = 0; i < mesh->num_triangles * 3; ++i) {
+    indices[i] = mesh->triangle_indices[i];
+  }
+
+  introduce_model(vertices, mesh->num_vertices, indices, mesh->num_triangles * 3);
+  free(vertices);
+  free(indices);
 }
