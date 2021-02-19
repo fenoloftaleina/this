@@ -124,6 +124,36 @@ void init(void)
   init_models();
   init_lines();
 
+
+  float model_half_width = 60.0f * 0.5f;
+  float model_mid = 100.0f;
+  float a1 = - model_half_width;
+  float a2 = model_half_width;
+  float ang = to_rad(45.0f);
+  float x1 = model_mid + rot_x(a1, a2, ang);
+  float y1 = model_mid + rot_y(a1, a2, ang);
+  float x2 = model_mid + rot_x(a2, a2, ang);
+  float y2 = model_mid + rot_y(a2, a2, ang);
+  float x3 = model_mid + rot_x(a2, a1, ang);
+  float y3 = model_mid + rot_y(a2, a1, ang);
+  float x4 = model_mid + rot_x(a1, a1, ang);
+  float y4 = model_mid + rot_y(a1, a1, ang);
+  vertex_t vertices[] = {
+    x1, y1, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, -1.0f,
+    x2, y2, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, -1.0f,
+    x3, y3, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, -1.0f,
+    x4, y4, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, -1.0f
+  };
+  index_t indices[] = {0, 1, 2, 0, 2, 3};
+
+  introduce_model(
+      vertices,
+      4,
+      indices,
+      6
+      );
+
+
   float thickness = 4.0f;
   lines_data.thickness = (int)thickness;
   float frame_size = 200.0f;
@@ -153,9 +183,15 @@ void init(void)
         {frame_size - inset, frame_size - inset},
         {inset, frame_size - inset},
         {inset, inset - thickness * 0.5f},
+
+        {x1, y1},
+        {x2, y2},
+        {x3, y3},
+        {x4, y4},
+        {x1, y1}
       },
-      (uint16_t[]){5, 2, 2, 2, 2, 5},
-      6);
+      (uint16_t[]){5, 2, 2, 2, 2, 5, 5},
+      7);
 
   float mid_size = 25.0f;
   float mid_beginning = (frame_size - mid_size) * 0.5f;
@@ -226,6 +262,7 @@ void frame(void)
     if (!in_data.editor) {
       update_logic(t, dt);
       update_player(t);
+      update_map(t);
       update_death(t);
     } else {
       update_editor(t, dt);
@@ -274,12 +311,6 @@ void frame(void)
   /* lines_data.thickness = 10; */
   /* pos_t positions[] = { {100, 100}, {300, 200}, {500, 100} }; */
   /* add_lines(&lines_bo, positions, positions, 3, &(col_t){0.1f, 0.1f, 0.1f, 1.0f}, frame_fraction); */
-
-
-  rect rects[1] = {{300.0f, 100.0f, 500.0f, 300.0f, 0.1f, 0.1f, 0.1f, 1.0f}};
-  add_models(&rects_bo, (int[]){1}, 1, 1.0f, rects, rects, frame_fraction);
-  rects[0] = (rect){300.0f, 100.0f, 500.0f, 300.0f, 0.9f, 0.3f, 0.5f, 1.0f};
-  add_models(&rects_bo, (int[]){2}, 1, 1.0f, rects, rects, frame_fraction);
 
 
   tick_buffer_object(&sprites_bo);

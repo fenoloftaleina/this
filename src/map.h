@@ -42,6 +42,8 @@ typedef struct
   const int matrix_size;
 
   // int offset_x, offsey_y; // for moving between maps potentially
+
+  int* temp_models_list;
 } map_data_t;
 
 
@@ -58,7 +60,13 @@ typedef struct color
 } color;
 
 
-const color death_tint_color = (color){0.3f, 0.3f, 0.3f};
+color type_colors[] = {
+  {0.5f, 0.35f, 0.47f},
+  {0.4f, 0.6f, 0.4f},
+  {0.3f, 0.6f, 0.7f}
+};
+
+const color death_type_color = (color){0.8f, 0.8f, 0.8f};
 
 
 float tile_width = 200.0f;
@@ -74,12 +82,47 @@ void init_map()
   map_data.matrix = (int*)malloc(map_data.matrix_size * sizeof(int));
   memset(map_data.matrix, -1, map_data.matrix_size * sizeof(int));
   map_data.raw_spot_types = (spot_type*)malloc(map_data.matrix_size * sizeof(spot_type));
+  map_data.temp_models_list = (int*)malloc(map_data.matrix_size * sizeof(int));
 }
 
 
 void draw_map(const float frame_fraction)
 {
-  add_rects(&sprites_bo, map_data.rects, map_data.prev_rects, map_data.n, frame_fraction);
+  for (int i = 0; i < map_data.n; ++i) {
+    if (map_data.spot_statuses[i] == spot_active) {
+      map_data.rects[i].r = map_data.rects[i].g = map_data.rects[i].b =
+        map_data.prev_rects[i].r = map_data.prev_rects[i].g = map_data.prev_rects[i].b =
+        0.1f;
+      map_data.rects[i].z = map_data.prev_rects[i].z = 2.0f;
+    } else {
+      map_data.rects[i].r = map_data.rects[i].g = map_data.rects[i].b =
+        map_data.prev_rects[i].r = map_data.prev_rects[i].g = map_data.prev_rects[i].b =
+        death_type_color.r;
+      map_data.rects[i].z = map_data.prev_rects[i].z = 1.0f;
+    }
+    map_data.temp_models_list[i] = 1;
+  }
+  add_models(
+      &rects_bo, map_data.temp_models_list, map_data.n, 1.0f,
+      map_data.rects, map_data.prev_rects, frame_fraction
+      );
+
+  for (int i = 0; i < map_data.n; ++i) {
+    if (map_data.spot_statuses[i] == spot_active) {
+      map_data.prev_rects[i].r = map_data.rects[i].r = type_colors[map_data.spot_types[i]].r;
+      map_data.prev_rects[i].g = map_data.rects[i].g = type_colors[map_data.spot_types[i]].g;
+      map_data.prev_rects[i].b = map_data.rects[i].b = type_colors[map_data.spot_types[i]].b;
+    } else {
+      map_data.prev_rects[i].r = map_data.rects[i].r = death_type_color.r;
+      map_data.prev_rects[i].g = map_data.rects[i].g = death_type_color.g;
+      map_data.prev_rects[i].b = map_data.rects[i].b = death_type_color.b;
+    }
+    map_data.temp_models_list[i] = 0;
+  }
+  add_models(
+      &rects_bo, map_data.temp_models_list, map_data.n, 1.0f,
+      map_data.rects, map_data.prev_rects, frame_fraction
+      );
 }
 
 
@@ -108,17 +151,8 @@ void raw_spots_to_matrix()
 
       map_data.matrix[i] = j;
       map_data.rects[j] = (rect){
-        x1,
-        y1,
-        x2,
-        y2,
-        1.0f,
-        1.0f,
-        1.0f,
-        1.0f,
-        1.0f
+        x1, y1, x2, y2, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, -1.0f, -1.0f
       };
-      set_sprite(&map_data.rects[j], &texture, cur_type + SPRITE_OFFSET);
 
       map_data.prev_rects[j] = map_data.rects[j];
       map_data.spot_types[j] = cur_type;
@@ -129,6 +163,12 @@ void raw_spots_to_matrix()
   }
 
   map_data.n = j;
+}
+
+
+void update_map(const float t)
+{
+  memcpy(map_data.prev_rects, map_data.rects, map_data.n * sizeof(rect));
 }
 
 

@@ -35,6 +35,22 @@ void introduce_model
 }
 
 
+float to_rad(const float ang)
+{
+  return ang / 57.29578;
+}
+
+float rot_x(const float x, const float y, const float ang)
+{
+  return x * cos(ang) - y * sin(ang);
+}
+
+float rot_y(const float x, const float y, const float ang)
+{
+  return x * sin(ang) + y * cos(ang);
+}
+
+
 void init_models()
 {
   models_data.vertices = (vertex_t*)malloc(100000 * vertex_size);
@@ -45,24 +61,6 @@ void init_models()
   models_data.indices_offsets = (int*)malloc(50 * sizeof(int));
   models_data.vertices_offsets[0] = 0;
   models_data.indices_offsets[0] = 0;
-
-
-  // colors here for now, no tinting, no textures
-
-  vertex_t vertices[] = {
-    0.0f,   120.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, -1.0f,
-    100.0f, 120.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, -1.0f,
-    100.0f, 0.0f,   1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, -1.0f,
-    0.0f,   0.0f,   1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, -1.0f
-  };
-  index_t indices[] = {0, 1, 2, 0, 2, 3};
-
-  introduce_model(
-      vertices,
-      4,
-      indices,
-      6
-      );
 }
 
 
@@ -99,7 +97,8 @@ void add_models
         lerp(prev_rects[i].y1, rects[i].y1, f);
       bo->vertices[vertices_start * vertex_elements_count + j + 2] =
         models_data.vertices[models_data.vertices_offsets[ids[i]] + j + 2] *
-        scale;
+        scale +
+        lerp(prev_rects[i].z, rects[i].z, f);
       bo->vertices[vertices_start * vertex_elements_count + j + 3] =
         models_data.vertices[models_data.vertices_offsets[ids[i]] + j + 3] +
         lerp(prev_rects[i].r, rects[i].r, f);

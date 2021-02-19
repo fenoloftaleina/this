@@ -39,10 +39,6 @@ void deactivate_spots(const int id)
   for (int i = 0; i < map_data.n; ++i) {
     if (map_data.spot_types[i] == type) {
       map_data.spot_statuses[i] = spot_inactive;
-
-      map_data.rects[i].r = death_tint_color.r;
-      map_data.rects[i].g = death_tint_color.g;
-      map_data.rects[i].b = death_tint_color.b;
     }
   }
 }
