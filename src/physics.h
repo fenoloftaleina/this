@@ -207,6 +207,8 @@ void check_collisions()
   float e_side = left ? eps : -eps;
   float e_end = up ? -eps : eps;
 
+  bool nothing_intersected = true;
+
   collision_points_data collision;
   recalc_collision_points(&collision, up, left);
 
@@ -219,6 +221,8 @@ void check_collisions()
           rect_side_end.side_x, rect_side_end.side_y1, rect_side_end.side_x, rect_side_end.side_y2)) {
       move_rect(&player_data.rect, rect_side_end.side_x - collision.hanging_x + e_side, 0.0f);
       recalc_collision_points(&collision, up, left);
+
+      nothing_intersected = false;
     }
   }
 
@@ -234,6 +238,8 @@ void check_collisions()
       jump_state.in_air = up;
       jump_state.started_at = 0.0f;
       jump_state.possible_double_jump = false;
+
+      nothing_intersected = false;
     }
   }
 
@@ -244,6 +250,8 @@ void check_collisions()
           rect_side_end.side_x, rect_side_end.side_y1, rect_side_end.side_x, rect_side_end.side_y2)) {
       move_rect(&player_data.rect, rect_side_end.side_x - collision.main_x + e_side, 0.0f);
       recalc_collision_points(&collision, up, left);
+
+      nothing_intersected = false;
     }
   }
 
@@ -259,7 +267,16 @@ void check_collisions()
       jump_state.in_air = up;
       jump_state.started_at = 0.0f;
       jump_state.possible_double_jump = false;
+
+      nothing_intersected = false;
     }
+  }
+
+  if (nothing_intersected && !jump_state.in_air) {
+    jump_state.v = 0.0f;
+    jump_state.in_air = true;
+    jump_state.started_at = 0.0f;
+    jump_state.possible_double_jump = false;
   }
 }
 
