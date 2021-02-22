@@ -22,6 +22,9 @@ typedef parsl_position pos_t;
 #include "main.glsl.h"
 
 
+#define GUI
+
+
 const char* main_dir = "../../../main/";
 
 const float dt = 1.0f / 60.0f;
@@ -62,8 +65,6 @@ buffer_object lines_bo;
 
 /* #include "generic.h" */
 
-
-/* #define GUI */
 
 
 // TODO: make something that makes spawning and using new BOs easier.
@@ -330,18 +331,22 @@ void frame(void)
 
   igSetNextWindowPos((ImVec2){1200,20}, ImGuiCond_FirstUseEver, (ImVec2){0,0});
 
-  igText("Hello, world!");
+  /* igText("Hello, world!"); */
 
-  igSliderFloat("gravity", &jump_state.gravity, -15000.0f, -5000.0f, "%.3f", 1.0f);
-  igSliderFloat("init_v", &jump_state.init_v, 1000.0f, 4000.0f, "%.3f", 1.0f);
-  igSliderFloat("init_double_v", &jump_state.init_double_v, 1000.0f, 4000.0f, "%.3f", 1.0f);
-  igSliderFloat("low_clamp", &jump_state.low_clamp, -10000.0f, -5000.0f, "%.3f", 1.0f);
-  igSliderFloat("high_clamp", &jump_state.low_clamp, 1000.0f, 5000.0f, "%.3f", 1.0f);
+  /* igSliderFloat("gravity", &jump_state.gravity, -15000.0f, -5000.0f, "%.3f", 1.0f); */
+  /* igSliderFloat("init_v", &jump_state.init_v, 1000.0f, 4000.0f, "%.3f", 1.0f); */
+  /* igSliderFloat("init_double_v", &jump_state.init_double_v, 1000.0f, 4000.0f, "%.3f", 1.0f); */
+  /* igSliderFloat("low_clamp", &jump_state.low_clamp, -10000.0f, -5000.0f, "%.3f", 1.0f); */
+  /* igSliderFloat("high_clamp", &jump_state.low_clamp, 1000.0f, 5000.0f, "%.3f", 1.0f); */
+  /*  */
+  /* igSliderFloat("default_clamp", &walk_state.default_clamp, 50.0f, 3000.0f, "%.3f", 1.0f); */
+  /* igSliderFloat("flight_clamp", &walk_state.flight_clamp, 50.0f, 3000.0f, "%.3f", 1.0f); */
+  /* igSliderFloat("damping", &walk_state.damping, 2000.0f, 40000.0f, "%.3f", 1.0f); */
+  /* igSliderFloat("transpose", &walk_state.damping, 2000.0f, 20000.0f, "%.3f", 1.0f); */
 
-  igSliderFloat("default_clamp", &walk_state.default_clamp, 50.0f, 3000.0f, "%.3f", 1.0f);
-  igSliderFloat("flight_clamp", &walk_state.flight_clamp, 50.0f, 3000.0f, "%.3f", 1.0f);
-  igSliderFloat("damping", &walk_state.damping, 2000.0f, 40000.0f, "%.3f", 1.0f);
-  igSliderFloat("transpose", &walk_state.damping, 2000.0f, 20000.0f, "%.3f", 1.0f);
+  igColorEdit3("type colors 1", &type_colors[0], ImGuiColorEditFlags_Float);
+  igColorEdit3("type colors 2", &type_colors[1], ImGuiColorEditFlags_Float);
+  igColorEdit3("type colors 3", &type_colors[2], ImGuiColorEditFlags_Float);
 
   simgui_render();
 #endif

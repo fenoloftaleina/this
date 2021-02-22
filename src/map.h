@@ -61,9 +61,11 @@ typedef struct color
 
 
 color type_colors[] = {
-  {0.5f, 0.35f, 0.47f},
-  {0.4f, 0.6f, 0.4f},
-  {0.3f, 0.6f, 0.7f}
+  {0.039f, 0.035f, 0.031f},
+  {0.937f, 0.780f, 0.887f},
+  {0.631f, 0.853f, 0.846f},
+  {0.131f, 0.853f, 0.846f},
+  {0.131f, 0.253f, 0.846f},
 };
 
 const color death_type_color = (color){0.8f, 0.8f, 0.8f};
@@ -75,6 +77,12 @@ float tile_height = 200.0f;
 
 void init_map()
 {
+  // for (int i = 0; i < spot_type_n; ++i) {
+  //   type_colors[i].r /= 255.0f;
+  //   type_colors[i].g /= 255.0f;
+  //   type_colors[i].b /= 255.0f;
+  // }
+
   map_data.prev_rects = (rect*)malloc(map_data.matrix_size * sizeof(rect));
   map_data.rects = (rect*)malloc(map_data.matrix_size * sizeof(rect));
   map_data.spot_types = (spot_type*)malloc(map_data.matrix_size * sizeof(spot_type));
