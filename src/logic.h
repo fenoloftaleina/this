@@ -87,7 +87,7 @@ bool death_on(const int k)
     0.0f,
     0.0f,
     0.0f,
-    flat_z,
+    flat_z - 0.6f,
     -1.0f,
     -1.0f
   };

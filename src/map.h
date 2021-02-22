@@ -159,7 +159,7 @@ void raw_spots_to_matrix()
 
       map_data.matrix[i] = j;
       map_data.rects[j] = (rect){
-        x1, y1, x2, y2, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, -1.0f, -1.0f
+        x1, y1, x2, y2, 0.0f, 0.0f, 0.0f, 1.0f, flat_z, -1.0f, -1.0f
       };
 
       map_data.prev_rects[j] = map_data.rects[j];

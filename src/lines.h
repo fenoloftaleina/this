@@ -53,6 +53,7 @@ void add_lines
  parsl_position* prev_positions,
  const int count,
  const col_t* color,
+ const bool closed,
  const float frame_fraction)
 {
   for (int i = 0; i < count; ++i) {
@@ -68,7 +69,7 @@ void add_lines
       .num_spines = 1,
       .vertices = prev_positions, // used as temp, see above
       .spine_lengths = spine_lengths,
-      .closed = false
+      .closed = closed
       });
 
   for (int i = 0; i < count; ++i) {
@@ -82,7 +83,8 @@ void add_lines
 void introduce_lines_model
 (parsl_position* positions,
  uint16_t* counts,
- int n)
+ int n,
+ const bool closed)
 {
   lines_data.ctx->config.thickness = lines_data.thickness;
 
@@ -96,7 +98,7 @@ void introduce_lines_model
       .num_spines = n,
       .vertices = positions,
       .spine_lengths = counts,
-      .closed = false
+      .closed = closed
       });
 
   vertex_t* vertices = (vertex_t*)malloc(mesh->num_vertices * vertex_elements_count * vertex_size);

@@ -22,7 +22,7 @@ typedef parsl_position pos_t;
 #include "main.glsl.h"
 
 
-#define GUI
+/* #define GUI */
 
 
 const char* main_dir = "../../../main/";
@@ -157,26 +157,27 @@ void init(void)
 
   float thickness = 4.0f;
   lines_data.thickness = (int)thickness;
-  float frame_size = 200.0f;
+  float beginning = thickness * 0.5f;
+  float frame_size = 200.0f - thickness * 0.5f;
   float inset = 25.0f;
   introduce_lines_model(
       (pos_t[]){
-        {0, 0},
-        {frame_size, 0},
+        {beginning, beginning},
+        {frame_size, beginning},
         {frame_size, frame_size},
-        {0, frame_size},
-        {0, - thickness * 0.5f},
+        {beginning, frame_size},
+        {beginning, - thickness * 0.5f},
 
-        {0, 0},
+        {beginning, beginning},
         {inset, inset},
 
-        {0, frame_size},
+        {beginning, frame_size},
         {inset, frame_size - inset},
 
         {frame_size, frame_size},
         {frame_size - inset, frame_size - inset},
 
-        {frame_size, 0},
+        {frame_size, beginning},
         {frame_size - inset, inset},
 
         {inset, inset},
@@ -192,7 +193,8 @@ void init(void)
         {x1, y1}
       },
       (uint16_t[]){5, 2, 2, 2, 2, 5, 5},
-      7);
+      7,
+      false);
 
   float mid_size = 25.0f;
   float mid_beginning = (frame_size - mid_size) * 0.5f;
@@ -205,7 +207,8 @@ void init(void)
         {mid_beginning, mid_beginning - thickness * 0.5f},
       },
       (uint16_t[]){5},
-      1);
+      1,
+      false);
 
 
   init_player_animations();
@@ -311,7 +314,7 @@ void frame(void)
 
   /* lines_data.thickness = 10; */
   /* pos_t positions[] = { {100, 100}, {300, 200}, {500, 100} }; */
-  /* add_lines(&lines_bo, positions, positions, 3, &(col_t){0.1f, 0.1f, 0.1f, 1.0f}, frame_fraction); */
+  /* add_lines(&lines_bo, positions, positions, 3, &(col_t){0.1f, 0.1f, 0.1f, 1.0f}, false, frame_fraction); */
 
 
   tick_buffer_object(&sprites_bo);
