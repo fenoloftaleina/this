@@ -32,26 +32,27 @@ void reload_logic()
 }
 
 
-void deactivate_spots(const int id)
+static const float tween_time = 0.25f;
+
+void deactivate_spots(const int id, const float t)
 {
   spot_type type = map_data.spot_types[id];
 
-  for (int i = 0; i < map_data.n; ++i) {
-    if (map_data.spot_types[i] == type) {
-      map_data.spot_statuses[i] = spot_inactive;
-    }
+  if (map_data.spot_type_statuses[type] != spot_inactive) {
+    map_data.spot_type_statuses[type] = spot_inactive;
+
+    map_data.tween_per_type[type].start_t = t;
+    map_data.tween_per_type[type].end_t = t + tween_time;
+    map_data.tween_per_type[type].start_v = 0.0f;
+    map_data.tween_per_type[type].end_v = 1.0f;
   }
 }
 
 
 void reset_spots()
 {
-  for (int i = 0; i < map_data.n; ++i) {
-    map_data.spot_statuses[i] = spot_active;
-
-    map_data.rects[i].r = 1.0f;
-    map_data.rects[i].g = 1.0f;
-    map_data.rects[i].b = 1.0f;
+  for (int i = 0; i < spot_type_n; ++i) {
+    map_data.spot_type_statuses[i] = spot_active;
   }
 }
 
@@ -83,9 +84,9 @@ bool death_on(const int k)
     y1,
     x2,
     y2,
-    1.0f,
-    0.0f,
-    0.0f,
+    death_color.r,
+    death_color.g,
+    death_color.b,
     0.0f,
     flat_z - 0.6f,
     -1.0f,
@@ -103,7 +104,7 @@ void evaluate(const float t)
 {
   int spot_x, spot_y, j;
   for (int i = 0; i < map_data.n; ++i) {
-    if (map_data.spot_statuses[i] == spot_active) {
+    if (map_data.spot_type_statuses[map_data.spot_types[i]] == spot_active) {
       matrix_xy(&map_data.rects[i], &spot_x, &spot_y);
 
       // death->matrix[matrix_i(spot_x, spot_y)] = 1;
@@ -281,22 +282,22 @@ void update_logic
   if (bottom_id != -1 && top_id == -1 && left_id == -1 && right_id == -1) {
     logic.touch_ids[logic.n] = bottom_id;
     logic.touch_spot_types[logic.n] = bottom_spot_type;
-    deactivate_spots(bottom_id);
+    deactivate_spots(bottom_id, t);
     logic.n += 1;
   } else if (bottom_id == -1 && top_id != -1 && left_id == -1 && right_id == -1) {
     logic.touch_ids[logic.n] = top_id;
     logic.touch_spot_types[logic.n] = top_spot_type;
-    deactivate_spots(top_id);
+    deactivate_spots(top_id, t);
     logic.n += 1;
   } else if (bottom_id == -1 && top_id == -1 && left_id != -1 && right_id == -1) {
     logic.touch_ids[logic.n] = left_id;
     logic.touch_spot_types[logic.n] = left_spot_type;
-    deactivate_spots(left_id);
+    deactivate_spots(left_id, t);
     logic.n += 1;
   } else if (bottom_id == -1 && top_id == -1 && left_id == -1 && right_id != -1) {
     logic.touch_ids[logic.n] = right_id;
     logic.touch_spot_types[logic.n] = right_spot_type;
-    deactivate_spots(right_id);
+    deactivate_spots(right_id, t);
     logic.n += 1;
   }
 

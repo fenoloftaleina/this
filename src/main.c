@@ -44,6 +44,7 @@ texture_data texture;
 
 sg_shader main_shader;
 sg_shader uv_frag_shader;
+sg_shader death_shader;
 
 
 #include "buffer_object.h"
@@ -51,6 +52,7 @@ buffer_object rects_bo;
 buffer_object sprites_bo;
 buffer_object other_bo;
 buffer_object lines_bo;
+buffer_object death_bo;
 #include "rect.h"
 #include "models.h"
 #include "lines.h"
@@ -77,6 +79,7 @@ static sg_pass_action pass_action;
 
 /* #include "ments.h" */
 
+static const float white_f = 0.9f;
 
 void init(void)
 {
@@ -96,17 +99,19 @@ void init(void)
   sdtx_color3f(1.0f, 0.0f, 0.0f);
 
   pass_action = (sg_pass_action) {
-    .colors[0] = { .action=SG_ACTION_CLEAR, .val={0.9f, 0.9f, 0.9f, 1.0f } }
+    .colors[0] = { .action=SG_ACTION_CLEAR, .val={white_f, white_f, white_f, 1.0f } }
   };
 
 
   main_shader = sg_make_shader(main_shader_desc());
   uv_frag_shader = sg_make_shader(uv_frag_shader_desc());
+  death_shader = sg_make_shader(death_shader_desc());
 
   init_buffer_object(&rects_bo, 40000, 60000, &main_shader);
   init_buffer_object(&sprites_bo, 40000, 60000, &main_shader);
   init_buffer_object(&other_bo, 40000, 60000, &uv_frag_shader);
   init_buffer_object(&lines_bo, 40000, 60000, &main_shader);
+  init_buffer_object(&death_bo, 40000, 60000, &death_shader);
 
 
   const int PATHS_COUNT = 9;
@@ -166,7 +171,7 @@ void init(void)
         {frame_size, beginning},
         {frame_size, frame_size},
         {beginning, frame_size},
-        {beginning, - thickness * 0.5f},
+        {beginning, beginning - thickness * 0.5f},
 
         {beginning, beginning},
         {inset, inset},
@@ -222,6 +227,7 @@ void init(void)
   set_texture(&sprites_bo, &texture);
   set_empty_texture(&other_bo);
   set_empty_texture(&lines_bo);
+  set_empty_texture(&death_bo);
 
   /* init_generic(&generic, 5000000 * vertex_elements_count, 7000000); */
   /* set_empty_texture(&generic.bo); */
@@ -289,6 +295,7 @@ void frame(void)
   reset_buffer_counts(&sprites_bo);
   reset_buffer_counts(&other_bo);
   reset_buffer_counts(&lines_bo);
+  reset_buffer_counts(&death_bo);
 
 
   /* rect bg = { */
@@ -321,6 +328,7 @@ void frame(void)
   tick_buffer_object(&rects_bo);
   tick_buffer_object(&other_bo);
   tick_buffer_object(&lines_bo);
+  tick_buffer_object(&death_bo);
 
 
   /* draw_ments(t); */

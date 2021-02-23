@@ -142,6 +142,6 @@ void draw_player(const float frame_fraction)
     {left_leg_x2, left_leg_y2},
     {left_leg_x2, left_leg_y1},
   };
-  add_lines(&lines_bo, positions, positions, sizeof(positions) / sizeof(pos_t), &(col_t){0.1f, 0.1f, 0.1f, 1.0f}, true, frame_fraction);
+  add_lines(&lines_bo, positions, positions, sizeof(positions) / sizeof(pos_t), &(col_t){black_f, black_f, black_f, 1.0f}, true, frame_fraction);
 
 }

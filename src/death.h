@@ -14,6 +14,8 @@ typedef struct
 
 death_data_t death_data;
 
+color death_color = {0.9f, 0.5f, 0.7f};
+
 
 void stop_death()
 {
@@ -24,14 +26,14 @@ void stop_death()
 
 void start_death(const float t)
 {
-  const float death_length = 1.0f;
+  const float death_length = 2.2f;
 
   add_schedule(&death_data.schedule, t + death_length, stop_death);
 
   death_data.tween.start_t = t;
   death_data.tween.end_t = t + death_length;
   death_data.tween.start_v = 0.0f;
-  death_data.tween.end_v = 0.5f;
+  death_data.tween.end_v = 0.25f;
 }
 
 
@@ -48,7 +50,7 @@ void init_death()
 
   reset_schedule(&death_data.schedule);
 
-  death_data.tween.fn = parabola;
+  death_data.tween.fn = pcurve_tween;
 }
 
 
@@ -66,5 +68,5 @@ void update_death(const float t)
 
 void draw_death(const float frame_fraction)
 {
-  add_rects(&rects_bo, death_data.rects, death_data.prev_rects, death_data.n, frame_fraction);
+  add_rects(&death_bo, death_data.rects, death_data.prev_rects, death_data.n, frame_fraction);
 }

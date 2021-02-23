@@ -1,11 +1,11 @@
 #include "mpack.h"
 
 
-typedef enum spot_status
+typedef enum spot_type_status
 {
   spot_active,
   spot_inactive
-} spot_status;
+} spot_type_status;
 
 
 typedef enum spot_type
@@ -29,7 +29,7 @@ typedef struct
   rect* prev_rects; // prev
   rect* rects;
   spot_type* spot_types;
-  spot_status* spot_statuses;
+  spot_type_status spot_type_statuses[spot_type_n];
 
   int* matrix; // matrix, linear, but 2d
 
@@ -44,6 +44,8 @@ typedef struct
   // int offset_x, offsey_y; // for moving between maps potentially
 
   int* temp_models_list;
+
+  tween_data_t tween_per_type[spot_type_n];
 } map_data_t;
 
 
@@ -86,26 +88,34 @@ void init_map()
   map_data.prev_rects = (rect*)malloc(map_data.matrix_size * sizeof(rect));
   map_data.rects = (rect*)malloc(map_data.matrix_size * sizeof(rect));
   map_data.spot_types = (spot_type*)malloc(map_data.matrix_size * sizeof(spot_type));
-  map_data.spot_statuses = (spot_status*)malloc(map_data.matrix_size * sizeof(spot_status));
   map_data.matrix = (int*)malloc(map_data.matrix_size * sizeof(int));
   memset(map_data.matrix, -1, map_data.matrix_size * sizeof(int));
   map_data.raw_spot_types = (spot_type*)malloc(map_data.matrix_size * sizeof(spot_type));
   map_data.temp_models_list = (int*)malloc(map_data.matrix_size * sizeof(int));
+
+  for (int i = 0; i < spot_type_n; ++i) {
+    map_data.tween_per_type[i].fn = lerp_tween;
+  }
 }
 
 
+static const float black_f = 0.1f;
+
 void draw_map(const float frame_fraction)
 {
+  spot_type type;
+
   for (int i = 0; i < map_data.n; ++i) {
-    if (map_data.spot_statuses[i] == spot_active) {
+    type = map_data.spot_types[i];
+    if (map_data.spot_type_statuses[type] == spot_active) {
       map_data.rects[i].r = map_data.rects[i].g = map_data.rects[i].b =
         map_data.prev_rects[i].r = map_data.prev_rects[i].g = map_data.prev_rects[i].b =
-        0.1f;
+        black_f;
       map_data.rects[i].z = map_data.prev_rects[i].z = 2.0f;
     } else {
       map_data.rects[i].r = map_data.rects[i].g = map_data.rects[i].b =
         map_data.prev_rects[i].r = map_data.prev_rects[i].g = map_data.prev_rects[i].b =
-        death_type_color.r;
+        lerp(black_f, death_type_color.r, map_data.tween_per_type[type].v);
       map_data.rects[i].z = map_data.prev_rects[i].z = 1.0f;
     }
     map_data.temp_models_list[i] = 1;
@@ -116,14 +126,19 @@ void draw_map(const float frame_fraction)
       );
 
   for (int i = 0; i < map_data.n; ++i) {
-    if (map_data.spot_statuses[i] == spot_active) {
+    type = map_data.spot_types[i];
+
+    if (map_data.spot_type_statuses[type] == spot_active) {
       map_data.prev_rects[i].r = map_data.rects[i].r = type_colors[map_data.spot_types[i]].r;
       map_data.prev_rects[i].g = map_data.rects[i].g = type_colors[map_data.spot_types[i]].g;
       map_data.prev_rects[i].b = map_data.rects[i].b = type_colors[map_data.spot_types[i]].b;
     } else {
-      map_data.prev_rects[i].r = map_data.rects[i].r = death_type_color.r;
-      map_data.prev_rects[i].g = map_data.rects[i].g = death_type_color.g;
-      map_data.prev_rects[i].b = map_data.rects[i].b = death_type_color.b;
+      map_data.prev_rects[i].r = map_data.rects[i].r =
+        lerp(type_colors[map_data.spot_types[i]].r, death_type_color.r, map_data.tween_per_type[type].v);
+      map_data.prev_rects[i].g = map_data.rects[i].g =
+        lerp(type_colors[map_data.spot_types[i]].g, death_type_color.g, map_data.tween_per_type[type].v);
+      map_data.prev_rects[i].b = map_data.rects[i].b =
+        lerp(type_colors[map_data.spot_types[i]].b, death_type_color.b, map_data.tween_per_type[type].v);
     }
     map_data.temp_models_list[i] = 0;
   }
@@ -164,18 +179,25 @@ void raw_spots_to_matrix()
 
       map_data.prev_rects[j] = map_data.rects[j];
       map_data.spot_types[j] = cur_type;
-      map_data.spot_statuses[j] = spot_active;
 
       ++j;
     }
   }
 
   map_data.n = j;
+
+  for (int i = 0; i < spot_type_n; ++i) {
+    map_data.spot_type_statuses[i] = spot_active;
+  }
 }
 
 
 void update_map(const float t)
 {
+  for (int i = 0; i < spot_type_n; ++i) {
+    update_tween(&map_data.tween_per_type[i], t);
+  }
+
   memcpy(map_data.prev_rects, map_data.rects, map_data.n * sizeof(rect));
 }
 
