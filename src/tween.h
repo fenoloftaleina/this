@@ -48,17 +48,17 @@ const float potential_frame_time_offset = dt;
 
 void update_tween(tween_data_t* tween_data, const float t)
 {
-  if (t >= tween_data->start_t && t < tween_data->end_t + potential_frame_time_offset) {
-    float a = (t - tween_data->start_t) / (tween_data->end_t - tween_data->start_t);
+  // if (t >= tween_data->start_t && t < tween_data->end_t + potential_frame_time_offset) {
 
-    if (a < 0.0f) {
-      a = 0.0f;
-    } else if (a > 1.0f) {
-      a = 1.0f;
-    }
+  float a = (t - tween_data->start_t) / (tween_data->end_t - tween_data->start_t);
 
-    a = tween_data->fn(a);
-
-    tween_data->v = tween_data->start_v * (1.0f -a ) + a * tween_data->end_v;
+  if (a < 0.0f) {
+    a = 0.0f;
+  } else if (a > 1.0f) {
+    a = 1.0f;
   }
+
+  a = tween_data->fn(a);
+
+  tween_data->v = tween_data->start_v * (1.0f -a ) + a * tween_data->end_v;
 }

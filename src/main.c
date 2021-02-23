@@ -162,8 +162,8 @@ void init(void)
 
   float thickness = 4.0f;
   lines_data.thickness = (int)thickness;
-  float beginning = thickness * 0.5f;
-  float frame_size = 200.0f - thickness * 0.5f;
+  float beginning = 0.0f;
+  float frame_size = 200.0f;
   float inset = 25.0f;
   introduce_lines_model(
       (pos_t[]){

@@ -46,6 +46,7 @@ typedef struct
   int* temp_models_list;
 
   tween_data_t tween_per_type[spot_type_n];
+  schedule_data_t reset_schedule;
 } map_data_t;
 
 
@@ -79,12 +80,6 @@ float tile_height = 200.0f;
 
 void init_map()
 {
-  // for (int i = 0; i < spot_type_n; ++i) {
-  //   type_colors[i].r /= 255.0f;
-  //   type_colors[i].g /= 255.0f;
-  //   type_colors[i].b /= 255.0f;
-  // }
-
   map_data.prev_rects = (rect*)malloc(map_data.matrix_size * sizeof(rect));
   map_data.rects = (rect*)malloc(map_data.matrix_size * sizeof(rect));
   map_data.spot_types = (spot_type*)malloc(map_data.matrix_size * sizeof(spot_type));
@@ -95,7 +90,14 @@ void init_map()
 
   for (int i = 0; i < spot_type_n; ++i) {
     map_data.tween_per_type[i].fn = lerp_tween;
+
+    map_data.tween_per_type[i].start_t = 0.0f;
+    map_data.tween_per_type[i].end_t = 1.0f;
+    map_data.tween_per_type[i].start_v = 0.0f;
+    map_data.tween_per_type[i].end_v = 1.0f;
   }
+
+  reset_schedule(&map_data.reset_schedule);
 }
 
 
@@ -108,16 +110,15 @@ void draw_map(const float frame_fraction)
   for (int i = 0; i < map_data.n; ++i) {
     type = map_data.spot_types[i];
     if (map_data.spot_type_statuses[type] == spot_active) {
-      map_data.rects[i].r = map_data.rects[i].g = map_data.rects[i].b =
-        map_data.prev_rects[i].r = map_data.prev_rects[i].g = map_data.prev_rects[i].b =
-        black_f;
       map_data.rects[i].z = map_data.prev_rects[i].z = 2.0f;
     } else {
-      map_data.rects[i].r = map_data.rects[i].g = map_data.rects[i].b =
-        map_data.prev_rects[i].r = map_data.prev_rects[i].g = map_data.prev_rects[i].b =
-        lerp(black_f, death_type_color.r, map_data.tween_per_type[type].v);
       map_data.rects[i].z = map_data.prev_rects[i].z = 1.0f;
     }
+
+    map_data.rects[i].r = map_data.rects[i].g = map_data.rects[i].b =
+      map_data.prev_rects[i].r = map_data.prev_rects[i].g = map_data.prev_rects[i].b =
+      lerp(death_type_color.r, black_f, map_data.tween_per_type[type].v);
+
     map_data.temp_models_list[i] = 1;
   }
   add_models(
@@ -128,18 +129,25 @@ void draw_map(const float frame_fraction)
   for (int i = 0; i < map_data.n; ++i) {
     type = map_data.spot_types[i];
 
-    if (map_data.spot_type_statuses[type] == spot_active) {
-      map_data.prev_rects[i].r = map_data.rects[i].r = type_colors[map_data.spot_types[i]].r;
-      map_data.prev_rects[i].g = map_data.rects[i].g = type_colors[map_data.spot_types[i]].g;
-      map_data.prev_rects[i].b = map_data.rects[i].b = type_colors[map_data.spot_types[i]].b;
-    } else {
-      map_data.prev_rects[i].r = map_data.rects[i].r =
-        lerp(type_colors[map_data.spot_types[i]].r, death_type_color.r, map_data.tween_per_type[type].v);
-      map_data.prev_rects[i].g = map_data.rects[i].g =
-        lerp(type_colors[map_data.spot_types[i]].g, death_type_color.g, map_data.tween_per_type[type].v);
-      map_data.prev_rects[i].b = map_data.rects[i].b =
-        lerp(type_colors[map_data.spot_types[i]].b, death_type_color.b, map_data.tween_per_type[type].v);
-    }
+    map_data.prev_rects[i].r = map_data.rects[i].r =
+      lerp(
+          death_type_color.r,
+          type_colors[map_data.spot_types[i]].r,
+          map_data.tween_per_type[type].v
+          );
+    map_data.prev_rects[i].g = map_data.rects[i].g =
+      lerp(
+          death_type_color.g,
+          type_colors[map_data.spot_types[i]].g,
+          map_data.tween_per_type[type].v
+          );
+    map_data.prev_rects[i].b = map_data.rects[i].b =
+      lerp(
+          death_type_color.b,
+          type_colors[map_data.spot_types[i]].b,
+          map_data.tween_per_type[type].v
+          );
+
     map_data.temp_models_list[i] = 0;
   }
   add_models(
@@ -197,6 +205,8 @@ void update_map(const float t)
   for (int i = 0; i < spot_type_n; ++i) {
     update_tween(&map_data.tween_per_type[i], t);
   }
+
+  execute_schedule(&map_data.reset_schedule, t);
 
   memcpy(map_data.prev_rects, map_data.rects, map_data.n * sizeof(rect));
 }

@@ -24,16 +24,16 @@ void stop_death()
 }
 
 
+const float death_time = 3.0f;
+
 void start_death(const float t)
 {
-  const float death_length = 2.2f;
-
-  add_schedule(&death_data.schedule, t + death_length, stop_death);
+  add_schedule(&death_data.schedule, t + death_time, stop_death);
 
   death_data.tween.start_t = t;
-  death_data.tween.end_t = t + death_length;
+  death_data.tween.end_t = t + death_time;
   death_data.tween.start_v = 0.0f;
-  death_data.tween.end_v = 0.25f;
+  death_data.tween.end_v = 1.0f;
 }
 
 
@@ -50,7 +50,7 @@ void init_death()
 
   reset_schedule(&death_data.schedule);
 
-  death_data.tween.fn = pcurve_tween;
+  death_data.tween.fn = lerp_tween;
 }
 
 

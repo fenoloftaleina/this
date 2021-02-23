@@ -43,18 +43,48 @@ void deactivate_spots(const int id, const float t)
 
     map_data.tween_per_type[type].start_t = t;
     map_data.tween_per_type[type].end_t = t + tween_time;
-    map_data.tween_per_type[type].start_v = 0.0f;
-    map_data.tween_per_type[type].end_v = 1.0f;
+    // map_data.tween_per_type[type].start_v = 1.0f;
+    map_data.tween_per_type[type].end_v = 0.0f;
   }
 }
 
 
-void reset_spots()
+// BEGIN reactivate_spots CLOSURE
+
+float closure_t;
+spot_type closure_types_to_reactivate[spot_type_n];
+int closure_types_to_reactivate_n;
+
+void reactivate_spots()
 {
-  for (int i = 0; i < spot_type_n; ++i) {
-    map_data.spot_type_statuses[i] = spot_active;
+  const float t = closure_t;
+
+  for (int i = 0; i < closure_types_to_reactivate_n; ++i) {
+    map_data.tween_per_type[closure_types_to_reactivate[i]].start_t = t;
+    map_data.tween_per_type[closure_types_to_reactivate[i]].end_t = t + death_time * 0.5f;
+    // map_data.tween_per_type[closure_types_to_reactivate[i]].start_v = 0.0f;
+    map_data.tween_per_type[closure_types_to_reactivate[i]].end_v = 1.0f;
   }
 }
+
+
+void reset_spots(const float t)
+{
+  closure_types_to_reactivate_n = 0;
+
+  for (int i = 0; i < spot_type_n; ++i) {
+    if (map_data.spot_type_statuses[i] == spot_inactive) {
+      map_data.spot_type_statuses[i] = spot_active;
+      closure_types_to_reactivate[closure_types_to_reactivate_n] = i;
+      closure_types_to_reactivate_n += 1;
+    }
+  }
+
+  closure_t = t + tween_time * 2.0f;
+  add_schedule(&map_data.reset_schedule, closure_t, reactivate_spots);
+}
+
+// END reactive spots CLOSURE
 
 
 void matrix_xy(const rect* rect, int* x, int* y)
@@ -304,7 +334,7 @@ void update_logic
   if (logic.n == logic.steps_till_eval) {
     evaluate(t);
     logic.n = 0;
-    reset_spots();
+    reset_spots(t);
     // printf("reset!\n");
   } else {
     // stop_death();
