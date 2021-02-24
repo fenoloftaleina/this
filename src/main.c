@@ -321,7 +321,7 @@ void frame(void)
 
   /* lines_data.thickness = 10; */
   /* pos_t positions[] = { {100, 100}, {300, 200}, {500, 100} }; */
-  /* add_lines(&lines_bo, positions, positions, 3, &(col_t){0.1f, 0.1f, 0.1f, 1.0f}, false, frame_fraction); */
+  /* add_lines(&lines_bo, positions, 3, &(col_t){0.1f, 0.1f, 0.1f, 1.0f}, flat_z, false); */
 
 
   tick_buffer_object(&sprites_bo);

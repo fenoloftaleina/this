@@ -28,6 +28,7 @@ const float death_time = 3.0f;
 
 void start_death(const float t)
 {
+  // reset_schedule(&death_data.schedule);
   add_schedule(&death_data.schedule, t + death_time, stop_death);
 
   death_data.tween.start_t = t;
