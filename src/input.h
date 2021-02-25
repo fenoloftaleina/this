@@ -1,26 +1,3 @@
-static char cur_map_name[255];
-
-void run_map(const char* map_name)
-{
-  strcpy(cur_map_name, map_name);
-  load_map(cur_map_name);
-  reload_logic();
-}
-
-
-void reload_current_map()
-{
-  load_map(cur_map_name);
-  reload_logic();
-}
-
-
-void save_current_map()
-{
-  save_map(cur_map_name);
-}
-
-
 void handle_input(const sapp_event* ev)
 {
 #ifdef GUI
@@ -101,15 +78,35 @@ void handle_input(const sapp_event* ev)
         break;
 
       case SAPP_KEYCODE_J:
-        next_spot_type();
+        if (in_data.editor) {
+          next_spot_type();
+        }
         break;
 
       case SAPP_KEYCODE_N:
-        clear_spot();
+        if (in_data.editor) {
+          clear_spot();
+        }
         break;
 
       case SAPP_KEYCODE_P:
-        save_current_map();
+        if (in_data.editor) {
+          save_current_map();
+        }
+        break;
+
+      case SAPP_KEYCODE_C:
+        if (in_data.editor) {
+          duplicate_current_map();
+        }
+        break;
+
+      case SAPP_KEYCODE_V:
+        run_map(cur_map_i - 1);
+        break;
+
+      case SAPP_KEYCODE_B:
+        run_map(cur_map_i + 1);
         break;
 
       default:

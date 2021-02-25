@@ -63,6 +63,7 @@ buffer_object death_bo;
 #include "player.h"
 #include "logic.h"
 #include "editor.h"
+#include "map_list.h"
 #include "input.h"
 
 /* #include "generic.h" */
@@ -239,7 +240,8 @@ void init(void)
   simgui_setup(&(simgui_desc_t){ .dpi_scale = 2.0f });
 #endif
 
-  run_map("level0");
+  load_map_list();
+  run_map(0);
 
   stm_setup();
 

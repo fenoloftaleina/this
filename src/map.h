@@ -252,7 +252,7 @@ void load_map(const char* map_filename)
 void save_map(const char* map_filename)
 {
   char file_path[255];
-  sprintf(file_path, "../../../main/src/maps/%s", map_filename);
+  sprintf(file_path, "%ssrc/maps/%s", main_dir, map_filename);
   mpack_writer_t writer;
   mpack_writer_init_filename(&writer, file_path);
   mpack_start_array(&writer, map_data.matrix_size);
