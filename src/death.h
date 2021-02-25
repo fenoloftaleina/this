@@ -9,6 +9,8 @@ typedef struct
 
   schedule_data_t schedule;
   tween_data_t tween;
+
+  bool player_dead;
 } death_data_t;
 
 
@@ -21,6 +23,8 @@ void stop_death()
 {
   death_data.n = 0;
   memset(death_data.matrix, -1, death_data.matrix_size * sizeof(int));
+
+  death_data.player_dead = false;
 }
 
 
@@ -52,6 +56,8 @@ void init_death()
   reset_schedule(&death_data.schedule);
 
   death_data.tween.fn = lerp_tween;
+
+  death_data.player_dead = false;
 }
 
 

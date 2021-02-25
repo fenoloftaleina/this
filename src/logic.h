@@ -99,6 +99,15 @@ int matrix_i(const int x, const int y)
 }
 
 
+bool player_hit(const float x1, const float y1, const float x2, const float y2)
+{
+  float mid_x = player_data.rect.x1 + player_data.width * 0.5f;
+  float mid_y = player_data.rect.y1 + player_data.height * 0.5f;
+
+  return mid_x >= x1 && mid_x < x2 && mid_y >= y1 && mid_y < y2;
+}
+
+
 bool death_on(const int k)
 {
   float x1, y1, x2, y2;
@@ -125,6 +134,10 @@ bool death_on(const int k)
   death_data.prev_rects[death_data.n] = death_data.rects[death_data.n];
 
   death_data.n += 1;
+
+  if (player_hit(x1, y1, x2, y2)) {
+    death_data.player_dead = true;
+  }
 
   return true;
 }
