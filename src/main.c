@@ -197,26 +197,18 @@ void init(void)
         {frame_size - inset, frame_size - inset},
         {inset, frame_size - inset},
         {inset, inset - thickness * 0.5f},
+      },
+      (uint16_t[]){5, 2, 2, 2, 2, 5},
+      6,
+      false);
 
+  introduce_lines_model(
+      (pos_t[]){
         {x1, y1},
         {x2, y2},
         {x3, y3},
         {x4, y4},
-        {x1, y1}
-      },
-      (uint16_t[]){5, 2, 2, 2, 2, 5, 5},
-      7,
-      false);
-
-  float mid_size = 25.0f;
-  float mid_beginning = (frame_size - mid_size) * 0.5f;
-  introduce_lines_model(
-      (pos_t[]){
-        {mid_beginning, mid_beginning},
-        {mid_beginning + mid_size, mid_beginning},
-        {mid_beginning + mid_size, mid_beginning + mid_size},
-        {mid_beginning, mid_beginning + mid_size},
-        {mid_beginning, mid_beginning - thickness * 0.5f},
+        {x1, y1},
       },
       (uint16_t[]){5},
       1,

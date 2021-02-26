@@ -129,8 +129,31 @@ void draw_map(const float frame_fraction)
     map_data.rects[i].r = map_data.rects[i].g = map_data.rects[i].b =
       map_data.prev_rects[i].r = map_data.prev_rects[i].g = map_data.prev_rects[i].b =
       lerp(death_type_color.r, black_f, map_data.tween_per_type[type].v);
-
     map_data.temp_models_list[i] = 1;
+  }
+  add_models(
+      &rects_bo, map_data.temp_models_list, map_data.n, 1.0f,
+      map_data.rects, map_data.prev_rects, frame_fraction
+      );
+
+
+  for (int i = 0; i < map_data.n; ++i) {
+    type = map_data.spot_types[i];
+
+    if (type == spot_neutral) {
+      continue;
+    }
+
+    if (map_data.spot_type_statuses[type] == spot_active) {
+      map_data.rects[i].z = map_data.prev_rects[i].z = flat_z - 0.3f;
+    } else {
+      map_data.rects[i].z = map_data.prev_rects[i].z = flat_z - 0.6f;
+    }
+
+    map_data.rects[i].r = map_data.rects[i].g = map_data.rects[i].b =
+      map_data.prev_rects[i].r = map_data.prev_rects[i].g = map_data.prev_rects[i].b =
+      lerp(death_type_color.r, black_f, map_data.tween_per_type[type].v);
+    map_data.temp_models_list[i] = 2;
   }
   add_models(
       &rects_bo, map_data.temp_models_list, map_data.n, 1.0f,
@@ -139,6 +162,10 @@ void draw_map(const float frame_fraction)
 
   for (int i = 0; i < map_data.n; ++i) {
     type = map_data.spot_types[i];
+
+    if (type == spot_neutral) {
+      continue;
+    }
 
     map_data.prev_rects[i].r = map_data.rects[i].r =
       lerp(
