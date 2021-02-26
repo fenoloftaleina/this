@@ -24,7 +24,7 @@ void reload_logic()
   logic.jumped_meantime = false;
   logic.alive = true;
 
-  stop_death();
+  reset_killing();
 
   for (int i = 0; i < logic.steps_till_eval; ++i) {
     logic.touch_ids[i] = -1;
@@ -39,6 +39,7 @@ void deactivate_spots(const int id, const float t)
   spot_type type = map_data.spot_types[id];
 
   if (map_data.spot_type_statuses[type] != spot_inactive) {
+    map_data.prev_spot_type_statuses[type] = map_data.spot_type_statuses[type];
     map_data.spot_type_statuses[type] = spot_inactive;
 
     map_data.tween_per_type[type].start_t = t;
@@ -61,7 +62,7 @@ void reactivate_spots()
 
   for (int i = 0; i < closure_types_to_reactivate_n; ++i) {
     map_data.tween_per_type[closure_types_to_reactivate[i]].start_t = t;
-    map_data.tween_per_type[closure_types_to_reactivate[i]].end_t = t + death_time * 0.5f;
+    map_data.tween_per_type[closure_types_to_reactivate[i]].end_t = t + killing_length * 0.5f;
     // map_data.tween_per_type[closure_types_to_reactivate[i]].start_v = 0.0f;
     map_data.tween_per_type[closure_types_to_reactivate[i]].end_v = 1.0f;
   }
@@ -79,6 +80,23 @@ void reset_spots(const float t)
       closure_types_to_reactivate_n += 1;
     }
   }
+
+  closure_t = t + tween_time * 2.0f;
+  add_schedule(&map_data.reset_schedule, closure_t, reactivate_spots);
+}
+
+
+void undo_spot(const float t, const spot_type type)
+{
+
+  closure_types_to_reactivate_n = 1;
+  closure_types_to_reactivate[0] = type;
+
+  map_data.spot_type_statuses[type] = map_data.prev_spot_type_statuses[type];
+  map_data.tween_per_type[type].start_t = t;
+  map_data.tween_per_type[type].end_t = t + killing_length * 0.5f;
+  // map_data.tween_per_type[type].start_v = 0.0f;
+  map_data.tween_per_type[type].end_v = 1.0f;
 
   closure_t = t + tween_time * 2.0f;
   add_schedule(&map_data.reset_schedule, closure_t, reactivate_spots);
@@ -135,7 +153,7 @@ bool death_on(const int k)
 
   death_data.n += 1;
 
-  if (player_hit(x1, y1, x2, y2)) {
+  if (player_hit(x1, y1, x2, y2)) { // I have the matrix_xy fn as well.
     death_data.player_dead = true;
   }
 
@@ -174,7 +192,18 @@ void evaluate(const float t)
     }
   }
 
-  start_death(t);
+
+  if (death_data.player_dead) {
+    // logic.n -= 1;
+    // undo_spot(t, logic.touch_spot_types[logic.n]);
+
+    show_death(t);
+  } else {
+    show_killing(t);
+    printf("reset\n");
+    logic.n = 0;
+    reset_spots(t);
+  }
 }
 
 
@@ -346,10 +375,5 @@ void update_logic
 
   if (logic.n == logic.steps_till_eval) {
     evaluate(t);
-    logic.n = 0;
-    reset_spots(t);
-    // printf("reset!\n");
-  } else {
-    // stop_death();
   }
 }

@@ -19,26 +19,37 @@ death_data_t death_data;
 color death_color = {0.9f, 0.5f, 0.7f};
 
 
-void stop_death()
+void reset_killing()
 {
   death_data.n = 0;
   memset(death_data.matrix, -1, death_data.matrix_size * sizeof(int));
 
-  death_data.player_dead = false;
+  // death_data.player_dead = false;
 }
 
 
-const float death_time = 3.0f;
+const float killing_length = 3.0f;
 
-void start_death(const float t)
+void show_killing(const float t)
 {
   // reset_schedule(&death_data.schedule);
-  add_schedule(&death_data.schedule, t + death_time, stop_death);
+  add_schedule(&death_data.schedule, t + killing_length, reset_killing);
 
   death_data.tween.start_t = t;
-  death_data.tween.end_t = t + death_time;
+  death_data.tween.end_t = t + killing_length;
   death_data.tween.start_v = 0.0f;
   death_data.tween.end_v = 1.0f;
+}
+
+
+static const float death_tween_subpart = 0.25f;
+
+void show_death(const float t)
+{
+  death_data.tween.start_t = t;
+  death_data.tween.end_t = t + killing_length * death_tween_subpart;
+  death_data.tween.start_v = 0.0f;
+  death_data.tween.end_v = 1.0f * death_tween_subpart;
 }
 
 
@@ -51,7 +62,7 @@ void init_death()
 
   death_data.matrix = (int*)malloc(death_data.matrix_size * sizeof(int));
 
-  stop_death();
+  reset_killing();
 
   reset_schedule(&death_data.schedule);
 

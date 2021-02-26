@@ -70,15 +70,36 @@ void draw_player(const float frame_fraction)
   float in_y2 = 15.0f;
   float glow_diff_top = 15.0f;
 
+  col_t red_tint = {0.8f, 0.1f, 0.3f, 1.0f};
   float red_tween = 0.0f;
   if (death_data.player_dead) {
-    red_tween = sin(death_data.tween.v * 3.14159);
+    red_tween = death_data.tween.v * 2.0f;
   }
 
-  rect player_rects[] = (rect[]){
-    {player_x, player_y, player_x + player_data.width, player_y + player_data.height, white_f + red_tween, white_f, white_f, 1.0f, flat_z - 0.5f, -1.0f, -1.0f},
-    {player_x + in_x1, player_y + in_y1, player_x + player_data.width - in_x2, player_y + player_data.height - in_y2 - glow_diff_top, gray_f + red_tween, gray_f, gray_f, 1.0f, flat_z - 0.3f, -1.0f, -1.0f},
-    {player_x + in_x1, player_y + player_data.height - in_y2 - glow_diff_top, player_x + player_data.width - in_x2, player_y + player_data.height - in_y2, light_gray_f + red_tween, light_gray_f, light_gray_f, 1.0f, flat_z - 0.3f, -1.0f, -1.0f},
+  rect player_rects[3];
+  player_rects[0] = (rect){
+    player_x, player_y, player_x + player_data.width, player_y + player_data.height,
+    lerp(white_f, red_tint.r, red_tween),
+    lerp(white_f, red_tint.g, red_tween),
+    lerp(white_f, red_tint.b, red_tween),
+    1.0f,
+    flat_z - 0.5f, -1.0f, -1.0f
+  };
+  player_rects[1] = (rect){
+    player_x + in_x1, player_y + in_y1, player_x + player_data.width - in_x2, player_y + player_data.height - in_y2 - glow_diff_top,
+    lerp(gray_f, red_tint.r, red_tween),
+    lerp(gray_f, red_tint.g, red_tween),
+    lerp(gray_f, red_tint.b, red_tween),
+    1.0f,
+    flat_z - 0.3f, -1.0f, -1.0f
+  };
+  player_rects[2] = (rect){
+    player_x + in_x1, player_y + player_data.height - in_y2 - glow_diff_top, player_x + player_data.width - in_x2, player_y + player_data.height - in_y2,
+    lerp(light_gray_f, red_tint.r, red_tween),
+    lerp(light_gray_f, red_tint.g, red_tween),
+    lerp(light_gray_f, red_tint.b, red_tween),
+    1.0f,
+    flat_z - 0.3f, -1.0f, -1.0f
   };
 
   add_rects(&rects_bo, player_rects, player_rects, sizeof(player_rects) / sizeof(rect), frame_fraction);

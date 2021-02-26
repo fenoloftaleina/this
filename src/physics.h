@@ -295,6 +295,10 @@ float h_clamp(const float val, const float clamp_val)
 void update_player_positions
 (const float t, const float dt)
 {
+  if (death_data.player_dead) {
+    return;
+  }
+
   // printf("%f\n", t);
   if (in_data.v == IN_UP && !jump_state.in_air) {
     jump_state.v = v_clamp(jump_state.init_v, jump_state.low_clamp, jump_state.high_clamp);

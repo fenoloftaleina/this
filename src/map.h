@@ -30,6 +30,7 @@ typedef struct
   rect* rects;
   spot_type* spot_types;
   spot_type_status spot_type_statuses[spot_type_n];
+  spot_type_status prev_spot_type_statuses[spot_type_n];
 
   int* matrix; // matrix, linear, but 2d
 
@@ -196,6 +197,7 @@ void raw_spots_to_matrix()
 
   for (int i = 0; i < spot_type_n; ++i) {
     map_data.spot_type_statuses[i] = spot_active;
+    map_data.prev_spot_type_statuses[i] = spot_active;
   }
 }
 

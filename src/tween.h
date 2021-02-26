@@ -38,7 +38,6 @@ float pcurve_tween(const float a)
 
 float minus_pow_x2 (const float a)
 {
-
   return -pow(a * 2.0f - 1.0f, 2.0f) + 1.0f;
 }
 
