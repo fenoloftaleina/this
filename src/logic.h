@@ -190,7 +190,8 @@ void evaluate(const float t)
 {
   int spot_x, spot_y, j;
   for (int i = 0; i < map_data.n; ++i) {
-    if (map_data.spot_type_statuses[map_data.spot_types[i]] == spot_active) {
+    if (map_data.spot_types[i] != spot_neutral &&
+        map_data.spot_type_statuses[map_data.spot_types[i]] == spot_active) {
       matrix_xy(&map_data.rects[i], &spot_x, &spot_y);
 
       // death->matrix[matrix_i(spot_x, spot_y)] = 1;
@@ -370,7 +371,8 @@ void update_logic
   if (found_id == -1 ||
       (!logic.jumped_meantime &&
        logic.n > 0 &&
-       logic.touch_ids[logic.n - 1] == found_id)) {
+       logic.touch_ids[logic.n - 1] == found_id) ||
+      map_data.spot_types[found_id] == spot_neutral) {
     return;
   }
 

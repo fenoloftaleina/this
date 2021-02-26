@@ -15,12 +15,13 @@ typedef enum spot_type
   spot_two,
   spot_three,
   spot_four,
-  spot_five
+  spot_five,
+  spot_neutral
 } spot_type;
 
 const int SPRITE_OFFSET = 0;
 
-const int spot_type_n = 5;
+const int spot_type_n = 6;
 
 
 typedef struct
@@ -70,6 +71,7 @@ color type_colors[] = {
   {0.631f, 0.853f, 0.846f},
   {0.131f, 0.853f, 0.846f},
   {0.131f, 0.253f, 0.846f},
+  {0.9f, 0.9f, 0.9f},
 };
 
 const color death_type_color = (color){0.8f, 0.8f, 0.8f};
