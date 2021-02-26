@@ -126,7 +126,6 @@ void reload_logic()
   }
 
   reset_death();
-  reset_player(900.0f, 1500.0f);
 }
 
 

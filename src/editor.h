@@ -55,3 +55,12 @@ void clear_spot()
 {
   set_raw_spot(editor_data.x, editor_data.y, spot_empty);
 }
+
+
+void set_player_start_position()
+{
+  map_data.player_start_x = (int)(((float)editor_data.x + 0.5f) * map_data.raw_tile_width);
+  map_data.player_start_y = (int)(((float)editor_data.y + 0.5f) * map_data.raw_tile_height);
+
+  reset_player(map_data.player_start_x, map_data.player_start_y);
+}

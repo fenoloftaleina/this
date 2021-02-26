@@ -49,6 +49,8 @@ typedef struct
 
   tween_data_t tween_per_type[spot_type_n];
   schedule_data_t reset_schedule;
+
+  int player_start_x, player_start_y;
 } map_data_t;
 
 
@@ -235,6 +237,7 @@ void load_map(const char* map_filename)
     fprintf(stderr, "An error occurred decoding the data!\n");
     return;
   }
+
   // int cnt = mpack_tag_array_count(&tag);
   for (int i = 0; i < map_data.matrix_size; ++i) {
     tag = mpack_read_tag(&reader);
@@ -254,6 +257,29 @@ void load_map(const char* map_filename)
   }
   mpack_done_array(&reader);
 
+  tag = mpack_read_tag(&reader);
+  if (mpack_tag_type(&tag) == mpack_type_uint) {
+    map_data.player_start_x = mpack_tag_uint_value(&tag);
+  } else {
+    map_data.player_start_x = mpack_tag_int_value(&tag);
+  }
+  if (mpack_reader_error(&reader) != mpack_ok) {
+    fprintf(stderr, "An error occurred decoding the data!\n");
+    return;
+  }
+
+  tag = mpack_read_tag(&reader);
+  if (mpack_tag_type(&tag) == mpack_type_uint) {
+    map_data.player_start_y = mpack_tag_uint_value(&tag);
+  } else {
+    map_data.player_start_y = mpack_tag_int_value(&tag);
+  }
+  if (mpack_reader_error(&reader) != mpack_ok) {
+    fprintf(stderr, "An error occurred decoding the data!\n");
+    return;
+  }
+
+
   reset_map();
 
   raw_spots_to_matrix();
@@ -271,6 +297,8 @@ void save_map(const char* map_filename)
     mpack_write_int(&writer, map_data.raw_spot_types[i]);
   }
   mpack_finish_array(&writer);
+  mpack_write_int(&writer, map_data.player_start_x);
+  mpack_write_int(&writer, map_data.player_start_y);
   if (mpack_writer_destroy(&writer) != mpack_ok) {
     fprintf(stderr, "An error occurred encoding the data!\n");
     return;

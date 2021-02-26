@@ -93,6 +93,12 @@ void handle_input(const sapp_event* ev, const float t)
         }
         break;
 
+      case SAPP_KEYCODE_O:
+        if (in_data.editor) {
+          set_player_start_position();
+        }
+        break;
+
       case SAPP_KEYCODE_P:
         if (in_data.editor) {
           save_current_map();

@@ -42,9 +42,6 @@ void init_player()
 {
   player_data.width = 100.0f;
   player_data.height = 120.0f;
-
-  float start_x = 900.0f, start_y = 1500.0f;
-  reset_player(start_x, start_y);
 }
 
 
