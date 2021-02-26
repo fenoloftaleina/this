@@ -100,7 +100,7 @@ void init(void)
     },
   });
 
-  sdtx_canvas(sapp_width() * 0.2f, sapp_height() * 0.2f);
+  sdtx_canvas(sapp_width() * 0.05f, sapp_height() * 0.05f);
   sdtx_origin(3.0f, 3.0f);
   sdtx_font(0);
   sdtx_color3f(1.0f, 0.0f, 0.0f);
@@ -311,6 +311,7 @@ void frame(void)
   /* add_rects(&sprites_bo, &bg, &bg, 1, frame_fraction); */
 
   draw_player(frame_fraction);
+  draw_logic(frame_fraction);
   draw_map(frame_fraction);
   draw_death(frame_fraction);
   if (in_data.editor) {

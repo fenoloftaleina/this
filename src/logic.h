@@ -1,12 +1,16 @@
+const int TOUCH_N = 255 * 3;
+
 typedef struct
 {
-  int touch_ids[3];
-  spot_type touch_spot_types[3];
+  int touch_ids[TOUCH_N];
+  spot_type touch_spot_types[TOUCH_N];
   bool jumped_meantime;
 
   const int default_steps_till_eval;
   int steps_till_eval;
   int n;
+
+  int display_n;
 } logic_data;
 
 
@@ -52,6 +56,12 @@ void reactivate_spots()
 }
 
 
+void reset_display_n()
+{
+  logic.display_n = logic.n % logic.steps_till_eval;
+}
+
+
 void reset_spots(const float t)
 {
   closure_types_to_reactivate_n = 0;
@@ -66,6 +76,8 @@ void reset_spots(const float t)
 
   closure_t = t + tween_time * 2.0f;
   add_schedule(&map_data.reset_schedule, closure_t, reactivate_spots);
+
+  add_schedule(&map_data.reset_schedule, closure_t + killing_length * 0.3f, reset_display_n);
 }
 
 
@@ -84,8 +96,11 @@ void undo_spot(const float t, const spot_type type)
 
 void undo(const float t)
 {
+  fprintf(stderr, "undo rects %d, logic n %d\n", player_data.undo_rects_i, logic.n);
   if (player_data.undo_rects_i > 0 && logic.n > 0) {
-    logic.n = logic.n - 1;
+    logic.n -= 1;
+    logic.display_n = logic.n % logic.steps_till_eval;
+
     player_data.undo_rects_i = (player_data.undo_rects_i - 1) % UNDO_RECTS_N;
     player_data.rect = player_data.undo_rects[player_data.undo_rects_i];
     player_data.prev_rect = player_data.rect;
@@ -103,6 +118,7 @@ void reload_logic()
 {
   logic.steps_till_eval = logic.default_steps_till_eval;
   logic.n = 0;
+  logic.display_n = 0;
   logic.jumped_meantime = false;
 
   for (int i = 0; i < logic.steps_till_eval; ++i) {
@@ -206,7 +222,6 @@ void evaluate(const float t)
     show_death(t);
   } else {
     show_killing(t);
-    logic.n = 0;
     reset_spots(t);
   }
 }
@@ -224,6 +239,17 @@ void evaluate(const float t)
 // {
 //   player_data.rect.x1 -= twitch_size;
 // }
+
+
+void draw_logic(const float frame_fraction)
+{
+  (void)frame_fraction;
+
+  sdtx_origin(15.0f, 10.0f);
+  sdtx_font(0);
+  sdtx_color4f(0.5f, 0.5f, 0.5f, 0.75f);
+  sdtx_printf("%d\n", logic.display_n);
+}
 
 
 void update_logic
@@ -322,8 +348,6 @@ void update_logic
     }
   }
 
-  // sdtx_printf("%d. found_id: %d\n", logic.n, found_id);
-  // printf("%d. found_id: %d -- %d << %d\n", logic.n, found_id, (logic.n + 2) % logic.steps_till_eval, logic.jumped_meantime);
 
   if ((bottom_id != -1 && top_id != -1) ||
       (left_id != -1 && right_id != -1)) {
@@ -345,7 +369,8 @@ void update_logic
 
   if (found_id == -1 ||
       (!logic.jumped_meantime &&
-       logic.touch_ids[(logic.n + 2) % logic.steps_till_eval] == found_id)) {
+       logic.n > 0 &&
+       logic.touch_ids[logic.n - 1] == found_id)) {
     return;
   }
 
@@ -378,7 +403,9 @@ void update_logic
     logic.n += 1;
   }
 
-  if (logic.n == logic.steps_till_eval) {
+  logic.display_n = logic.n % logic.steps_till_eval;
+
+  if (logic.n > 0 && logic.n % logic.steps_till_eval == 0) {
     evaluate(t);
   }
 }

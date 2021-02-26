@@ -27,13 +27,14 @@ void reset_player(const float start_x, const float start_y)
 
   // player_data.animation = player_animations_data.animations[RUN_RIGHT];
 
-  player_data.undo_rects_i = -1;
-
   const float pw2 = player_data.width * 0.5f;
   const float ph2 = player_data.height * 0.5f;
 
   player_data.rect = (rect){start_x - pw2, start_y - ph2, start_x + pw2, start_y + ph2, 0.9f, 0.9f, 0.9f, 1.0f, flat_z - 0.5f, -1.0f, -1.0f, -1.0f, -1.0f};
   player_data.prev_rect = player_data.rect;
+
+  player_data.undo_rects_i = 0;
+  player_data.undo_rects[player_data.undo_rects_i] = player_data.rect;
 }
 
 
