@@ -1,4 +1,4 @@
-void handle_input(const sapp_event* ev)
+void handle_input(const sapp_event* ev, const float t)
 {
 #ifdef GUI
   simgui_handle_event(ev);
@@ -75,6 +75,10 @@ void handle_input(const sapp_event* ev)
 
       case SAPP_KEYCODE_R:
         reload_current_map();
+        break;
+
+      case SAPP_KEYCODE_U:
+        undo(t);
         break;
 
       case SAPP_KEYCODE_J:

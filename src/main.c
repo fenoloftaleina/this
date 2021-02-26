@@ -250,15 +250,16 @@ void init(void)
 }
 
 
-static void input(const sapp_event* ev)
-{
-  handle_input(ev);
-}
-
-
 static uint64_t last_time = 0;
 static float t = 0.0f, frame_time, accumulator = 0.0f;
 static float frame_fraction;
+
+
+static void input(const sapp_event* ev)
+{
+  handle_input(ev, t);
+}
+
 
 /* bool once = false; */
 

@@ -1,3 +1,5 @@
+const UNDO_RECTS_N = 255;
+
 typedef struct
 {
   rect rect;
@@ -8,6 +10,9 @@ typedef struct
   bool just_jumped;
 
   animation_data_t animation;
+
+  rect undo_rects[UNDO_RECTS_N];
+  int undo_rects_i;
 } player_data_t;
 
 player_data_t player_data;
@@ -31,6 +36,8 @@ void init_player()
   player_data.just_jumped = false;
 
   // player_data.animation = player_animations_data.animations[RUN_RIGHT];
+
+  player_data.undo_rects_i = -1;
 }
 
 
