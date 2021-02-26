@@ -7,29 +7,12 @@ typedef struct
   const int default_steps_till_eval;
   int steps_till_eval;
   int n;
-
-  bool alive;
 } logic_data;
 
 
 logic_data logic = (logic_data){
   .default_steps_till_eval = 3
 };
-
-
-void reload_logic()
-{
-  logic.steps_till_eval = logic.default_steps_till_eval;
-  logic.n = 0;
-  logic.jumped_meantime = false;
-  logic.alive = true;
-
-  reset_killing();
-
-  for (int i = 0; i < logic.steps_till_eval; ++i) {
-    logic.touch_ids[i] = -1;
-  }
-}
 
 
 static const float tween_time = 0.25f;
@@ -113,6 +96,21 @@ void undo(const float t)
       death_data.player_dead = false;
     }
   }
+}
+
+
+void reload_logic()
+{
+  logic.steps_till_eval = logic.default_steps_till_eval;
+  logic.n = 0;
+  logic.jumped_meantime = false;
+
+  for (int i = 0; i < logic.steps_till_eval; ++i) {
+    logic.touch_ids[i] = -1;
+  }
+
+  reset_death();
+  reset_player(900.0f, 1500.0f);
 }
 
 
@@ -244,9 +242,6 @@ void update_logic
 
   int logic_x, logic_y;
   matrix_xy(&player_data.rect, &logic_x, &logic_y);
-
-  // sdtx_printf("step %d - %s\n pos %f %f - %d %d", logic.n, logic.alive ? "alive" : "dead", player_data.rect.x1, player_data.rect.y1, logic_x, logic_y);
-  // sdtx_printf("w h %d %d", sapp_width(), sapp_height());
 
 
 

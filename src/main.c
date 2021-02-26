@@ -29,10 +29,16 @@ const char* main_dir = "../../../main/";
 
 const float dt = 1.0f / 60.0f;
 
+uint64_t last_time = 0;
+float t = 0.0f, frame_time, accumulator = 0.0f;
+float frame_fraction;
+
+
 /* #define RUN 0 */
 /* #define RUN1 1 */
 /* #define RUN_COUNT 2 */
 /* #define SPRITES_COUNT 2 */
+
 
 #include "schedule.h"
 #include "tween.h"
@@ -248,11 +254,6 @@ void init(void)
   in_data.h = in_data.v = IN_NONE;
   in_data.editor = false;
 }
-
-
-static uint64_t last_time = 0;
-static float t = 0.0f, frame_time, accumulator = 0.0f;
-static float frame_fraction;
 
 
 static void input(const sapp_event* ev)

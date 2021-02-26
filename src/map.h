@@ -79,16 +79,8 @@ float tile_width = 200.0f;
 float tile_height = 200.0f;
 
 
-void init_map()
+void reset_map()
 {
-  map_data.prev_rects = (rect*)malloc(map_data.matrix_size * sizeof(rect));
-  map_data.rects = (rect*)malloc(map_data.matrix_size * sizeof(rect));
-  map_data.spot_types = (spot_type*)malloc(map_data.matrix_size * sizeof(spot_type));
-  map_data.matrix = (int*)malloc(map_data.matrix_size * sizeof(int));
-  memset(map_data.matrix, -1, map_data.matrix_size * sizeof(int));
-  map_data.raw_spot_types = (spot_type*)malloc(map_data.matrix_size * sizeof(spot_type));
-  map_data.temp_models_list = (int*)malloc(map_data.matrix_size * sizeof(int));
-
   for (int i = 0; i < spot_type_n; ++i) {
     map_data.tween_per_type[i].fn = lerp_tween;
 
@@ -99,6 +91,20 @@ void init_map()
   }
 
   reset_schedule(&map_data.reset_schedule);
+}
+
+
+void init_map()
+{
+  map_data.prev_rects = (rect*)malloc(map_data.matrix_size * sizeof(rect));
+  map_data.rects = (rect*)malloc(map_data.matrix_size * sizeof(rect));
+  map_data.spot_types = (spot_type*)malloc(map_data.matrix_size * sizeof(spot_type));
+  map_data.matrix = (int*)malloc(map_data.matrix_size * sizeof(int));
+  memset(map_data.matrix, -1, map_data.matrix_size * sizeof(int));
+  map_data.raw_spot_types = (spot_type*)malloc(map_data.matrix_size * sizeof(spot_type));
+  map_data.temp_models_list = (int*)malloc(map_data.matrix_size * sizeof(int));
+
+  reset_map();
 }
 
 
@@ -246,6 +252,7 @@ void load_map(const char* map_filename)
   }
   mpack_done_array(&reader);
 
+  reset_map();
 
   raw_spots_to_matrix();
 }

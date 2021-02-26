@@ -23,8 +23,6 @@ void reset_killing()
 {
   death_data.n = 0;
   memset(death_data.matrix, -1, death_data.matrix_size * sizeof(int));
-
-  // death_data.player_dead = false;
 }
 
 
@@ -53,6 +51,18 @@ void show_death(const float t)
 }
 
 
+void reset_death()
+{
+  reset_killing();
+
+  reset_schedule(&death_data.schedule);
+
+  death_data.tween.fn = lerp_tween;
+
+  death_data.player_dead = false;
+}
+
+
 void init_death()
 {
   death_data.matrix_size = map_data.matrix_size;
@@ -62,13 +72,7 @@ void init_death()
 
   death_data.matrix = (int*)malloc(death_data.matrix_size * sizeof(int));
 
-  reset_killing();
-
-  reset_schedule(&death_data.schedule);
-
-  death_data.tween.fn = lerp_tween;
-
-  death_data.player_dead = false;
+  reset_death();
 }
 
 

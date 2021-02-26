@@ -1,4 +1,4 @@
-const UNDO_RECTS_N = 255;
+const int UNDO_RECTS_N = 255;
 
 typedef struct
 {
@@ -21,23 +21,29 @@ player_data_t player_data;
 #include "physics.h"
 
 
-void init_player()
+void reset_player(const float start_x, const float start_y)
 {
-  player_data.width = 100.0f;
-  player_data.height = 120.0f;
-
-  const float pw2 = player_data.width * 0.5f;
-  const float ph2 = player_data.height * 0.5f;
-
-  player_data.rect = (rect){-pw2, -ph2, pw2, ph2, 0.9f, 0.9f, 0.9f, 1.0f, flat_z - 0.5f, -1.0f, -1.0f, -1.0f, -1.0f};
-  move_rect(&player_data.rect, 900.0f, 1500.0f);
-  player_data.prev_rect = player_data.rect;
-
   player_data.just_jumped = false;
 
   // player_data.animation = player_animations_data.animations[RUN_RIGHT];
 
   player_data.undo_rects_i = -1;
+
+  const float pw2 = player_data.width * 0.5f;
+  const float ph2 = player_data.height * 0.5f;
+
+  player_data.rect = (rect){start_x - pw2, start_y - ph2, start_x + pw2, start_y + ph2, 0.9f, 0.9f, 0.9f, 1.0f, flat_z - 0.5f, -1.0f, -1.0f, -1.0f, -1.0f};
+  player_data.prev_rect = player_data.rect;
+}
+
+
+void init_player()
+{
+  player_data.width = 100.0f;
+  player_data.height = 120.0f;
+
+  float start_x = 900.0f, start_y = 1500.0f;
+  reset_player(start_x, start_y);
 }
 
 
