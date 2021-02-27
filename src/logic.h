@@ -6,9 +6,12 @@ typedef struct
   spot_type touch_spot_types[TOUCH_N];
   bool jumped_meantime;
 
+  spot_type_status prev_spot_type_statuses[TOUCH_N * spot_type_n];
+
   const int default_steps_till_eval;
   int steps_till_eval;
   int n;
+  int n_offset;
 
   int display_n;
 } logic_data;
@@ -25,8 +28,9 @@ void deactivate_spots(const int id, const float t)
 {
   spot_type type = map_data.spot_types[id];
 
+  logic.prev_spot_type_statuses[logic.n * spot_type_n + type] = map_data.spot_type_statuses[type];
+
   if (map_data.spot_type_statuses[type] != spot_inactive) {
-    map_data.prev_spot_type_statuses[type] = map_data.spot_type_statuses[type];
     map_data.spot_type_statuses[type] = spot_inactive;
 
     map_data.tween_per_type[type].start_t = t;
@@ -58,37 +62,40 @@ void reactivate_spots()
 
 void reset_display_n()
 {
-  logic.display_n = logic.n % logic.steps_till_eval;
+  logic.display_n = (logic.n + logic.n_offset) % logic.steps_till_eval;
 }
 
 
-void reset_spots(const float t)
+void reset_spots(const float when)
 {
   closure_types_to_reactivate_n = 0;
 
   for (int i = 0; i < spot_type_n; ++i) {
-    if (map_data.spot_type_statuses[i] == spot_inactive) {
+    if (i != spot_checkpoint &&
+        map_data.spot_type_statuses[i] == spot_inactive) {
       map_data.spot_type_statuses[i] = spot_active;
       closure_types_to_reactivate[closure_types_to_reactivate_n] = i;
       closure_types_to_reactivate_n += 1;
     }
   }
 
-  closure_t = t + tween_time * 2.0f;
+  closure_t = when;
   add_schedule(&map_data.reset_schedule, closure_t, reactivate_spots);
 
-  add_schedule(&map_data.reset_schedule, closure_t + killing_length * 0.3f, reset_display_n);
+  // add_schedule(&map_data.reset_schedule, closure_t + killing_length * 0.3f, reset_display_n);
 }
 
 
 void undo_spot(const float t, const spot_type type)
 {
+  if (map_data.spot_type_statuses[type] != logic.prev_spot_type_statuses[logic.n * spot_type_n + type]) {
+    map_data.spot_type_statuses[type] = logic.prev_spot_type_statuses[logic.n * spot_type_n + type];
 
-  map_data.spot_type_statuses[type] = map_data.prev_spot_type_statuses[type];
-  map_data.tween_per_type[type].start_t = t;
-  map_data.tween_per_type[type].end_t = t + tween_time;
-  map_data.tween_per_type[type].start_v = 0.0f;
-  map_data.tween_per_type[type].end_v = 1.0f;
+    map_data.tween_per_type[type].start_t = t;
+    map_data.tween_per_type[type].end_t = t + tween_time;
+    map_data.tween_per_type[type].start_v = 0.0f;
+    map_data.tween_per_type[type].end_v = 1.0f;
+  }
 }
 
 // END reactive spots CLOSURE
@@ -96,14 +103,14 @@ void undo_spot(const float t, const spot_type type)
 
 void undo(const float t)
 {
-  fprintf(stderr, "undo rects %d, logic n %d\n", player_data.undo_rects_i, logic.n);
   if (player_data.undo_rects_i > 0 && logic.n > 0) {
     logic.n -= 1;
-    logic.display_n = logic.n % logic.steps_till_eval;
+    logic.display_n = (logic.n + logic.n_offset) % logic.steps_till_eval;
 
     player_data.undo_rects_i = (player_data.undo_rects_i - 1) % UNDO_RECTS_N;
     player_data.rect = player_data.undo_rects[player_data.undo_rects_i];
     player_data.prev_rect = player_data.rect;
+
     undo_spot(t, logic.touch_spot_types[logic.n]);
 
     if (death_data.player_dead) {
@@ -118,11 +125,16 @@ void reload_logic()
 {
   logic.steps_till_eval = logic.default_steps_till_eval;
   logic.n = 0;
+  logic.n_offset = 0;
   logic.display_n = 0;
   logic.jumped_meantime = false;
 
   for (int i = 0; i < logic.steps_till_eval; ++i) {
     logic.touch_ids[i] = -1;
+  }
+
+  for (int i = 0; i < TOUCH_N * spot_type_n; ++i) {
+    logic.prev_spot_type_statuses[i] = spot_active;
   }
 
   reset_death();
@@ -190,6 +202,7 @@ void evaluate(const float t)
   int spot_x, spot_y, j;
   for (int i = 0; i < map_data.n; ++i) {
     if (map_data.spot_types[i] != spot_neutral &&
+        map_data.spot_types[i] != spot_checkpoint &&
         map_data.spot_type_statuses[map_data.spot_types[i]] == spot_active) {
       matrix_xy(&map_data.rects[i], &spot_x, &spot_y);
 
@@ -222,7 +235,7 @@ void evaluate(const float t)
     show_death(t);
   } else {
     show_killing(t);
-    reset_spots(t);
+    reset_spots(t + tween_time * 2.0f);
   }
 }
 
@@ -269,6 +282,25 @@ void update_logic
   int logic_x, logic_y;
   matrix_xy(&player_data.rect, &logic_x, &logic_y);
 
+  // printf("??? %d %d\n", logic.n, logic.n_offset);
+  if (get_raw_spot(logic_x, logic_y) == spot_checkpoint &&
+      (logic.n + logic.n_offset) % logic.steps_till_eval != 0) {
+    // printf("PRE %d %d\n", logic.n, logic.n_offset);
+
+    logic.n_offset -= logic.n % logic.steps_till_eval;
+    logic.display_n = (logic.n + logic.n_offset) % logic.steps_till_eval;
+
+    // printf("CHECKPOINT %d %d\n", logic.n, logic.n_offset);
+
+    map_data.tween_per_type[spot_checkpoint].start_t = t;
+    map_data.tween_per_type[spot_checkpoint].end_t = t + tween_time;
+    map_data.tween_per_type[spot_checkpoint].start_v = 0.0f;
+    map_data.tween_per_type[spot_checkpoint].end_v = 1.0f;
+
+    reset_spots(t);
+
+    return;
+  }
 
 
   // if (in_data.v == IN_UP) {
@@ -366,12 +398,16 @@ void update_logic
     found_id = left_id + right_id + top_id + bottom_id + 3;
   }
 
+  // printf("found id %d\n", found_id);
 
   if (found_id == -1 ||
       (!logic.jumped_meantime &&
-       logic.n > 0 &&
+       logic.n + logic.n_offset > 0 &&
        logic.touch_ids[logic.n - 1] == found_id) ||
-      map_data.spot_types[found_id] == spot_neutral) {
+      map_data.spot_types[found_id] == spot_neutral ||
+      map_data.spot_types[found_id] == spot_checkpoint) {
+
+    // printf("return\n");
     return;
   }
 
@@ -404,9 +440,9 @@ void update_logic
     logic.n += 1;
   }
 
-  logic.display_n = logic.n % logic.steps_till_eval;
+  logic.display_n = (logic.n + logic.n_offset) % logic.steps_till_eval;
 
-  if (logic.n > 0 && logic.n % logic.steps_till_eval == 0) {
+  if (logic.n + logic.n_offset > 0 && (logic.n + logic.n_offset) % logic.steps_till_eval == 0) {
     evaluate(t);
   }
 }

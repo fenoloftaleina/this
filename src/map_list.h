@@ -51,7 +51,7 @@ void duplicate_current_map()
     printf("%d\n", i);
     map_list[i] = map_list[i - 1];
   }
-  sprintf(map_list[cur_map_i + 1], "%s-%d", map_list[cur_map_i], time(0));
+  sprintf(map_list[cur_map_i + 1], "%s-%ld", map_list[cur_map_i], time(0));
 
   map_list_n += 1;
   cur_map_i += 1;
@@ -64,8 +64,7 @@ void duplicate_current_map()
 
 void reload_current_map()
 {
-  load_map(cur_map_name);
-  reload_logic();
+  run_map(cur_map_i);
 }
 
 

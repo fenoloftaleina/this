@@ -214,6 +214,21 @@ void init(void)
       1,
       false);
 
+  vertex_t vertices_checkpoint[] = {
+    0.0f, tile_height, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, -1.0f,
+    tile_width, tile_height, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, -1.0f,
+    tile_width, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, -1.0f,
+    0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, -1.0f
+  };
+  index_t indices_checkpoint[] = {0, 1, 2, 0, 2, 3};
+
+  introduce_model(
+      vertices_checkpoint,
+      4,
+      indices_checkpoint,
+      6
+      );
+
 
   init_player_animations();
   init_player();
