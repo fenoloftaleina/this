@@ -37,8 +37,8 @@ static float e = 0.1f;
 
 static jump_data jump_state = (jump_data){
   .gravity = -10000.0f,
-  .init_v = 1600.0f,
-  .init_double_v = 1.655f * 1600.0f,
+  .init_v = 1450.0f,
+  .init_double_v = 2350.0f,
   .double_jump_threshold = 0.1f,
 
   .low_clamp = -3.0f * 1600.0f,
