@@ -13,6 +13,9 @@ typedef struct
 
   rect undo_rects[UNDO_RECTS_N];
   int undo_rects_i;
+
+  bool won;
+  bool lost;
 } player_data_t;
 
 player_data_t player_data;
@@ -24,6 +27,8 @@ player_data_t player_data;
 void reset_player(const float start_x, const float start_y)
 {
   player_data.just_jumped = false;
+  player_data.won = false;
+  player_data.lost = false;
 
   // player_data.animation = player_animations_data.animations[RUN_RIGHT];
 

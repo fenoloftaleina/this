@@ -314,6 +314,17 @@ void update_logic
   }
 
 
+  if (player_data.rect.x1 + player_data.width * 0.5f < 0.0f) {
+    player_data.lost = true;
+    return;
+  }
+
+  if (player_data.rect.y1 < 0.0f) {
+    player_data.won = true;
+    return;
+  }
+
+
   // if (in_data.v == IN_UP) {
   //   add_schedule(&player_data.twitch_schedule, t + dt * 20.0f, twitch_fn);
   //   add_schedule(&player_data.twitch_schedule, t + dt * 30.0f, twitch_back_fn);

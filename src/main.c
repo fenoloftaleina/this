@@ -285,6 +285,14 @@ void frame(void)
       update_player(t);
       update_map(t);
       update_death(t);
+
+      if (player_data.won) {
+        run_map(cur_map_i + 1);
+      }
+
+      if (player_data.lost) {
+        reload_current_map();
+      }
     } else {
       update_editor(t, dt);
       in_data.v = in_data.h = IN_NONE;

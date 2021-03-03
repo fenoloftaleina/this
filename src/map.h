@@ -241,7 +241,7 @@ void raw_spots_to_matrix()
   float x1, y1, x2, y2;
   int j = 0;
   for(int i = 0; i < map_data.matrix_size; ++i) {
-    if (map_data.raw_spot_types[i] != -1) {
+    if (map_data.raw_spot_types[i] != spot_empty) {
       cur_type = map_data.raw_spot_types[i];
 
       raw_xy12(i, &x1, &y1, &x2, &y2);
@@ -255,6 +255,8 @@ void raw_spots_to_matrix()
       map_data.spot_types[j] = cur_type;
 
       ++j;
+    } else {
+      map_data.matrix[i] = spot_empty;
     }
   }
 
