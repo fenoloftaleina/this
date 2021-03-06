@@ -375,9 +375,11 @@ void frame(void)
   /* igSliderFloat("damping", &walk_state.damping, 2000.0f, 40000.0f, "%.3f", 1.0f); */
   /* igSliderFloat("transpose", &walk_state.damping, 2000.0f, 20000.0f, "%.3f", 1.0f); */
 
-  igColorEdit3("type colors 1", &type_colors[0], ImGuiColorEditFlags_Float);
-  igColorEdit3("type colors 2", &type_colors[1], ImGuiColorEditFlags_Float);
-  igColorEdit3("type colors 3", &type_colors[2], ImGuiColorEditFlags_Float);
+  igColorEdit3("type colors 1", &type_colors[1], ImGuiColorEditFlags_Float);
+  igColorEdit3("type colors 2", &type_colors[2], ImGuiColorEditFlags_Float);
+  igColorEdit3("type colors 3", &type_colors[3], ImGuiColorEditFlags_Float);
+  igColorEdit3("type colors 4", &type_colors[4], ImGuiColorEditFlags_Float);
+  igColorEdit3("type colors 5", &type_colors[5], ImGuiColorEditFlags_Float);
 
   simgui_render();
 #endif

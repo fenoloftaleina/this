@@ -11,12 +11,12 @@ typedef enum spot_type_status
 typedef enum spot_type
 {
   spot_empty = -1,
+  spot_neutral,
   spot_one,
   spot_two,
   spot_three,
   spot_four,
   spot_five,
-  spot_neutral,
   spot_checkpoint
 } spot_type;
 
@@ -68,12 +68,12 @@ typedef struct color
 
 
 color type_colors[] = {
+  {0.9f, 0.9f, 0.9f},
   {0.039f, 0.035f, 0.031f},
   {0.937f, 0.780f, 0.887f},
   {0.631f, 0.853f, 0.846f},
-  {0.131f, 0.853f, 0.846f},
-  {0.131f, 0.253f, 0.846f},
-  {0.9f, 0.9f, 0.9f},
+  {0.721f, 0.887f, 0.631f},
+  {0.887f, 0.778f, 0.639f},
   {0.7f, 0.7f, 0.7f},
 };
 
