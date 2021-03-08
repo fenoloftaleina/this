@@ -207,6 +207,7 @@ void evaluate(const float t)
   int spot_x, spot_y, j;
   for (int i = 0; i < map_data.n; ++i) {
     if (map_data.spot_types[i] != spot_neutral &&
+        map_data.spot_types[i] != spot_spikes &&
         map_data.spot_types[i] != spot_checkpoint &&
         map_data.spot_type_statuses[map_data.spot_types[i]] == spot_active) {
       matrix_xy(&map_data.rects[i], &spot_x, &spot_y);
@@ -430,6 +431,13 @@ void update_logic
       map_data.spot_types[found_id] == spot_checkpoint) {
 
     // printf("return\n");
+    return;
+  }
+
+  if (map_data.spot_types[found_id] == spot_spikes) {
+    death_data.player_dead = true;
+    show_death(t);
+
     return;
   }
 

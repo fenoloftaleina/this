@@ -17,12 +17,13 @@ typedef enum spot_type
   spot_three,
   spot_four,
   spot_five,
-  spot_checkpoint
+  spot_checkpoint,
+  spot_spikes,
 } spot_type;
 
 const int SPRITE_OFFSET = 0;
 
-const int spot_type_n = 8;
+const int spot_type_n = 9;
 
 
 typedef struct
@@ -79,6 +80,7 @@ color type_colors[] = {
 
 const color death_type_color = (color){0.8f, 0.8f, 0.8f};
 const color checkpoint_type_color = (color){0.9f, 0.9f, 0.9f};
+const color spikes_type_color = (color){0.9f, 0.3f, 0.2f};
 
 
 float tile_width = 200.0f;
@@ -151,6 +153,12 @@ void draw_map(const float frame_fraction)
             );
 
       map_data.temp_models_list[i] = 3;
+    } else if (type == spot_spikes) {
+      map_data.rects[i].r = map_data.prev_rects[i].r = spikes_type_color.r;
+      map_data.rects[i].g = map_data.prev_rects[i].g = spikes_type_color.g;
+      map_data.rects[i].b = map_data.prev_rects[i].b = spikes_type_color.b;
+
+      map_data.temp_models_list[i] = 1;
     } else {
       map_data.rects[i].r = map_data.rects[i].g = map_data.rects[i].b =
         map_data.prev_rects[i].r = map_data.prev_rects[i].g = map_data.prev_rects[i].b =
@@ -168,7 +176,7 @@ void draw_map(const float frame_fraction)
   for (int i = 0; i < map_data.n; ++i) {
     type = map_data.spot_types[i];
 
-    if (type == spot_neutral || type == spot_checkpoint) {
+    if (type == spot_neutral || type == spot_checkpoint || type == spot_spikes) {
       continue;
     }
 
@@ -191,7 +199,7 @@ void draw_map(const float frame_fraction)
   for (int i = 0; i < map_data.n; ++i) {
     type = map_data.spot_types[i];
 
-    if (type == spot_neutral || type == spot_checkpoint) {
+    if (type == spot_neutral || type == spot_checkpoint || type == spot_spikes) {
       continue;
     }
 
