@@ -43,32 +43,34 @@ void run_map(const int map_i)
 }
 
 
+void save_current_map()
+{
+  save_map(cur_map_name);
+}
+
+
 void duplicate_current_map()
 {
   map_list[map_list_n] = (char*)malloc(255 * sizeof(char));
 
   for (int i = map_list_n; i > cur_map_i + 1; i--) {
-    printf("%d\n", i);
     map_list[i] = map_list[i - 1];
   }
-  sprintf(map_list[cur_map_i + 1], "%s-%ld", map_list[cur_map_i], time(0));
+  time_t t = time(0);
+  struct tm tm = *localtime(&t);
+  sprintf(map_list[cur_map_i + 1], "level%d-%s", cur_map_i + 1, asctime(&tm));
 
   map_list_n += 1;
   cur_map_i += 1;
 
   save_map_list();
 
-  run_map(cur_map_i);
+  strcpy(cur_map_name, map_list[cur_map_i]);
+  save_current_map();
 }
 
 
 void reload_current_map()
 {
   run_map(cur_map_i);
-}
-
-
-void save_current_map()
-{
-  save_map(cur_map_name);
 }

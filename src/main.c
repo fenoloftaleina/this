@@ -69,7 +69,7 @@ buffer_object death_bo;
 #include "player.h"
 #include "logic.h"
 #include "editor.h"
-#include "map_list.h"
+#include "maps_list.h"
 #include "input.h"
 
 /* #include "generic.h" */
