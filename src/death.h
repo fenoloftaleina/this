@@ -57,8 +57,6 @@ void reset_death()
 
   reset_schedule(&death_data.schedule);
 
-  death_data.tween.fn = lerp_tween;
-
   death_data.player_dead = false;
 }
 
@@ -71,6 +69,8 @@ void init_death()
   death_data.rects = (rect*)malloc(death_data.matrix_size * sizeof(rect));
 
   death_data.matrix = (int*)malloc(death_data.matrix_size * sizeof(int));
+
+  death_data.tween.fn = lerp_tween;
 
   reset_death();
 }

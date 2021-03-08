@@ -47,7 +47,7 @@ void draw_editor(const float frame_fraction)
 
 void next_spot_type()
 {
-  set_raw_spot(editor_data.x, editor_data.y, (get_raw_spot(editor_data.x, editor_data.y) + 1) % (spot_type_n - 1));
+  set_raw_spot(editor_data.x, editor_data.y, (get_raw_spot(editor_data.x, editor_data.y) + 1) % spot_type_n);
 }
 
 

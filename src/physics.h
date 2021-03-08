@@ -215,8 +215,6 @@ void check_collisions()
   rect_side_end_data rect_side_end;
 
   for (int i = 0; i < map_data.n; ++i) {
-    if (map_data.spot_types[i] == spot_checkpoint) continue;
-
     recalc_rect_side_end(&rect_side_end, &map_data.rects[i], up, left);
     if (lines_intersect(
           collision.p_hanging_x, collision.p_hanging_y, collision.hanging_x, collision.hanging_y,
@@ -229,8 +227,6 @@ void check_collisions()
   }
 
   for (int i = 0; i < map_data.n; ++i) {
-    if (map_data.spot_types[i] == spot_checkpoint) continue;
-
     recalc_rect_side_end(&rect_side_end, &map_data.rects[i], up, left);
     if (lines_intersect(
           collision.p_dragging_x, collision.p_dragging_y, collision.dragging_x, collision.dragging_y,
@@ -248,8 +244,6 @@ void check_collisions()
   }
 
   for (int i = 0; i < map_data.n; ++i) {
-    if (map_data.spot_types[i] == spot_checkpoint) continue;
-
     recalc_rect_side_end(&rect_side_end, &map_data.rects[i], up, left);
     if (lines_intersect(
           collision.p_main_x, collision.p_main_y, collision.main_x, collision.main_y,
@@ -262,8 +256,6 @@ void check_collisions()
   }
 
   for (int i = 0; i < map_data.n; ++i) {
-    if (map_data.spot_types[i] == spot_checkpoint) continue;
-
     recalc_rect_side_end(&rect_side_end, &map_data.rects[i], up, left);
     if (lines_intersect(
           collision.p_main_x, collision.p_main_y, collision.main_x, collision.main_y,

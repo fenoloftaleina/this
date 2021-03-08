@@ -12,18 +12,13 @@ typedef enum spot_type
 {
   spot_empty = -1,
   spot_neutral,
-  spot_one,
-  spot_two,
-  spot_three,
-  spot_four,
-  spot_five,
-  spot_checkpoint,
+  spot_move,
   spot_spikes,
 } spot_type;
 
 const int SPRITE_OFFSET = 0;
 
-const int spot_type_n = 9;
+const int spot_type_n = 3;
 
 
 typedef struct
@@ -68,21 +63,6 @@ typedef struct color
 } color;
 
 
-color type_colors[] = {
-  {0.9f, 0.9f, 0.9f},
-  {0.039f, 0.035f, 0.031f},
-  {0.937f, 0.780f, 0.887f},
-  {0.631f, 0.853f, 0.846f},
-  {0.721f, 0.887f, 0.631f},
-  {0.887f, 0.778f, 0.639f},
-  {0.7f, 0.7f, 0.7f},
-};
-
-const color death_type_color = (color){0.8f, 0.8f, 0.8f};
-const color checkpoint_type_color = (color){0.9f, 0.9f, 0.9f};
-const color spikes_type_color = (color){0.9f, 0.3f, 0.2f};
-
-
 float tile_width = 200.0f;
 float tile_height = 200.0f;
 
@@ -97,8 +77,6 @@ void reset_map()
     map_data.tween_per_type[i].start_v = 0.0f;
     map_data.tween_per_type[i].end_v = 1.0f;
   }
-
-  map_data.tween_per_type[spot_checkpoint].fn = parabola_tween;
 
   reset_schedule(&map_data.reset_schedule);
 }
@@ -122,111 +100,8 @@ static const float black_f = 0.1f;
 
 void draw_map(const float frame_fraction)
 {
-  spot_type type;
-
-  for (int i = 0; i < map_data.n; ++i) {
-    type = map_data.spot_types[i];
-    if (map_data.spot_type_statuses[type] == spot_active) {
-      map_data.rects[i].z = map_data.prev_rects[i].z = flat_z - 0.3f;
-    } else {
-      map_data.rects[i].z = map_data.prev_rects[i].z = flat_z - 0.6f;
-    }
-
-    if (type == spot_checkpoint) {
-      map_data.prev_rects[i].r = map_data.rects[i].r =
-        lerp(
-            type_colors[type].r,
-            checkpoint_type_color.r,
-            map_data.tween_per_type[type].v
-            );
-      map_data.prev_rects[i].g = map_data.rects[i].g =
-        lerp(
-            type_colors[type].g,
-            checkpoint_type_color.g,
-            map_data.tween_per_type[type].v
-            );
-      map_data.prev_rects[i].b = map_data.rects[i].b =
-        lerp(
-            type_colors[type].b,
-            checkpoint_type_color.b,
-            map_data.tween_per_type[type].v
-            );
-
-      map_data.temp_models_list[i] = 3;
-    } else if (type == spot_spikes) {
-      map_data.rects[i].r = map_data.prev_rects[i].r = spikes_type_color.r;
-      map_data.rects[i].g = map_data.prev_rects[i].g = spikes_type_color.g;
-      map_data.rects[i].b = map_data.prev_rects[i].b = spikes_type_color.b;
-
-      map_data.temp_models_list[i] = 1;
-    } else {
-      map_data.rects[i].r = map_data.rects[i].g = map_data.rects[i].b =
-        map_data.prev_rects[i].r = map_data.prev_rects[i].g = map_data.prev_rects[i].b =
-        lerp(death_type_color.r, black_f, map_data.tween_per_type[type].v);
-
-      map_data.temp_models_list[i] = 1;
-    }
-  }
-  add_models(
-      &rects_bo, map_data.temp_models_list, map_data.n, 1.0f,
-      map_data.rects, map_data.prev_rects, frame_fraction
-      );
-
-
-  for (int i = 0; i < map_data.n; ++i) {
-    type = map_data.spot_types[i];
-
-    if (type == spot_neutral || type == spot_checkpoint || type == spot_spikes) {
-      continue;
-    }
-
-    if (map_data.spot_type_statuses[type] == spot_active) {
-      map_data.rects[i].z = map_data.prev_rects[i].z = flat_z - 0.3f;
-    } else {
-      map_data.rects[i].z = map_data.prev_rects[i].z = flat_z - 0.6f;
-    }
-
-    map_data.rects[i].r = map_data.rects[i].g = map_data.rects[i].b =
-      map_data.prev_rects[i].r = map_data.prev_rects[i].g = map_data.prev_rects[i].b =
-      lerp(death_type_color.r, black_f, map_data.tween_per_type[type].v);
-    map_data.temp_models_list[i] = 2;
-  }
-  add_models(
-      &rects_bo, map_data.temp_models_list, map_data.n, 1.0f,
-      map_data.rects, map_data.prev_rects, frame_fraction
-      );
-
-  for (int i = 0; i < map_data.n; ++i) {
-    type = map_data.spot_types[i];
-
-    if (type == spot_neutral || type == spot_checkpoint || type == spot_spikes) {
-      continue;
-    }
-
-    map_data.prev_rects[i].r = map_data.rects[i].r =
-      lerp(
-          death_type_color.r,
-          type_colors[type].r,
-          map_data.tween_per_type[type].v
-          );
-    map_data.prev_rects[i].g = map_data.rects[i].g =
-      lerp(
-          death_type_color.g,
-          type_colors[type].g,
-          map_data.tween_per_type[type].v
-          );
-    map_data.prev_rects[i].b = map_data.rects[i].b =
-      lerp(
-          death_type_color.b,
-          type_colors[type].b,
-          map_data.tween_per_type[type].v
-          );
-
-    map_data.temp_models_list[i] = 0;
-  }
-  add_models(
-      &rects_bo, map_data.temp_models_list, map_data.n, 1.0f,
-      map_data.rects, map_data.prev_rects, frame_fraction
+  add_rects(
+      &sprites_bo, map_data.rects, map_data.prev_rects, map_data.n, frame_fraction
       );
 }
 
@@ -256,8 +131,9 @@ void raw_spots_to_matrix()
 
       map_data.matrix[i] = j;
       map_data.rects[j] = (rect){
-        x1, y1, x2, y2, 0.0f, 0.0f, 0.0f, 1.0f, flat_z, -1.0f, -1.0f
+        x1, y1, x2, y2, 1.0f, 1.0f, 1.0f, 1.0f, flat_z, -1.0f, -1.0f
       };
+      set_sprite(&map_data.rects[j], &texture, SPRITE_OFFSET + cur_type);
 
       map_data.prev_rects[j] = map_data.rects[j];
       map_data.spot_types[j] = cur_type;
