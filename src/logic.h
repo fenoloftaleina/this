@@ -2,7 +2,9 @@ const int TOUCH_N = 255 * 3;
 
 typedef struct
 {
-  int prev_found_ids[UNDO_RECTS_N];
+  bool jumped_meantime;
+  int prev_found_id1s[UNDO_RECTS_N];
+  int prev_found_id2s[UNDO_RECTS_N];
 } logic_data;
 
 
@@ -29,9 +31,12 @@ void deactivate_spots(const int id, const float t)
 
 void reload_logic()
 {
+  logic.jumped_meantime = false;
+
   player_data.undo_rects_i = 0;
   player_data.undo_rects[player_data.undo_rects_i] = player_data.rect;
-  logic.prev_found_ids[player_data.undo_rects_i] = -1;
+  logic.prev_found_id1s[player_data.undo_rects_i] = -1;
+  logic.prev_found_id2s[player_data.undo_rects_i] = -1;
 }
 
 
@@ -172,6 +177,52 @@ void undo(const float t)
 }
 
 
+void run_for(int found_id)
+{
+  spot_type found_type = map_data.spot_types[found_id];
+
+  if (found_type == spot_spikes) {
+    death_data.player_dead = true;
+
+    return;
+  }
+
+  int p_x, p_y;
+  matrix_xy(&player_data.rect, &p_x, &p_y);
+
+  if (found_type == spot_move) {
+    int x, y, i;
+    matrix_xy(&map_data.rects[found_id], &x, &y);
+
+    map_data.matrix[y * map_data.matrix_w + x] = -1;
+
+    if (p_x < x) {
+      i = y * map_data.matrix_w + x + 1;
+    } else if (p_x > x) {
+      i = y * map_data.matrix_w + x - 1;
+    } else if (p_y < y) {
+      i = (y + 1) * map_data.matrix_w + x;
+    } else if (p_y > y) {
+      i = (y - 1) * map_data.matrix_w + x;
+    }
+
+    if (map_data.matrix[i] != -1) {
+      return;
+    }
+
+    map_data.matrix[i] = found_id;
+
+    float x1, y1, x2, y2;
+
+    raw_xy12(i, &x1, &y1, &x2, &y2);
+    map_data.rects[found_id].x1 = x1;
+    map_data.rects[found_id].y1 = y1;
+    map_data.rects[found_id].x2 = x2;
+    map_data.rects[found_id].y2 = y2;
+  }
+}
+
+
 void update_logic
 (const float t, const float dt)
 {
@@ -179,11 +230,12 @@ void update_logic
 
   update_player_positions(t, dt);
 
+  if (player_data.just_jumped) {
+    logic.jumped_meantime = true;
+  }
+
   check_collisions();
 
-
-  int logic_x, logic_y;
-  matrix_xy(&player_data.rect, &logic_x, &logic_y);
 
   // printf("??? %d %d\n", logic.n, logic.n_offset);
   // if (get_raw_spot(logic_x, logic_y) == spot_checkpoint &&
@@ -247,7 +299,8 @@ void update_logic
   float right_overlap = 0.0f;
 
   float temp_overlap;
-  int found_id = -1;
+  int found_id1 = -1;
+  int found_id2 = -1;
 
   for (int i = 0; i < map_data.n; ++i) {
     if (player_data.rect.x1 < map_data.rects[i].x1) {
@@ -305,33 +358,54 @@ void update_logic
       (left_id != -1 && right_id != -1)) {
     // death
     exit(0);
-  } else if (
-      (left_id != -1 && top_id != -1) ||
-      (left_id != -1 && bottom_id != -1) ||
-      (right_id != -1 && top_id != -1) ||
-      (right_id != -1 && bottom_id != -1)) {
-    // double touch
-
-    // printf("double touch\n\n");
-    return;
+  } else if (left_id != -1 && top_id != -1) {
+    found_id1 = left_id;
+    found_id2 = top_id;
+  } else if (left_id != -1 && bottom_id != -1) {
+    found_id1 = left_id;
+    found_id2 = bottom_id;
+  } else if (right_id != -1 && top_id != -1) {
+    found_id1 = right_id;
+    found_id2 = top_id;
+  } else if (right_id != -1 && bottom_id != -1) {
+    found_id1 = right_id;
+    found_id2 = bottom_id;
   } else {
-    found_id = left_id + right_id + top_id + bottom_id + 3;
+    found_id1 = left_id + right_id + top_id + bottom_id + 3;
   }
 
   // printf("found id %d\n", found_id);
 
-  if (found_id == -1 || found_id == logic.prev_found_ids[player_data.undo_rects_i]) {
+  if (found_id1 == -1) {
     return;
   }
 
+  if ((found_id1 == logic.prev_found_id1s[player_data.undo_rects_i] ||
+        found_id1 == logic.prev_found_id2s[player_data.undo_rects_i]) &&
+       !logic.jumped_meantime) {
+    found_id1 = -1;
+  }
+
+  if ((found_id2 == logic.prev_found_id1s[player_data.undo_rects_i] ||
+        found_id2 == logic.prev_found_id2s[player_data.undo_rects_i]) &&
+       !logic.jumped_meantime) {
+    found_id2 = -1;
+  }
+
+  if (found_id1 == -1 && found_id2 == -1) {
+    return;
+  }
+
+  logic.jumped_meantime = false;
+
   player_data.undo_rects_i = (player_data.undo_rects_i + 1) % UNDO_RECTS_N;
   player_data.undo_rects[player_data.undo_rects_i] = player_data.rect;
-  logic.prev_found_ids[player_data.undo_rects_i] = found_id;
-
-
-  spot_type found_type = map_data.spot_types[found_id];
-
-  if (found_type == spot_spikes) {
-    death_data.player_dead = true;
+  if (found_id1 != -1) {
+    logic.prev_found_id1s[player_data.undo_rects_i] = found_id1;
+    run_for(found_id1);
+  }
+  if (found_id2 != -1) {
+    logic.prev_found_id2s[player_data.undo_rects_i] = found_id2;
+    run_for(found_id2);
   }
 }
