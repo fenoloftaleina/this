@@ -11,24 +11,6 @@ typedef struct
 logic_data logic = (logic_data){};
 
 
-static const float tween_time = 0.25f;
-
-void deactivate_spots(const int id, const float t)
-{
-  spot_type type = map_data.spot_types[id];
-
-  if (map_data.spot_type_statuses[type] != spot_inactive) {
-    map_data.spot_type_statuses[type] = spot_inactive;
-
-    map_data.tween_per_type[type].start_t = t;
-    map_data.tween_per_type[type].end_t = t + tween_time;
-    // map_data.tween_per_type[type].start_v = 1.0f;
-    map_data.tween_per_type[type].end_v = 0.0f;
-  }
-}
-
-
-
 void reload_logic()
 {
   logic.jumped_meantime = false;
@@ -38,118 +20,6 @@ void reload_logic()
   logic.prev_found_id1s[player_data.undo_rects_i] = -1;
   logic.prev_found_id2s[player_data.undo_rects_i] = -1;
 }
-
-
-void matrix_xy(const rect* rect, int* x, int* y)
-{
-  *x = ((rect->x1 + rect->x2) * 0.5f + 1.0f) / map_data.raw_tile_width;
-  *y = ((rect->y1 + rect->y2) * 0.5f + 1.0f) / map_data.raw_tile_height;
-}
-
-int matrix_i(const int x, const int y)
-{
-  return y * map_data.matrix_w + x;
-}
-
-
-bool player_hit(const float x1, const float y1, const float x2, const float y2)
-{
-  float mid_x = player_data.rect.x1 + player_data.width * 0.5f;
-  float mid_y = player_data.rect.y1 + player_data.height * 0.5f;
-
-  return mid_x >= x1 && mid_x < x2 && mid_y >= y1 && mid_y < y2;
-}
-
-
-bool death_on(const int k)
-{
-  float x1, y1, x2, y2;
-
-  if (map_data.matrix[k] != -1) return false;
-
-  if (death_data.matrix[k] != -1) return true;
-
-  death_data.matrix[k] = 1;
-  raw_xy12(k, &x1, &y1, &x2, &y2);
-  death_data.rects[death_data.n] = (rect){
-    x1,
-    y1,
-    x2,
-    y2,
-    death_color.r,
-    death_color.g,
-    death_color.b,
-    0.0f,
-    flat_z - 0.6f,
-    -1.0f,
-    -1.0f
-  };
-  death_data.prev_rects[death_data.n] = death_data.rects[death_data.n];
-
-  death_data.n += 1;
-
-  if (player_hit(x1, y1, x2, y2)) { // I have the matrix_xy fn as well.
-    death_data.player_dead = true;
-  }
-
-  return true;
-}
-
-
-void evaluate(const float t)
-{
-  int spot_x, spot_y, j;
-  for (int i = 0; i < map_data.n; ++i) {
-    if (map_data.spot_types[i] != spot_neutral &&
-        map_data.spot_types[i] != spot_spikes &&
-        map_data.spot_type_statuses[map_data.spot_types[i]] == spot_active) {
-      matrix_xy(&map_data.rects[i], &spot_x, &spot_y);
-
-      // death->matrix[matrix_i(spot_x, spot_y)] = 1;
-
-      j = spot_x + 1;
-      while(j < map_data.matrix_w && death_on(matrix_i(j, spot_y))) {
-        ++j;
-      }
-
-      j = spot_x - 1;
-      while(j >= 0 && death_on(matrix_i(j, spot_y))) {
-        --j;
-      }
-
-      j = spot_y + 1;
-      while(j < map_data.matrix_h && death_on(matrix_i(spot_x, j))) {
-        ++j;
-      }
-
-      j = spot_y - 1;
-      while(j >= 0 && death_on(matrix_i(spot_x, j))) {
-        --j;
-      }
-    }
-  }
-
-
-  if (death_data.player_dead) {
-    show_death(t);
-  } else {
-    show_killing(t);
-  }
-}
-
-
-// const float twitch_size = 20.0f;
-//
-// void twitch_fn()
-// {
-//   player_data.rect.x1 += twitch_size;
-// }
-//
-//
-// void twitch_back_fn()
-// {
-//   player_data.rect.x1 -= twitch_size;
-// }
 
 
 void draw_logic(const float frame_fraction)
@@ -166,8 +36,6 @@ void draw_logic(const float frame_fraction)
 void undo(const float t)
 {
   if (player_data.undo_rects_i > 0) {
-    printf("undo!!!!!\n");
-
     death_data.player_dead = false;
 
     player_data.undo_rects_i = (player_data.undo_rects_i - 1) % UNDO_RECTS_N;
@@ -179,47 +47,45 @@ void undo(const float t)
 
 void run_for(int found_id)
 {
-  spot_type found_type = map_data.spot_types[found_id];
-
-  if (found_type == spot_spikes) {
-    death_data.player_dead = true;
-
-    return;
-  }
-
-  int p_x, p_y;
-  matrix_xy(&player_data.rect, &p_x, &p_y);
-
-  if (found_type == spot_move) {
-    int x, y, i;
-    matrix_xy(&map_data.rects[found_id], &x, &y);
-
-    map_data.matrix[y * map_data.matrix_w + x] = -1;
-
-    if (p_x < x) {
-      i = y * map_data.matrix_w + x + 1;
-    } else if (p_x > x) {
-      i = y * map_data.matrix_w + x - 1;
-    } else if (p_y < y) {
-      i = (y + 1) * map_data.matrix_w + x;
-    } else if (p_y > y) {
-      i = (y - 1) * map_data.matrix_w + x;
-    }
-
-    if (map_data.matrix[i] != -1) {
-      return;
-    }
-
-    map_data.matrix[i] = found_id;
-
-    float x1, y1, x2, y2;
-
-    raw_xy12(i, &x1, &y1, &x2, &y2);
-    map_data.rects[found_id].x1 = x1;
-    map_data.rects[found_id].y1 = y1;
-    map_data.rects[found_id].x2 = x2;
-    map_data.rects[found_id].y2 = y2;
-  }
+  // spot_type found_type = map_data.spot_types[found_id];
+  //
+  // if (found_type == spot_spikes) {
+  //   death_data.player_dead = true;
+  //
+  //   return;
+  // }
+  //
+  // int ii;
+  //
+  // int p_i, p_j;
+  // rect_to_ij(&player_data.rect, &p_i, &p_j);
+  //
+  // if (found_type == spot_move) {
+  //   int i, j;
+  //   rect_to_ij(&map_data.rects[found_id], &i, &j);
+  //
+  //   map_data.matrix[ij_to_i(i, j)] = -1;
+  //
+  //   if (p_i < i) {
+  //     i += 1;
+  //   } else if (p_i > i) {
+  //     i -= 1;
+  //   } else if (p_j < j) {
+  //     j += 1;
+  //   } else if (p_j > j) {
+  //     j -= 1;
+  //   }
+  //
+  //   ii = ij_to_i(i, j);
+  //
+  //   if (map_data.matrix[ii] != -1) {
+  //     return;
+  //   }
+  //
+  //   map_data.matrix[ii] = found_id;
+  //
+  //   ii_to_rect(ii, found_id);
+  // }
 }
 
 
@@ -237,50 +103,15 @@ void update_logic
   check_collisions();
 
 
-  // printf("??? %d %d\n", logic.n, logic.n_offset);
-  // if (get_raw_spot(logic_x, logic_y) == spot_checkpoint &&
-  //     (logic.n + logic.n_offset) % logic.steps_till_eval != 0) {
-  //   logic.n_offset = - (logic.n % logic.steps_till_eval);
-  //   logic.display_n = (logic.n + logic.n_offset) % logic.steps_till_eval;
-  //
-  //   map_data.tween_per_type[spot_checkpoint].start_t = t;
-  //   map_data.tween_per_type[spot_checkpoint].end_t = t + tween_time;
-  //   map_data.tween_per_type[spot_checkpoint].start_v = 0.0f;
-  //   map_data.tween_per_type[spot_checkpoint].end_v = 1.0f;
-  //
-  //   for (int i = 0; i < spot_type_n; ++i) {
-  //     if (i != spot_checkpoint &&
-  //         map_data.spot_type_statuses[i] == spot_inactive) {
-  //       map_data.spot_type_statuses[i] = spot_active;
-  //
-  //       map_data.tween_per_type[i].start_t = t;
-  //       map_data.tween_per_type[i].end_t = t + tween_time;
-  //       // map_data.tween_per_type[i].start_v = 0.0f;
-  //       map_data.tween_per_type[i].end_v = 1.0f;
-  //     }
-  //   }
-  //
-  //   return;
-  // }
-
-
   if (player_data.rect.x1 + player_data.width * 0.5f < 0.0f) {
-    player_data.lost = true;
+    // player_data.lost = true;
     return;
   }
 
   if (player_data.rect.y1 < 0.0f) {
-    player_data.won = true;
+    // player_data.won = true;
     return;
   }
-
-
-  // if (in_data.v == IN_UP) {
-  //   add_schedule(&player_data.twitch_schedule, t + dt * 20.0f, twitch_fn);
-  //   add_schedule(&player_data.twitch_schedule, t + dt * 30.0f, twitch_back_fn);
-  // }
-  // execute_schedule(&player_data.twitch_schedule, t);
-
 
 
   float eps = 0.0011f;

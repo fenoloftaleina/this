@@ -5,7 +5,7 @@ typedef struct
   rect* rects;
 
   int* matrix; // matrix, linear, but 2d
-  int matrix_size;
+  int m;
 
   schedule_data_t schedule;
   tween_data_t tween;
@@ -22,7 +22,7 @@ color death_color = {0.9f, 0.5f, 0.7f};
 void reset_killing()
 {
   death_data.n = 0;
-  memset(death_data.matrix, -1, death_data.matrix_size * sizeof(int));
+  memset(death_data.matrix, -1, death_data.m * sizeof(int));
 }
 
 
@@ -63,12 +63,12 @@ void reset_death()
 
 void init_death()
 {
-  death_data.matrix_size = map_data.matrix_size;
+  death_data.m = map_data.m;
 
-  death_data.prev_rects = (rect*)malloc(death_data.matrix_size * sizeof(rect));
-  death_data.rects = (rect*)malloc(death_data.matrix_size * sizeof(rect));
+  death_data.prev_rects = (rect*)malloc(death_data.m * sizeof(rect));
+  death_data.rects = (rect*)malloc(death_data.m * sizeof(rect));
 
-  death_data.matrix = (int*)malloc(death_data.matrix_size * sizeof(int));
+  death_data.matrix = (int*)malloc(death_data.m * sizeof(int));
 
   death_data.tween.fn = lerp_tween;
 

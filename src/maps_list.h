@@ -37,7 +37,9 @@ void run_map(const int map_i)
 {
   cur_map_i = map_i;
   strcpy(cur_map_name, map_list[cur_map_i]);
+
   load_map(cur_map_name);
+
   reset_player(map_data.player_start_x, map_data.player_start_y);
   reload_logic();
 }
