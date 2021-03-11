@@ -5,7 +5,7 @@ typedef enum spot_type
 {
   spot_empty = -1,
   spot_neutral,
-  spot_move,
+  spot_pushable,
   spot_spikes,
 } spot_type;
 
@@ -207,8 +207,6 @@ void load_map(const char* map_filename)
     }
   }
   mpack_done_array(&reader);
-
-  fprintf(stderr, "first arr done\n");
 
   tag = mpack_read_tag(&reader);
   int cnt = mpack_tag_array_count(&tag);

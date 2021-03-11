@@ -47,45 +47,45 @@ void undo(const float t)
 
 void run_for(int found_id)
 {
-  // spot_type found_type = map_data.spot_types[found_id];
-  //
-  // if (found_type == spot_spikes) {
-  //   death_data.player_dead = true;
-  //
-  //   return;
-  // }
-  //
-  // int ii;
-  //
-  // int p_i, p_j;
-  // rect_to_ij(&player_data.rect, &p_i, &p_j);
-  //
-  // if (found_type == spot_move) {
-  //   int i, j;
-  //   rect_to_ij(&map_data.rects[found_id], &i, &j);
-  //
-  //   map_data.matrix[ij_to_i(i, j)] = -1;
-  //
-  //   if (p_i < i) {
-  //     i += 1;
-  //   } else if (p_i > i) {
-  //     i -= 1;
-  //   } else if (p_j < j) {
-  //     j += 1;
-  //   } else if (p_j > j) {
-  //     j -= 1;
-  //   }
-  //
-  //   ii = ij_to_i(i, j);
-  //
-  //   if (map_data.matrix[ii] != -1) {
-  //     return;
-  //   }
-  //
-  //   map_data.matrix[ii] = found_id;
-  //
-  //   ii_to_rect(ii, found_id);
-  // }
+  spot_type found_type = map_data.spot_types[found_id];
+
+  if (found_type == spot_spikes) {
+    death_data.player_dead = true;
+
+    return;
+  }
+
+  int ii;
+
+  int p_i, p_j;
+  rect_to_ij(&player_data.rect, &p_i, &p_j);
+
+  if (found_type == spot_pushable) {
+    int i, j;
+    rect_to_ij(&map_data.rects[found_id], &i, &j);
+
+    map_data.matrix[ij_to_ii(i, j)] = -1;
+
+    if (p_i < i) {
+      i += 1;
+    } else if (p_i > i) {
+      i -= 1;
+    } else if (p_j < j) {
+      j += 1;
+    } else if (p_j > j) {
+      j -= 1;
+    }
+
+    ii = ij_to_ii(i, j);
+
+    if (map_data.matrix[ii] != -1) {
+      return;
+    }
+
+    map_data.matrix[ii] = found_id;
+
+    ii_to_jj_rect(ii, found_id);
+  }
 }
 
 
