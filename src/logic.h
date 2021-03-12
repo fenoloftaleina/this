@@ -45,6 +45,31 @@ void undo(const float t)
 }
 
 
+void move_spot
+(const int i, const int j, const spot_type type, const int diff_i, const int diff_j)
+{
+  int ii = ij_to_ii(i, j);
+  int jj = map_data.matrix[ii];
+  int dest_ii = ij_to_ii(i + diff_i, j + diff_j);
+  if (jj == -1 ||
+      map_data.matrix[dest_ii] != -1 ||
+      map_data.spot_types[jj] != type ||
+      i + diff_i == 0 ||
+      i + diff_i == map_data.m_w - 1 ||
+      j + diff_j == 0 ||
+      j + diff_j == map_data.m_h - 1) {
+    return;
+  }
+
+  map_data.matrix[dest_ii] = jj;
+  map_data.matrix[ii] = -1;
+
+  printf("move %d %d by %d %d\n", i, j, diff_i, diff_j);
+
+  ii_to_jj_rect(dest_ii, jj);
+}
+
+
 void run_for(int found_id)
 {
   spot_type found_type = map_data.spot_types[found_id];
@@ -60,242 +85,37 @@ void run_for(int found_id)
   int p_i, p_j;
   rect_to_ij(&player_data.rect, &p_i, &p_j);
 
-  if (found_type == spot_pushable) {
-    int i, j;
-    rect_to_ij(&map_data.rects[found_id], &i, &j);
+  int f_i, f_j;
+  rect_to_ij(&map_data.rects[found_id], &f_i, &f_j);
 
-    map_data.matrix[ij_to_ii(i, j)] = -1;
+  // map_data.matrix[ij_to_ii(i, j)] = -1;
 
-    if (p_i < i) {
-      i += 1;
-    } else if (p_i > i) {
-      i -= 1;
-    } else if (p_j < j) {
-      j += 1;
-    } else if (p_j > j) {
-      j -= 1;
-    }
-
-    ii = ij_to_ii(i, j);
-
-    if (map_data.matrix[ii] != -1) {
-      return;
-    }
-
-    map_data.matrix[ii] = found_id;
-
-    ii_to_jj_rect(ii, found_id);
-  }
-}
-
-
-void run_interactions()
-{
-  // clear states
-  memset(map_data.states_matrix, state_empty, map_data.m * sizeof(matrix_state));
-
-  for (int j = 1; j < map_data.m_h - 1; ++j) {
-    for (int i = 1; i < map_data.m_w - 1; ++i) {
-      int ii = ij_to_ii(i, j);
-      int jj = map_data.matrix[ii];
-
-      if (jj == -1) {
-        continue;
+  if (p_i < f_i) {
+    // from left
+    for (int j = 1; j < map_data.m_h - 1; ++j) {
+      for (int i = map_data.m_w - 2; i > 0; --i) {
+        move_spot(i, j, found_type, 1, 0);
       }
-
-      spot_type type = map_data.spot_types[jj];
-      matrix_state state = map_data.states_matrix[jj];
-
-      int left_id = map_data.matrix[ij_to_ii(i - 1, j)];
-      int right_id = map_data.matrix[ij_to_ii(i + 1, j)];
-      int bottom_id = map_data.matrix[ij_to_ii(i, j - 1)];
-      int top_id = map_data.matrix[ij_to_ii(i, j + 1)];
-
-      switch (type) {
-        case spot_neutral:
-        case spot_empty:
-          break;
-
-        case spot_spikes:
-          // TODO: everything around needs to die
-          break;
-
-        case spot_pushable:
-          if (left_id != -1) {
-            spot_type left_type = map_data.spot_types[left_id];
-            matrix_state left_state = map_data.states_matrix[left_id];
-
-            switch(left_type) {
-              case spot_spikes:
-                map_data.states_matrix[ii] = state_will_die;
-                break;
-
-              case spot_pushable:
-                bool can_be_pushed = (right_id == -1);
-
-                if (can_be_pushed) {
-                  map_data.states_matrix[ii] = state_will_be_pushed_right;
-                }
-
-                switch (left_state) {
-                  case state_will_die:
-                    break;
-
-                    // conflicting ideas about where to go => impasse
-                  case state_will_be_pushed_right:
-                  case state_will_be_pushed_down:
-                  case state_will_be_pushed_up:
-                  case state_push_impasse:
-                    map_data.states_matrix[left_id] = state_push_impasse;
-                    break;
-
-                  case state_neutral:
-                  case state_will_be_pushed_left:
-                    map_data.states_matrix[left_id] = state_will_be_pushed_left;
-                    break;
-
-                  case state_empty:
-                    // just to silence the switch
-                    break;
-                }
-                break;
-
-              case spot_neutral:
-                break;
-            }
-          }
-          if (right_id != -1) {
-            spot_type right_type = map_data.spot_types[right_id];
-            matrix_state right_state = map_data.states_matrix[right_id];
-
-            switch(right_type) {
-              case spot_spikes:
-                map_data.states_matrix[ii] = state_will_die;
-                break;
-
-              case spot_pushable:
-                bool can_be_pushed = (left_id == -1);
-
-                if (can_be_pushed) {
-                  map_data.states_matrix[ii] = state_will_be_pushed_left;
-                }
-
-                switch (right_state) {
-                  case state_will_die:
-                    break;
-
-                    // conflicting ideas about where to go => impasse
-                  case state_will_be_pushed_left:
-                  case state_will_be_pushed_down:
-                  case state_will_be_pushed_up:
-                  case state_push_impasse:
-                    map_data.states_matrix[right_id] = state_push_impasse;
-                    break;
-
-                  case state_neutral:
-                  case state_will_be_pushed_right:
-                    map_data.states_matrix[right_id] = state_will_be_pushed_right;
-                    break;
-
-                  case state_empty:
-                    // just to silence the switch
-                    break;
-                }
-                break;
-
-              case spot_neutral:
-                break;
-            }
-          }
-          if (bottom_id != -1) {
-            spot_type bottom_type = map_data.spot_types[bottom_id];
-
-            switch(bottom_type) {
-              case spot_spikes:
-                map_data.states_matrix[ii] = state_will_die;
-                break;
-
-              case spot_pushable:
-                if (map_data.states_matrix[ii] == state_will_be_pushed_right ||
-                    map_data.states_matrix[ii] == state_will_be_pushed_left) {
-                  map_data.states_matrix[ii] = state_push_impasse;
-                } else {
-                  map_data.states_matrix[ii] = state_will_be_pushed_up;
-                }
-                break;
-
-              case spot_neutral:
-                break;
-            }
-          }
-          if (top_id != -1) {
-            spot_type top_type = map_data.spot_types[top_id];
-
-            switch(top_type) {
-              case spot_spikes:
-                map_data.states_matrix[ii] = state_will_die;
-                break;
-
-              case spot_pushable:
-                if (map_data.states_matrix[ii] == state_will_be_pushed_right ||
-                    map_data.states_matrix[ii] == state_will_be_pushed_left ||
-                    map_data.states_matrix[ii] == state_will_be_pushed_up) {
-                  map_data.states_matrix[ii] = state_push_impasse;
-                } else {
-                  map_data.states_matrix[ii] = state_will_be_pushed_down;
-                }
-                break;
-
-              case spot_neutral:
-                break;
-
-              default:
-                break;
-            }
-          }
-          break;
-      }
-
-      // backtrack
-
-
     }
-  }
-
-  for (int j = 0; j < map_data.m_h; ++j) {
-    for (int i = 0; i < map_data.m_w; ++i) {
-      int ii = ij_to_ii(i, j);
-      int jj = map_data.matrix[ii];
-
-      if (jj == -1) {
-        continue;
+  } else if (p_i > f_i) {
+    // from right
+    for (int j = 1; j < map_data.m_h - 1; ++j) {
+      for (int i = 1; i < map_data.m_w - 1; ++i) {
+        move_spot(i, j, found_type, -1, 0);
       }
-
-      matrix_state state = map_data.states_matrix[ii];
-
-      switch (state) {
-        case state_will_be_pushed_left:
-          move_ij_spot_to_ij(i, j, i - 1, j);
-          break;
-
-        case state_will_be_pushed_right:
-          move_ij_spot_to_ij(i, j, i + 1, j);
-          break;
-
-        case state_will_be_pushed_up:
-          move_ij_spot_to_ij(i, j, i, j + 1);
-          break;
-
-        case state_will_be_pushed_down:
-          move_ij_spot_to_ij(i, j, i, j - 1);
-          break;
-
-        case state_will_die:
-          remove_ij_spot(i, j);
-          break;
-
-        default:
-          continue;
+    }
+  } else if (p_j < f_j) {
+    // from bottom
+    for (int j = map_data.m_h - 2; j > 0; --j) {
+      for (int i = 1; i < map_data.m_w - 1; ++i) {
+        move_spot(i, j, found_type, 0, 1);
+      }
+    }
+  } else if (p_j > f_j) {
+    // from top
+    for (int j = 1; j < map_data.m_h - 1; ++j) {
+      for (int i = 1; i < map_data.m_w - 1; ++i) {
+        move_spot(i, j, found_type, 0, -1);
       }
     }
   }
@@ -452,6 +272,4 @@ void update_logic
     logic.prev_found_id2s[player_data.undo_rects_i] = found_id2;
     run_for(found_id2);
   }
-
-  run_interactions();
 }
