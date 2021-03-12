@@ -89,6 +89,219 @@ void run_for(int found_id)
 }
 
 
+void run_interactions()
+{
+  // clear states
+  memset(map_data.states_matrix, state_empty, map_data.m * sizeof(matrix_state));
+
+  for (int j = 1; j < map_data.m_h - 1; ++j) {
+    for (int i = 1; i < map_data.m_w - 1; ++i) {
+      int ii = ij_to_ii(i, j);
+      int jj = map_data.matrix[ii];
+
+      if (jj == -1) {
+        continue;
+      }
+
+      spot_type type = map_data.spot_types[jj];
+      matrix_state state = map_data.states_matrix[jj];
+
+      int left_id = map_data.matrix[ij_to_ii(i - 1, j)];
+      int right_id = map_data.matrix[ij_to_ii(i + 1, j)];
+      int bottom_id = map_data.matrix[ij_to_ii(i, j - 1)];
+      int top_id = map_data.matrix[ij_to_ii(i, j + 1)];
+
+      switch (type) {
+        case spot_neutral:
+        case spot_empty:
+          break;
+
+        case spot_spikes:
+          // TODO: everything around needs to die
+          break;
+
+        case spot_pushable:
+          if (left_id != -1) {
+            spot_type left_type = map_data.spot_types[left_id];
+            matrix_state left_state = map_data.states_matrix[left_id];
+
+            switch(left_type) {
+              case spot_spikes:
+                map_data.states_matrix[ii] = state_will_die;
+                break;
+
+              case spot_pushable:
+                bool can_be_pushed = (right_id == -1);
+
+                if (can_be_pushed) {
+                  map_data.states_matrix[ii] = state_will_be_pushed_right;
+                }
+
+                switch (left_state) {
+                  case state_will_die:
+                    break;
+
+                    // conflicting ideas about where to go => impasse
+                  case state_will_be_pushed_right:
+                  case state_will_be_pushed_down:
+                  case state_will_be_pushed_up:
+                  case state_push_impasse:
+                    map_data.states_matrix[left_id] = state_push_impasse;
+                    break;
+
+                  case state_neutral:
+                  case state_will_be_pushed_left:
+                    map_data.states_matrix[left_id] = state_will_be_pushed_left;
+                    break;
+
+                  case state_empty:
+                    // just to silence the switch
+                    break;
+                }
+                break;
+
+              case spot_neutral:
+                break;
+            }
+          }
+          if (right_id != -1) {
+            spot_type right_type = map_data.spot_types[right_id];
+            matrix_state right_state = map_data.states_matrix[right_id];
+
+            switch(right_type) {
+              case spot_spikes:
+                map_data.states_matrix[ii] = state_will_die;
+                break;
+
+              case spot_pushable:
+                bool can_be_pushed = (left_id == -1);
+
+                if (can_be_pushed) {
+                  map_data.states_matrix[ii] = state_will_be_pushed_left;
+                }
+
+                switch (right_state) {
+                  case state_will_die:
+                    break;
+
+                    // conflicting ideas about where to go => impasse
+                  case state_will_be_pushed_left:
+                  case state_will_be_pushed_down:
+                  case state_will_be_pushed_up:
+                  case state_push_impasse:
+                    map_data.states_matrix[right_id] = state_push_impasse;
+                    break;
+
+                  case state_neutral:
+                  case state_will_be_pushed_right:
+                    map_data.states_matrix[right_id] = state_will_be_pushed_right;
+                    break;
+
+                  case state_empty:
+                    // just to silence the switch
+                    break;
+                }
+                break;
+
+              case spot_neutral:
+                break;
+            }
+          }
+          if (bottom_id != -1) {
+            spot_type bottom_type = map_data.spot_types[bottom_id];
+
+            switch(bottom_type) {
+              case spot_spikes:
+                map_data.states_matrix[ii] = state_will_die;
+                break;
+
+              case spot_pushable:
+                if (map_data.states_matrix[ii] == state_will_be_pushed_right ||
+                    map_data.states_matrix[ii] == state_will_be_pushed_left) {
+                  map_data.states_matrix[ii] = state_push_impasse;
+                } else {
+                  map_data.states_matrix[ii] = state_will_be_pushed_up;
+                }
+                break;
+
+              case spot_neutral:
+                break;
+            }
+          }
+          if (top_id != -1) {
+            spot_type top_type = map_data.spot_types[top_id];
+
+            switch(top_type) {
+              case spot_spikes:
+                map_data.states_matrix[ii] = state_will_die;
+                break;
+
+              case spot_pushable:
+                if (map_data.states_matrix[ii] == state_will_be_pushed_right ||
+                    map_data.states_matrix[ii] == state_will_be_pushed_left ||
+                    map_data.states_matrix[ii] == state_will_be_pushed_up) {
+                  map_data.states_matrix[ii] = state_push_impasse;
+                } else {
+                  map_data.states_matrix[ii] = state_will_be_pushed_down;
+                }
+                break;
+
+              case spot_neutral:
+                break;
+
+              default:
+                break;
+            }
+          }
+          break;
+      }
+
+      // backtrack
+
+
+    }
+  }
+
+  for (int j = 0; j < map_data.m_h; ++j) {
+    for (int i = 0; i < map_data.m_w; ++i) {
+      int ii = ij_to_ii(i, j);
+      int jj = map_data.matrix[ii];
+
+      if (jj == -1) {
+        continue;
+      }
+
+      matrix_state state = map_data.states_matrix[ii];
+
+      switch (state) {
+        case state_will_be_pushed_left:
+          move_ij_spot_to_ij(i, j, i - 1, j);
+          break;
+
+        case state_will_be_pushed_right:
+          move_ij_spot_to_ij(i, j, i + 1, j);
+          break;
+
+        case state_will_be_pushed_up:
+          move_ij_spot_to_ij(i, j, i, j + 1);
+          break;
+
+        case state_will_be_pushed_down:
+          move_ij_spot_to_ij(i, j, i, j - 1);
+          break;
+
+        case state_will_die:
+          remove_ij_spot(i, j);
+          break;
+
+        default:
+          continue;
+      }
+    }
+  }
+}
+
+
 void update_logic
 (const float t, const float dt)
 {
@@ -239,4 +452,6 @@ void update_logic
     logic.prev_found_id2s[player_data.undo_rects_i] = found_id2;
     run_for(found_id2);
   }
+
+  run_interactions();
 }

@@ -9,6 +9,19 @@ typedef enum spot_type
   spot_spikes,
 } spot_type;
 
+typedef enum matrix_state
+{
+  state_empty = -1,
+  state_neutral,
+  state_will_die,
+  state_will_be_pushed_up,
+  state_will_be_pushed_down,
+  state_will_be_pushed_left,
+  state_will_be_pushed_right,
+  state_push_impasse,
+} matrix_state;
+
+
 const int SPRITE_OFFSET = 0;
 
 const int spot_type_n = 3;
@@ -22,11 +35,12 @@ typedef struct
   spot_type* spot_types;
 
   int* matrix; // matrix, linear, but 2d
+  matrix_state* states_matrix;
 
   float raw_tile_width, raw_tile_height;
 
-  const int matrix_w;
-  const int matrix_h;
+  const int m_w;
+  const int m_h;
   const int m;
 
   tween_data_t tween_per_type[spot_type_n];
@@ -37,8 +51,8 @@ typedef struct
 
 
 map_data_t map_data = (map_data_t){
-  .matrix_w = 20,
-  .matrix_h = 12,
+  .m_w = 20,
+  .m_h = 12,
   .m = 20 * 12
 };
 
@@ -77,6 +91,7 @@ void init_map()
   map_data.rects = (rect*)malloc(map_data.m * sizeof(rect));
   map_data.matrix = (int*)malloc(map_data.m * sizeof(int));
   memset(map_data.matrix, -1, map_data.m * sizeof(int));
+  map_data.states_matrix = (matrix_state*)malloc(map_data.m * sizeof(matrix_state));
   map_data.spot_types = (spot_type*)malloc(map_data.m * sizeof(spot_type));
 
   reset_map();
@@ -104,14 +119,14 @@ void ij_to_xy(const int i, const int j, float* x1, float* y1, float* x2, float* 
 
 void ii_to_ij(const int ii, int* i, int* j)
 {
-  *i = ii % map_data.matrix_w;
-  *j = ii / map_data.matrix_w;
+  *i = ii % map_data.m_w;
+  *j = ii / map_data.m_w;
 }
 
 
 int ij_to_ii(int i, int j)
 {
-  return j * map_data.matrix_w + i;
+  return j * map_data.m_w + i;
 }
 
 
@@ -303,6 +318,20 @@ void set_ij_spot(const int i, const int j, const spot_type t)
 }
 
 
+void move_ij_spot_to_ij(const int i1, const int j1, const int i2, const int j2)
+{
+  int ii1 = ij_to_ii(i1, j1);
+  int ii2 = ij_to_ii(i2, j2);
+
+  int jj = map_data.matrix[ii1];
+
+  map_data.matrix[ii1] = -1;
+  map_data.matrix[ii2] = jj;
+
+  ii_to_jj_rect(ii2, jj);
+}
+
+
 void remove_ij_spot(const int i, const int j)
 {
   int ii = ij_to_ii(i, j);
@@ -323,6 +352,8 @@ void remove_ij_spot(const int i, const int j)
       map_data.matrix[i] -= 1;
     }
   }
+
+  map_data.n -= 1;
 }
 
 
