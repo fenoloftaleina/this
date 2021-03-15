@@ -354,6 +354,8 @@ void remove_ij_spot(const int i, const int j)
   }
 
   map_data.n -= 1;
+
+  map_data.matrix[ii] = -1;
 }
 
 

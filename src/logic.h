@@ -3,8 +3,9 @@ const int TOUCH_N = 255 * 3;
 typedef struct
 {
   bool jumped_meantime;
-  int prev_found_id1s[UNDO_RECTS_N];
-  int prev_found_id2s[UNDO_RECTS_N];
+
+  int prev_i;
+  int prev_j;
 } logic_data;
 
 
@@ -17,8 +18,9 @@ void reload_logic()
 
   player_data.undo_rects_i = 0;
   player_data.undo_rects[player_data.undo_rects_i] = player_data.rect;
-  logic.prev_found_id1s[player_data.undo_rects_i] = -1;
-  logic.prev_found_id2s[player_data.undo_rects_i] = -1;
+
+  logic.prev_i = -1;
+  logic.prev_j = -1;
 }
 
 
@@ -45,79 +47,50 @@ void undo(const float t)
 }
 
 
-void move_spot
-(const int i, const int j, const spot_type type, const int diff_i, const int diff_j)
+const int TEMP_NON_EMPTY = -2;
+
+
+void update_matrix()
 {
-  int ii = ij_to_ii(i, j);
-  int jj = map_data.matrix[ii];
-  int dest_ii = ij_to_ii(i + diff_i, j + diff_j);
-  if (jj == -1 ||
-      map_data.matrix[dest_ii] != -1 ||
-      map_data.spot_types[jj] != type ||
-      i + diff_i == 0 ||
-      i + diff_i == map_data.m_w - 1 ||
-      j + diff_j == 0 ||
-      j + diff_j == map_data.m_h - 1) {
-    return;
+  bool updated_something = false;
+  int ii, jj;
+  int spots_around_count;
+
+  for (int j = 1; j < map_data.m_h - 1; ++j) {
+    for (int i = 1; i < map_data.m_w - 1; ++i) {
+      ii = ij_to_ii(i, j);
+      jj = map_data.matrix[ii];
+
+      if (jj == TEMP_NON_EMPTY) {
+        continue;
+      }
+
+      spots_around_count = 0;
+      if (map_data.matrix[ii - 1] != -1) {
+        spots_around_count += 1;
+      }
+      if (map_data.matrix[ii + 1] != -1) {
+        spots_around_count += 1;
+      }
+      if (map_data.matrix[ii - map_data.m_w] != -1) {
+        spots_around_count += 1;
+      }
+      if (map_data.matrix[ii + map_data.m_w] != -1) {
+        spots_around_count += 1;
+      }
+
+      if (jj == -1 && spots_around_count > 2) {
+        set_ij_spot(i, j, spot_pushable);
+        updated_something = true;
+      } else if (jj != -1 && spots_around_count > 2) {
+        remove_ij_spot(i, j);
+        updated_something = true;
+      }
+    }
   }
 
-  map_data.matrix[dest_ii] = jj;
-  map_data.matrix[ii] = -1;
-
-  printf("move %d %d by %d %d\n", i, j, diff_i, diff_j);
-
-  ii_to_jj_rect(dest_ii, jj);
-}
-
-
-void run_for(int found_id)
-{
-  spot_type found_type = map_data.spot_types[found_id];
-
-  if (found_type == spot_spikes) {
-    death_data.player_dead = true;
-
-    return;
-  }
-
-  int ii;
-
-  int p_i, p_j;
-  rect_to_ij(&player_data.rect, &p_i, &p_j);
-
-  int f_i, f_j;
-  rect_to_ij(&map_data.rects[found_id], &f_i, &f_j);
-
-  // map_data.matrix[ij_to_ii(i, j)] = -1;
-
-  if (p_i < f_i) {
-    // from left
-    for (int j = 1; j < map_data.m_h - 1; ++j) {
-      for (int i = map_data.m_w - 2; i > 0; --i) {
-        move_spot(i, j, found_type, 1, 0);
-      }
-    }
-  } else if (p_i > f_i) {
-    // from right
-    for (int j = 1; j < map_data.m_h - 1; ++j) {
-      for (int i = 1; i < map_data.m_w - 1; ++i) {
-        move_spot(i, j, found_type, -1, 0);
-      }
-    }
-  } else if (p_j < f_j) {
-    // from bottom
-    for (int j = map_data.m_h - 2; j > 0; --j) {
-      for (int i = 1; i < map_data.m_w - 1; ++i) {
-        move_spot(i, j, found_type, 0, 1);
-      }
-    }
-  } else if (p_j > f_j) {
-    // from top
-    for (int j = 1; j < map_data.m_h - 1; ++j) {
-      for (int i = 1; i < map_data.m_w - 1; ++i) {
-        move_spot(i, j, found_type, 0, -1);
-      }
-    }
+  if (updated_something) {
+    // update_matrix();
   }
 }
 
@@ -125,151 +98,26 @@ void run_for(int found_id)
 void update_logic
 (const float t, const float dt)
 {
-  player_data.just_jumped = false;
-
   update_player_positions(t, dt);
-
-  if (player_data.just_jumped) {
-    logic.jumped_meantime = true;
-  }
 
   check_collisions();
 
+  int i, j;
 
-  if (player_data.rect.x1 + player_data.width * 0.5f < 0.0f) {
-    // player_data.lost = true;
+  rect_to_ij(&player_data.rect, &i, &j);
+
+  if (i == logic.prev_i && j == logic.prev_j) {
     return;
   }
 
-  if (player_data.rect.y1 < 0.0f) {
-    // player_data.won = true;
-    return;
-  }
+  logic.prev_i = i;
+  logic.prev_j = j;
 
+  int ii = ij_to_ii(i, j);
 
-  float eps = 0.0011f;
+  map_data.matrix[ii] = TEMP_NON_EMPTY;
 
-  int bottom_id = -1;
-  spot_type bottom_spot_type = -1;
-  float bottom_overlap = 0.0f;
-  int top_id = -1;
-  spot_type top_spot_type = -1;
-  float top_overlap = 0.0f;
-  int left_id = -1;
-  spot_type left_spot_type = -1;
-  float left_overlap = 0.0f;
-  int right_id = -1;
-  spot_type right_spot_type = -1;
-  float right_overlap = 0.0f;
+  update_matrix();
 
-  float temp_overlap;
-  int found_id1 = -1;
-  int found_id2 = -1;
-
-  for (int i = 0; i < map_data.n; ++i) {
-    if (player_data.rect.x1 < map_data.rects[i].x1) {
-      temp_overlap = player_data.rect.x1 + player_data.width - map_data.rects[i].x1;
-    } else if (player_data.rect.x2 <= map_data.rects[i].x2) {
-      temp_overlap = player_data.width;
-    } else {
-      temp_overlap = map_data.rects[i].x2 - player_data.rect.x1;
-    }
-
-    if (temp_overlap > bottom_overlap &&
-        fabs(player_data.rect.y1 - map_data.rects[i].y2) < eps) {
-      bottom_id = i;
-      bottom_spot_type = map_data.spot_types[i];
-      bottom_overlap = temp_overlap;
-    }
-
-    if (temp_overlap > top_overlap &&
-        fabs(map_data.rects[i].y1 - player_data.rect.y2) < eps) {
-      top_id = i;
-      top_spot_type = map_data.spot_types[i];
-      top_overlap = temp_overlap;
-    }
-
-
-    if (player_data.rect.y1 < map_data.rects[i].y1) {
-      temp_overlap = player_data.rect.y1 + player_data.height - map_data.rects[i].y1;
-    } else if (player_data.rect.y2 <= map_data.rects[i].y2) {
-      temp_overlap = player_data.width;
-    } else {
-      temp_overlap = map_data.rects[i].y2 - player_data.rect.y1;
-    }
-
-    if (temp_overlap > left_overlap &&
-        fabs(player_data.rect.x1 - map_data.rects[i].x2) < eps &&
-        (player_data.rect.x1 - player_data.prev_rect.x1 < 0.0f ||
-         in_data.h == IN_LEFT)) {
-      left_id = i;
-      left_spot_type = map_data.spot_types[i];
-      left_overlap = temp_overlap;
-    }
-
-    if (temp_overlap > right_overlap &&
-        fabs(map_data.rects[i].x1 - player_data.rect.x2) < eps &&
-        (player_data.rect.x1 - player_data.prev_rect.x1 > 0.0f ||
-         in_data.h == IN_RIGHT)) {
-      right_id = i;
-      right_spot_type = map_data.spot_types[i];
-      right_overlap = temp_overlap;
-    }
-  }
-
-
-  if ((bottom_id != -1 && top_id != -1) ||
-      (left_id != -1 && right_id != -1)) {
-    // death
-    exit(0);
-  } else if (left_id != -1 && top_id != -1) {
-    found_id1 = left_id;
-    found_id2 = top_id;
-  } else if (left_id != -1 && bottom_id != -1) {
-    found_id1 = left_id;
-    found_id2 = bottom_id;
-  } else if (right_id != -1 && top_id != -1) {
-    found_id1 = right_id;
-    found_id2 = top_id;
-  } else if (right_id != -1 && bottom_id != -1) {
-    found_id1 = right_id;
-    found_id2 = bottom_id;
-  } else {
-    found_id1 = left_id + right_id + top_id + bottom_id + 3;
-  }
-
-  // printf("found id %d\n", found_id);
-
-  if (found_id1 == -1) {
-    return;
-  }
-
-  if ((found_id1 == logic.prev_found_id1s[player_data.undo_rects_i] ||
-        found_id1 == logic.prev_found_id2s[player_data.undo_rects_i]) &&
-       !logic.jumped_meantime) {
-    found_id1 = -1;
-  }
-
-  if ((found_id2 == logic.prev_found_id1s[player_data.undo_rects_i] ||
-        found_id2 == logic.prev_found_id2s[player_data.undo_rects_i]) &&
-       !logic.jumped_meantime) {
-    found_id2 = -1;
-  }
-
-  if (found_id1 == -1 && found_id2 == -1) {
-    return;
-  }
-
-  logic.jumped_meantime = false;
-
-  player_data.undo_rects_i = (player_data.undo_rects_i + 1) % UNDO_RECTS_N;
-  player_data.undo_rects[player_data.undo_rects_i] = player_data.rect;
-  if (found_id1 != -1) {
-    logic.prev_found_id1s[player_data.undo_rects_i] = found_id1;
-    run_for(found_id1);
-  }
-  if (found_id2 != -1) {
-    logic.prev_found_id2s[player_data.undo_rects_i] = found_id2;
-    run_for(found_id2);
-  }
+  map_data.matrix[ii] = -1;
 }
