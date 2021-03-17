@@ -6,6 +6,8 @@ typedef struct
 
   int prev_i;
   int prev_j;
+
+  int prev_found_id;
 } logic_data;
 
 
@@ -21,6 +23,7 @@ void reload_logic()
 
   logic.prev_i = -1;
   logic.prev_j = -1;
+  logic.prev_found_id = -2;
 }
 
 
@@ -47,54 +50,6 @@ void undo(const float t)
 }
 
 
-const int TEMP_NON_EMPTY = -2;
-
-
-void update_matrix()
-{
-  bool updated_something = false;
-  int ii, jj;
-  int spots_around_count;
-
-  for (int j = 1; j < map_data.m_h - 1; ++j) {
-    for (int i = 1; i < map_data.m_w - 1; ++i) {
-      ii = ij_to_ii(i, j);
-      jj = map_data.matrix[ii];
-
-      if (jj == TEMP_NON_EMPTY) {
-        continue;
-      }
-
-      spots_around_count = 0;
-      if (map_data.matrix[ii - 1] != -1) {
-        spots_around_count += 1;
-      }
-      if (map_data.matrix[ii + 1] != -1) {
-        spots_around_count += 1;
-      }
-      if (map_data.matrix[ii - map_data.m_w] != -1) {
-        spots_around_count += 1;
-      }
-      if (map_data.matrix[ii + map_data.m_w] != -1) {
-        spots_around_count += 1;
-      }
-
-      if (jj == -1 && spots_around_count > 2) {
-        set_ij_spot(i, j, spot_pushable);
-        updated_something = true;
-      } else if (jj != -1 && spots_around_count > 2) {
-        remove_ij_spot(i, j);
-        updated_something = true;
-      }
-    }
-  }
-
-  if (updated_something) {
-    // update_matrix();
-  }
-}
-
-
 void update_logic
 (const float t, const float dt)
 {
@@ -106,18 +61,136 @@ void update_logic
 
   rect_to_ij(&player_data.rect, &i, &j);
 
-  if (i == logic.prev_i && j == logic.prev_j) {
+  if (i >= 9) {
+    reset_player(map_data.player_start_x, map_data.player_start_y);
+  }
+
+  // if (i == logic.prev_i && j == logic.prev_j) {
+  //   return;
+  // }
+
+  // logic.prev_i = i;
+  // logic.prev_j = j;
+
+  int ii = ij_to_ii(i, j);
+  int jj = map_data.matrix[ii];
+
+  float eps = 0.0011f;
+
+  int bottom_id = -1;
+  spot_type bottom_spot_type = -1;
+  float bottom_overlap = 0.0f;
+  int top_id = -1;
+  spot_type top_spot_type = -1;
+  float top_overlap = 0.0f;
+  int left_id = -1;
+  spot_type left_spot_type = -1;
+  float left_overlap = 0.0f;
+  int right_id = -1;
+  spot_type right_spot_type = -1;
+  float right_overlap = 0.0f;
+
+  float temp_overlap;
+  int found_id = -1;
+
+  for (int i = 0; i < map_data.n; ++i) {
+    if (player_data.rect.x1 < map_data.rects[i].x1) {
+      temp_overlap = player_data.rect.x1 + player_data.width - map_data.rects[i].x1;
+    } else if (player_data.rect.x2 <= map_data.rects[i].x2) {
+      temp_overlap = player_data.width;
+    } else {
+      temp_overlap = map_data.rects[i].x2 - player_data.rect.x1;
+    }
+
+    if (temp_overlap > bottom_overlap &&
+        fabs(player_data.rect.y1 - map_data.rects[i].y2) < eps) {
+      bottom_id = i;
+      bottom_spot_type = map_data.spot_types[i];
+      bottom_overlap = temp_overlap;
+    }
+
+    if (temp_overlap > top_overlap &&
+        fabs(map_data.rects[i].y1 - player_data.rect.y2) < eps) {
+      top_id = i;
+      top_spot_type = map_data.spot_types[i];
+      top_overlap = temp_overlap;
+    }
+
+
+    if (player_data.rect.y1 < map_data.rects[i].y1) {
+      temp_overlap = player_data.rect.y1 + player_data.height - map_data.rects[i].y1;
+    } else if (player_data.rect.y2 <= map_data.rects[i].y2) {
+      temp_overlap = player_data.width;
+    } else {
+      temp_overlap = map_data.rects[i].y2 - player_data.rect.y1;
+    }
+
+    if (temp_overlap > left_overlap &&
+        fabs(player_data.rect.x1 - map_data.rects[i].x2) < eps &&
+        (player_data.rect.x1 - player_data.prev_rect.x1 < 0.0f ||
+         in_data.h == IN_LEFT)) {
+      left_id = i;
+      left_spot_type = map_data.spot_types[i];
+      left_overlap = temp_overlap;
+    }
+
+    if (temp_overlap > right_overlap &&
+        fabs(map_data.rects[i].x1 - player_data.rect.x2) < eps &&
+        (player_data.rect.x1 - player_data.prev_rect.x1 > 0.0f ||
+         in_data.h == IN_RIGHT)) {
+      right_id = i;
+      right_spot_type = map_data.spot_types[i];
+      right_overlap = temp_overlap;
+    }
+  }
+
+
+  if ((bottom_id != -1 && top_id != -1) ||
+      (left_id != -1 && right_id != -1)) {
+    // death
+    exit(0);
+  } else if (
+      (left_id != -1 && top_id != -1) ||
+      (left_id != -1 && bottom_id != -1) ||
+      (right_id != -1 && top_id != -1) ||
+      (right_id != -1 && bottom_id != -1)) {
+    // double touch
+
+    // printf("double touch\n\n");
+    return;
+  } else {
+    found_id = left_id + right_id + top_id + bottom_id + 3;
+  }
+
+  // printf("found id %d\n", found_id);
+
+  if (found_id == -1 || found_id == logic.prev_found_id) {
     return;
   }
 
-  logic.prev_i = i;
-  logic.prev_j = j;
+  logic.prev_found_id = found_id;
 
-  int ii = ij_to_ii(i, j);
+  player_data.undo_rects_i = (player_data.undo_rects_i + 1) % UNDO_RECTS_N;
+  player_data.undo_rects[player_data.undo_rects_i] = player_data.rect;
 
-  map_data.matrix[ii] = TEMP_NON_EMPTY;
+  int fi, fj;
+  rect_to_ij(&map_data.rects[found_id], &fi, &fj);
 
-  update_matrix();
+  bool player_above = player_data.rect.y1 > map_data.rects[found_id].y2;
+  // printf("%d %f %d %d %f %d %d\n", player_above, player_data.rect.y1, i, j, map_data.rects[ij_to_ii(fi, fj)].y2, fi, fj);
 
-  map_data.matrix[ii] = -1;
+  if (map_data.matrix[ij_to_ii(fi, fj + 1)] == -1 &&
+      (!player_above || map_data.matrix[ij_to_ii(fi, fj + 2)] == -1)) {
+    map_data.matrix[ij_to_ii(fi, fj)] = -1;
+    map_data.matrix[ij_to_ii(fi, fj + 1)] = found_id;
+
+    if (player_above) {
+      player_data.rect.y1 += map_data.raw_tile_height;
+      player_data.rect.y2 += map_data.raw_tile_height;
+      player_data.prev_rect.y1 += map_data.raw_tile_height;
+      player_data.prev_rect.y2 += map_data.raw_tile_height;
+    }
+
+    ii_to_jj_rect(ij_to_ii(fi, fj + 1), found_id);
+  }
 }
