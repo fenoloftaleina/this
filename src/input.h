@@ -69,6 +69,7 @@ void handle_input(const sapp_event* ev, const float t)
           in_data.editor = false;
         } else {
           reload_current_map();
+          reset_editor();
           in_data.editor = true;
         }
         break;
@@ -90,6 +91,25 @@ void handle_input(const sapp_event* ev, const float t)
       case SAPP_KEYCODE_N:
         if (in_data.editor) {
           clear_spot();
+        }
+        break;
+
+
+      case SAPP_KEYCODE_G:
+        if (in_data.editor) {
+          start_or_add_to_path();
+        }
+        break;
+
+      case SAPP_KEYCODE_F:
+        if (in_data.editor) {
+          finish_editing_path();
+        }
+        break;
+
+      case SAPP_KEYCODE_L:
+        if (in_data.editor) {
+          toggle_path_looped();
         }
         break;
 

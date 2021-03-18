@@ -36,8 +36,6 @@ typedef struct
 
   int* matrix; // matrix, linear, but 2d
 
-  spot_type* raw_spot_types; // alwaus full size, with -1s in empty ones, for editor and serialization
-
   float raw_tile_width, raw_tile_height;
 
   const int matrix_w;
@@ -87,15 +85,23 @@ float tile_width = 200.0f;
 float tile_height = 200.0f;
 
 
+
+
+#include "paths.h"
+
+
+
+
 void reset_map()
 {
   for (int i = 0; i < spot_type_n; ++i) {
     map_data.tween_per_type[i].fn = lerp_tween;
-
     map_data.tween_per_type[i].start_t = 0.0f;
     map_data.tween_per_type[i].end_t = 1.0f;
     map_data.tween_per_type[i].start_v = 0.0f;
     map_data.tween_per_type[i].end_v = 1.0f;
+
+    map_data.spot_type_statuses[i] = spot_active;
   }
 
   map_data.tween_per_type[spot_checkpoint].fn = parabola_tween;
@@ -106,12 +112,14 @@ void reset_map()
 
 void init_map()
 {
+  map_data.raw_tile_width = tile_width;
+  map_data.raw_tile_height = tile_height;
+
   map_data.prev_rects = (rect*)malloc(map_data.matrix_size * sizeof(rect));
   map_data.rects = (rect*)malloc(map_data.matrix_size * sizeof(rect));
   map_data.spot_types = (spot_type*)malloc(map_data.matrix_size * sizeof(spot_type));
   map_data.matrix = (int*)malloc(map_data.matrix_size * sizeof(int));
   memset(map_data.matrix, -1, map_data.matrix_size * sizeof(int));
-  map_data.raw_spot_types = (spot_type*)malloc(map_data.matrix_size * sizeof(spot_type));
   map_data.temp_models_list = (int*)malloc(map_data.matrix_size * sizeof(int));
 
   reset_map();
@@ -231,47 +239,68 @@ void draw_map(const float frame_fraction)
 }
 
 
-void raw_xy12(const int i, float* x1, float* y1, float* x2, float* y2)
+void ij_to_xy(const int i, const int j, float* x1, float* y1, float* x2, float* y2)
 {
-  *x1 = -1.0f + (i % map_data.matrix_w * map_data.raw_tile_width);
-  *y1 = -1.0f + (i / map_data.matrix_w * map_data.raw_tile_height);
+  *x1 = -1.0f + i * map_data.raw_tile_width;
+  *y1 = -1.0f + j * map_data.raw_tile_height;
   *x2 = *x1 + map_data.raw_tile_width;
   *y2 = *y1 + map_data.raw_tile_height;
 }
 
 
-void raw_spots_to_matrix()
+void ii_to_ij(const int ii, int* i, int* j)
 {
-  map_data.raw_tile_width = tile_width;
-  map_data.raw_tile_height = tile_height;
+  *i = ii % map_data.matrix_w;
+  *j = ii / map_data.matrix_w;
+}
 
-  spot_type cur_type;
+
+int ij_to_ii(int i, int j)
+{
+  return j * map_data.matrix_w + i;
+}
+
+
+void ii_to_xy(const int ii, float* x1, float* y1, float* x2, float* y2)
+{
+  int i, j;
+  ii_to_ij(ii, &i, &j);
+  ij_to_xy(i, j, x1, y1, x2, y2);
+}
+
+
+void rect_to_ij(const rect* rect, int* i, int* j)
+{
+  *i = ((rect->x1 + rect->x2) * 0.5f + 1.0f) / map_data.raw_tile_width;
+  *j = ((rect->y1 + rect->y2) * 0.5f + 1.0f) / map_data.raw_tile_height;
+}
+
+
+void ii_to_jj_rect(const int ii, const int jj)
+{
   float x1, y1, x2, y2;
-  int j = 0;
-  for(int i = 0; i < map_data.matrix_size; ++i) {
-    if (map_data.raw_spot_types[i] != spot_empty) {
-      cur_type = map_data.raw_spot_types[i];
+  ii_to_xy(ii, &x1, &y1, &x2, &y2);
 
-      raw_xy12(i, &x1, &y1, &x2, &y2);
+  map_data.rects[jj] = (rect){
+    x1, y1, x2, y2, 1.0f, 1.0f, 1.0f, 1.0f, flat_z
+  };
+  map_data.prev_rects[jj] = map_data.rects[jj];
 
-      map_data.matrix[i] = j;
-      map_data.rects[j] = (rect){
-        x1, y1, x2, y2, 0.0f, 0.0f, 0.0f, 1.0f, flat_z, -1.0f, -1.0f
-      };
+  set_sprite(&map_data.rects[jj], &texture, SPRITE_OFFSET + map_data.spot_types[jj]);
+}
 
-      map_data.prev_rects[j] = map_data.rects[j];
-      map_data.spot_types[j] = cur_type;
 
-      ++j;
-    } else {
-      map_data.matrix[i] = spot_empty;
+void matrix_to_rects()
+{
+  int jj = 0;
+  for(int ii = 0; ii < map_data.matrix_size; ++ii) {
+    jj = map_data.matrix[ii];
+
+    if (jj == -1) {
+      continue;
     }
-  }
 
-  map_data.n = j;
-
-  for (int i = 0; i < spot_type_n; ++i) {
-    map_data.spot_type_statuses[i] = spot_active;
+    ii_to_jj_rect(ii, jj);
   }
 }
 
@@ -302,6 +331,31 @@ void load_map(const char* map_filename)
     return;
   }
 
+  // int a;
+  // int j = 0;
+  // for (int i = 0; i < map_data.matrix_size; ++i) {
+  //   tag = mpack_read_tag(&reader);
+  //   if (mpack_reader_error(&reader) != mpack_ok) {
+  //     fprintf(stderr, "An error occurred decoding the data!\n");
+  //     return;
+  //   }
+  //   if (mpack_tag_type(&tag) == mpack_type_uint) {
+  //     a = mpack_tag_uint_value(&tag);
+  //   } else {
+  //     a = mpack_tag_int_value(&tag);
+  //   }
+  //   // printf("%d %d %d\n", i, j, a);
+  //   if (a != -1) {
+  //     map_data.matrix[i] = j;
+  //     map_data.spot_types[j] = a;
+  //     j += 1;
+  //   } else {
+  //     map_data.matrix[i] = -1;
+  //   }
+  // }
+  // mpack_done_array(&reader);
+  // map_data.n = j;
+
   // int cnt = mpack_tag_array_count(&tag);
   for (int i = 0; i < map_data.matrix_size; ++i) {
     tag = mpack_read_tag(&reader);
@@ -310,9 +364,9 @@ void load_map(const char* map_filename)
       return;
     }
     if (mpack_tag_type(&tag) == mpack_type_uint) {
-      map_data.raw_spot_types[i] = mpack_tag_uint_value(&tag);
+      map_data.matrix[i] = mpack_tag_uint_value(&tag);
     } else {
-      map_data.raw_spot_types[i] = mpack_tag_int_value(&tag);
+      map_data.matrix[i] = mpack_tag_int_value(&tag);
     }
     if (mpack_reader_error(&reader) != mpack_ok) {
       fprintf(stderr, "An error occurred decoding the data!\n");
@@ -322,31 +376,52 @@ void load_map(const char* map_filename)
   mpack_done_array(&reader);
 
   tag = mpack_read_tag(&reader);
+  int cnt = mpack_tag_array_count(&tag);
+  map_data.n = cnt;
+  for (int i = 0; i < cnt; ++i) {
+    tag = mpack_read_tag(&reader);
+    if (mpack_reader_error(&reader) != mpack_ok) {
+      fprintf(stderr, "An error occurred decoding the data!\n");
+      return;
+    }
+    if (mpack_tag_type(&tag) == mpack_type_uint) {
+      map_data.spot_types[i] = mpack_tag_uint_value(&tag);
+    } else {
+      map_data.spot_types[i] = mpack_tag_int_value(&tag);
+    }
+    if (mpack_reader_error(&reader) != mpack_ok) {
+      fprintf(stderr, "An error occurred decoding the data!\n");
+      return;
+    }
+  }
+  mpack_done_array(&reader);
+
+  tag = mpack_read_tag(&reader);
+  if (mpack_reader_error(&reader) != mpack_ok) {
+    fprintf(stderr, "An error occurred decoding the data!\n");
+    return;
+  }
   if (mpack_tag_type(&tag) == mpack_type_uint) {
     map_data.player_start_x = mpack_tag_uint_value(&tag);
   } else {
     map_data.player_start_x = mpack_tag_int_value(&tag);
   }
+
+  tag = mpack_read_tag(&reader);
   if (mpack_reader_error(&reader) != mpack_ok) {
     fprintf(stderr, "An error occurred decoding the data!\n");
     return;
   }
-
-  tag = mpack_read_tag(&reader);
   if (mpack_tag_type(&tag) == mpack_type_uint) {
     map_data.player_start_y = mpack_tag_uint_value(&tag);
   } else {
     map_data.player_start_y = mpack_tag_int_value(&tag);
   }
-  if (mpack_reader_error(&reader) != mpack_ok) {
-    fprintf(stderr, "An error occurred decoding the data!\n");
-    return;
-  }
 
 
   reset_map();
 
-  raw_spots_to_matrix();
+  matrix_to_rects();
 }
 
 
@@ -358,7 +433,12 @@ void save_map(const char* map_filename)
   mpack_writer_init_filename(&writer, file_path);
   mpack_start_array(&writer, map_data.matrix_size);
   for (int i = 0; i < map_data.matrix_size; ++i) {
-    mpack_write_int(&writer, map_data.raw_spot_types[i]);
+    mpack_write_int(&writer, map_data.matrix[i]);
+  }
+  mpack_finish_array(&writer);
+  mpack_start_array(&writer, map_data.n);
+  for (int i = 0; i < map_data.n; ++i) {
+    mpack_write_int(&writer, map_data.spot_types[i]);
   }
   mpack_finish_array(&writer);
   mpack_write_int(&writer, map_data.player_start_x);
@@ -370,15 +450,72 @@ void save_map(const char* map_filename)
 }
 
 
-void set_raw_spot(const int x, const int y, const spot_type t)
+void set_ij_spot(const int i, const int j, const spot_type t)
 {
-  map_data.raw_spot_types[y * map_data.matrix_w + x] = t;
+  int ii = ij_to_ii(i, j);
+  int jj = map_data.matrix[ii];
 
-  raw_spots_to_matrix();
+  if (jj == -1) {
+    map_data.matrix[ii] = map_data.n;
+    jj = map_data.matrix[ii];
+    map_data.n += 1;
+  }
+
+  map_data.spot_types[jj] = t;
+
+  ii_to_jj_rect(ii, jj);
 }
 
 
-spot_type get_raw_spot(const int x, const int y)
+void move_ij_spot_to_ij(const int i1, const int j1, const int i2, const int j2)
 {
-  return map_data.raw_spot_types[y * map_data.matrix_w + x];
+  int ii1 = ij_to_ii(i1, j1);
+  int ii2 = ij_to_ii(i2, j2);
+
+  int jj = map_data.matrix[ii1];
+
+  map_data.matrix[ii1] = -1;
+  map_data.matrix[ii2] = jj;
+
+  ii_to_jj_rect(ii2, jj);
+}
+
+
+void remove_ij_spot(const int i, const int j)
+{
+  int ii = ij_to_ii(i, j);
+  int jj = map_data.matrix[ii];
+
+  if (jj == -1) {
+    return;
+  }
+
+  int elements = map_data.n - jj - 1;
+
+  memmove(map_data.spot_types + jj, map_data.spot_types + jj + 1, elements * sizeof(spot_type));
+  memmove(map_data.rects + jj, map_data.rects + jj + 1, elements * sizeof(rect));
+  memmove(map_data.prev_rects + jj, map_data.prev_rects + jj + 1, elements * sizeof(rect));
+
+  for (int i = 0; i < map_data.matrix_size; ++i) {
+    if (map_data.matrix[i] >= jj) {
+      map_data.matrix[i] -= 1;
+    }
+  }
+
+  map_data.n -= 1;
+
+  map_data.matrix[ii] = -1;
+}
+
+
+spot_type get_ij_spot(const int i, const int j)
+{
+  int ii = ij_to_ii(i, j);
+  int jj = map_data.matrix[ii];
+
+  if (jj == -1) {
+    return -1;
+  }
+
+  return map_data.spot_types[jj];
 }

@@ -37,9 +37,11 @@ void run_map(const int map_i)
 {
   cur_map_i = map_i;
   strcpy(cur_map_name, map_list[cur_map_i]);
+
   load_map(cur_map_name);
-  reload_logic();
+
   reset_player(map_data.player_start_x, map_data.player_start_y);
+  reload_logic();
 }
 
 
@@ -48,7 +50,6 @@ void duplicate_current_map()
   map_list[map_list_n] = (char*)malloc(255 * sizeof(char));
 
   for (int i = map_list_n; i > cur_map_i + 1; i--) {
-    printf("%d\n", i);
     map_list[i] = map_list[i - 1];
   }
   sprintf(map_list[cur_map_i + 1], "%s-%ld", map_list[cur_map_i], time(0));

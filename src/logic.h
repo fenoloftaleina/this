@@ -167,16 +167,16 @@ bool player_hit(const float x1, const float y1, const float x2, const float y2)
 }
 
 
-bool death_on(const int k)
+bool death_on(const int ii)
 {
   float x1, y1, x2, y2;
 
-  if (map_data.matrix[k] != -1) return false;
+  if (map_data.matrix[ii] != -1) return false;
 
-  if (death_data.matrix[k] != -1) return true;
+  if (death_data.matrix[ii] != -1) return true;
 
-  death_data.matrix[k] = 1;
-  raw_xy12(k, &x1, &y1, &x2, &y2);
+  death_data.matrix[ii] = 1;
+  ii_to_xy(ii, &x1, &y1, &x2, &y2);
   death_data.rects[death_data.n] = (rect){
     x1,
     y1,
@@ -289,7 +289,7 @@ void update_logic
   matrix_xy(&player_data.rect, &logic_x, &logic_y);
 
   // printf("??? %d %d\n", logic.n, logic.n_offset);
-  if (get_raw_spot(logic_x, logic_y) == spot_checkpoint &&
+  if (get_ij_spot(logic_x, logic_y) == spot_checkpoint &&
       (logic.n + logic.n_offset) % logic.steps_till_eval != 0) {
     logic.n_offset = - (logic.n % logic.steps_till_eval);
     logic.display_n = (logic.n + logic.n_offset) % logic.steps_till_eval;

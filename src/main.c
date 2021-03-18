@@ -254,7 +254,13 @@ void init(void)
 #endif
 
   load_map_list();
+
   run_map(0);
+  /* for (int i = 0; i < 8; ++i) { */
+  /*   strcpy(cur_map_name, map_list[i]); */
+  /*   load_map(cur_map_name); */
+  /*   save_map(cur_map_name); */
+  /* } */
 
   stm_setup();
 
