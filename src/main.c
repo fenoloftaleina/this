@@ -233,6 +233,7 @@ void init(void)
   init_player_animations();
   init_player();
   init_map();
+  init_paths();
   init_death();
   init_editor();
 
@@ -334,6 +335,7 @@ void frame(void)
   draw_player(frame_fraction);
   draw_logic(frame_fraction);
   draw_map(frame_fraction);
+  draw_paths();
   draw_death(frame_fraction);
   if (in_data.editor) {
     draw_editor(frame_fraction);

@@ -94,7 +94,6 @@ void handle_input(const sapp_event* ev, const float t)
         }
         break;
 
-
       case SAPP_KEYCODE_G:
         if (in_data.editor) {
           start_or_add_to_path();

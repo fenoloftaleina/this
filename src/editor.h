@@ -93,27 +93,20 @@ void toggle_path_looped()
 }
 
 
-int editor_to_ii()
-{
-  return map_data.matrix[ij_to_ii(editor_data.i, editor_data.j)];
-}
-
-
-// int ii_to_path()
-// {
-//   // int jj = editor_
-//   // return spot_to_path();
-//   return -1;
-// }
-
-
 void start_or_add_to_path()
 {
+  int ii, jj;
+
   if (editor_data.current_path == -1) {
-    // editor_data.current_path = ii_to_path();
+    ii = ij_to_ii(editor_data.i, editor_data.j);
+    jj = map_data.matrix[ii];
 
-    // if (editor_data.current_path == -1)
+    if (jj == -1) {
+      return;
+    }
+
+    editor_data.current_path = restart_path(jj, editor_data.i, editor_data.j);
+  } else {
+    add_to_path(editor_data.current_path, editor_data.i, editor_data.j);
   }
-
-
 }
