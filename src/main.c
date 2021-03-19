@@ -63,6 +63,8 @@ buffer_object death_bo;
 #include "models.h"
 #include "lines.h"
 
+#include "rect_animation.h"
+
 #include "map.h"
 #include "in_types.h"
 #include "death.h"

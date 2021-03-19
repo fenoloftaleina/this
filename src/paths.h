@@ -114,3 +114,8 @@ void draw_paths()
         );
   }
 }
+
+
+void advance_paths()
+{
+}

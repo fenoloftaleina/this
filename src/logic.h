@@ -146,18 +146,6 @@ void reload_logic()
 }
 
 
-void matrix_xy(const rect* rect, int* x, int* y)
-{
-  *x = ((rect->x1 + rect->x2) * 0.5f + 1.0f) / map_data.raw_tile_width;
-  *y = ((rect->y1 + rect->y2) * 0.5f + 1.0f) / map_data.raw_tile_height;
-}
-
-int matrix_i(const int x, const int y)
-{
-  return y * map_data.matrix_w + x;
-}
-
-
 bool player_hit(const float x1, const float y1, const float x2, const float y2)
 {
   float mid_x = player_data.rect.x1 + player_data.width * 0.5f;
@@ -194,7 +182,7 @@ bool death_on(const int ii)
 
   death_data.n += 1;
 
-  if (player_hit(x1, y1, x2, y2)) { // I have the matrix_xy fn as well.
+  if (player_hit(x1, y1, x2, y2)) { // I have the rect_to_ij fn as well.
     death_data.player_dead = true;
   }
 
@@ -210,27 +198,27 @@ void evaluate(const float t)
         map_data.spot_types[i] != spot_spikes &&
         map_data.spot_types[i] != spot_checkpoint &&
         map_data.spot_type_statuses[map_data.spot_types[i]] == spot_active) {
-      matrix_xy(&map_data.rects[i], &spot_x, &spot_y);
+      rect_to_ij(&map_data.rects[i], &spot_x, &spot_y);
 
-      // death->matrix[matrix_i(spot_x, spot_y)] = 1;
+      // death->matrix[ij_to_ii(spot_x, spot_y)] = 1;
 
       j = spot_x + 1;
-      while(j < map_data.matrix_w && death_on(matrix_i(j, spot_y))) {
+      while(j < map_data.matrix_w && death_on(ij_to_ii(j, spot_y))) {
         ++j;
       }
 
       j = spot_x - 1;
-      while(j >= 0 && death_on(matrix_i(j, spot_y))) {
+      while(j >= 0 && death_on(ij_to_ii(j, spot_y))) {
         --j;
       }
 
       j = spot_y + 1;
-      while(j < map_data.matrix_h && death_on(matrix_i(spot_x, j))) {
+      while(j < map_data.matrix_h && death_on(ij_to_ii(spot_x, j))) {
         ++j;
       }
 
       j = spot_y - 1;
-      while(j >= 0 && death_on(matrix_i(spot_x, j))) {
+      while(j >= 0 && death_on(ij_to_ii(spot_x, j))) {
         --j;
       }
     }
@@ -286,7 +274,7 @@ void update_logic
 
 
   int logic_x, logic_y;
-  matrix_xy(&player_data.rect, &logic_x, &logic_y);
+  rect_to_ij(&player_data.rect, &logic_x, &logic_y);
 
   // printf("??? %d %d\n", logic.n, logic.n_offset);
   if (get_ij_spot(logic_x, logic_y) == spot_checkpoint &&
@@ -440,6 +428,25 @@ void update_logic
 
     return;
   }
+
+
+  int i, j;
+  rect_to_ij(&map_data.rects[found_id], &i, &j);
+  rect start_rect = {
+    i * map_data.raw_tile_width,
+    j * map_data.raw_tile_height,
+    (i + 1) * map_data.raw_tile_width,
+    (j + 1) * map_data.raw_tile_height
+  };
+  rect end_rect = {
+    i * map_data.raw_tile_width,
+    (j - 1) * map_data.raw_tile_height,
+    (i + 1) * map_data.raw_tile_width,
+    j * map_data.raw_tile_height
+  };
+  schedule_rect_animation(&map_data.rect_animations[found_id], t, 10.0f, start_rect, end_rect, lerp_tween);
+
+
 
   player_data.undo_rects_i = (player_data.undo_rects_i + 1) % UNDO_RECTS_N;
   player_data.undo_rects[player_data.undo_rects_i] = player_data.rect;

@@ -49,6 +49,8 @@ typedef struct
   tween_data_t tween_per_type[spot_type_n];
   schedule_data_t reset_schedule;
 
+  rect_animation_t* rect_animations;
+
   int player_start_x, player_start_y;
 } map_data_t;
 
@@ -121,6 +123,11 @@ void init_map()
   map_data.matrix = (int*)malloc(map_data.matrix_size * sizeof(int));
   memset(map_data.matrix, -1, map_data.matrix_size * sizeof(int));
   map_data.temp_models_list = (int*)malloc(map_data.matrix_size * sizeof(int));
+  map_data.rect_animations = (rect_animation_t*)malloc(map_data.matrix_size * sizeof(rect_animation_t));
+
+  for (int i = 0; i < map_data.matrix_size; ++i) {
+    init_rect_animation(&map_data.rect_animations[i]);
+  }
 
   reset_map();
 }
@@ -287,6 +294,8 @@ void ii_to_jj_rect(const int ii, const int jj)
   map_data.prev_rects[jj] = map_data.rects[jj];
 
   set_sprite(&map_data.rects[jj], &texture, SPRITE_OFFSET + map_data.spot_types[jj]);
+
+  set_rect_animation(&map_data.rect_animations[jj], &map_data.rects[jj]);
 }
 
 
@@ -312,6 +321,10 @@ void update_map(const float t)
   }
 
   execute_schedule(&map_data.reset_schedule, t);
+
+  for (int i = 0; i < map_data.n; ++i) {
+    update_rect_animation(&map_data.rect_animations[i], t);
+  }
 
   memcpy(map_data.prev_rects, map_data.rects, map_data.n * sizeof(rect));
 }
