@@ -112,6 +112,18 @@ void handle_input(const sapp_event* ev, const float t)
         }
         break;
 
+      case SAPP_KEYCODE_Y:
+        if (in_data.editor) {
+          toggle_path_self_only();
+        }
+        break;
+
+      case SAPP_KEYCODE_T:
+        if (in_data.editor) {
+          inc_path_step();
+        }
+        break;
+
       case SAPP_KEYCODE_O:
         if (in_data.editor) {
           set_player_start_position();

@@ -1,6 +1,4 @@
-
-static const int PATHS_N = 100;
-static const int PATHS_M = 20;
+const int PATHS_M = 20;
 
 typedef struct
 {
@@ -8,114 +6,136 @@ typedef struct
   int j;
 } ij_t;
 
-typedef struct
+typedef struct path_data_t
 {
-  int lengths[PATHS_N];
-  int directions[PATHS_N];
-  int step[PATHS_N];
-  bool looped[PATHS_N];
-  int jjs[PATHS_N];
+  int length;
+  int direction;
+  int step;
+  bool looped;
+  bool self_only;
 
-  ij_t positions[PATHS_N * PATHS_M];
-
-  int n;
-} paths_data_t;
+  ij_t positions[PATHS_M];
+} path_data_t;
 
 
-paths_data_t paths_data;
-
-
-void reset_paths()
+void reset_path(path_data_t* path_data)
 {
-  paths_data.n = 0;
+  path_data->length = -1;
+  path_data->self_only = false;
+  memset(path_data->positions, -1, PATHS_M * sizeof(ij_t));
 }
 
 
-void init_paths()
+void init_path(path_data_t* path_data)
 {
-  reset_paths();
+  reset_path(path_data);
 }
 
 
-void add_to_path(int path, int i, int j)
+void add_to_path(path_data_t* path_data, int i, int j)
 {
-  int pos_id = path * PATHS_M + paths_data.lengths[path];
-  paths_data.positions[pos_id].i = i;
-  paths_data.positions[pos_id].j = j;
+  path_data->positions[path_data->length].i = i;
+  path_data->positions[path_data->length].j = j;
 
-  paths_data.lengths[path] += 1;
+  path_data->length += 1;
 }
 
 
-int restart_path(int jj, int i, int j)
+void restart_path(path_data_t* path_data, int i, int j)
 {
-  int path = -1;
+  path_data->length = 0;
+  path_data->direction = 1;
+  path_data->step = 0;
+  path_data->looped = false;
+  path_data->self_only = false;
 
-  for (int i = 0; i < paths_data.n; ++i) {
-    if (paths_data.jjs[i] == jj) {
-      path = i;
-    }
+  add_to_path(path_data, i, j);
+}
+
+
+static pos_t temp_lines_positions[PATHS_M + 1];
+
+void draw_path(path_data_t* path_data)
+{
+  if (path_data->length < 2) {
+    return;
   }
 
-  if (path == -1) {
-    path = paths_data.n;
-    paths_data.n += 1;
-
-    paths_data.jjs[path] = jj;
-  }
-
-  paths_data.lengths[path] = 0;
-  paths_data.directions[path] = 1;
-  paths_data.step[path] = 0;
-  paths_data.looped[path] = false;
-
-  add_to_path(path, i, j);
-
-  return path;
-}
-
-
-int jj_to_path(int jj)
-{
-  for (int i = 0; i < paths_data.n; ++i) {
-    if (paths_data.jjs[i] == jj) {
-      return i;
-    }
-  }
-
-  return -1;
-}
-
-
-void draw_paths()
-{
   lines_data.thickness = 4;
-  pos_t lines_positions[PATHS_M];
 
-  int k = 0;
-  for (int i = 0; i < paths_data.n; ++i) {
-    if (paths_data.lengths[i] < 2) {
-      continue;
-    }
-
-    for (int j = 0; j < paths_data.lengths[i]; ++j) {
-      int pos_id = i * PATHS_M + j;
-      lines_positions[j] = (pos_t){
-        paths_data.positions[pos_id].i * map_data.raw_tile_width +
-          map_data.raw_tile_width * 0.5f,
-        paths_data.positions[pos_id].j * map_data.raw_tile_height +
-          map_data.raw_tile_height * 0.5f
-      };
-    }
-
-    add_lines(
-        &lines_bo, lines_positions, paths_data.lengths[i],
-        &(col_t){0.7f, 0.1f, 0.4f, 1.0f}, flat_z, false
-        );
+  for (int j = 0; j < path_data->length; ++j) {
+    temp_lines_positions[j] = (pos_t){
+      path_data->positions[j].i * map_data.raw_tile_width +
+        map_data.raw_tile_width * 0.5f,
+      path_data->positions[j].j * map_data.raw_tile_height +
+        map_data.raw_tile_height * 0.5f
+    };
   }
+
+  if (path_data->looped) {
+    temp_lines_positions[path_data->length] = temp_lines_positions[0];
+  }
+
+  add_lines(
+      &lines_bo, temp_lines_positions, path_data->length + path_data->looped,
+      &(col_t){0.7f, 0.1f, 0.4f, 1.0f}, flat_z, false
+      );
 }
 
 
-void advance_paths()
+void advance_path
+(path_data_t* path_data, rect_animation_t* rect_animation, const float t)
 {
+  float x1, y1, x2, y2;
+
+  ij_to_xy(
+      path_data->positions[path_data->step].i,
+      path_data->positions[path_data->step].j,
+      &x1, &y1, &x2, &y2
+      );
+  rect start_rect = (rect){
+    x1, y1, x2, y2, 1.0f, 1.0f, 1.0f, 1.0f, flat_z
+  };
+
+  if (path_data->direction == 1) {
+    if (path_data->step + 1 < path_data->length) {
+      path_data->step += 1;
+    } else {
+      if (path_data->looped) {
+        path_data->step = 0;
+      } else {
+        path_data->step -= 1;
+        path_data->direction = -1;
+      }
+    }
+  } else {
+    if (path_data->step - 1 >= 0) {
+      path_data->step -= 1;
+    } else {
+      if (path_data->looped) {
+        path_data->step = path_data->length - 1;
+      } else {
+        path_data->step += 1;
+        path_data->direction = 1;
+      }
+    }
+  }
+
+  ij_to_xy(
+      path_data->positions[path_data->step].i,
+      path_data->positions[path_data->step].j,
+      &x1, &y1, &x2, &y2
+      );
+  rect end_rect = (rect){
+    x1, y1, x2, y2, 1.0f, 1.0f, 1.0f, 1.0f, flat_z
+  };
+  float path_step_time = 1.0f;
+  schedule_rect_animation(
+      rect_animation,
+      t,
+      path_step_time,
+      start_rect,
+      end_rect,
+      lerp_tween
+      );
 }

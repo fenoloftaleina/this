@@ -3,7 +3,7 @@ typedef struct
   int i, j;
   rect rect;
 
-  int current_path;
+  path_data_t* current_path;
 } editor_data_t;
 
 
@@ -12,13 +12,13 @@ editor_data_t editor_data;
 
 void reset_editor()
 {
-  editor_data.current_path = -1;
+  editor_data.current_path = NULL;
 }
 
 
 void init_editor()
 {
-  editor_data.i = editor_data.j = 0;
+  editor_data.i = editor_data.j = 6;
 
   float tw = tile_width;
   float th = tile_height;
@@ -78,18 +78,40 @@ void set_player_start_position()
 
 void finish_editing_path()
 {
-  editor_data.current_path = -1;
+  editor_data.current_path = NULL;
+}
+
+
+int editor_ij_to_active_path_jj()
+{
+  int ii, jj;
+
+  ii = ij_to_ii(editor_data.i, editor_data.j);
+  jj = map_data.matrix[ii];
+
+  if (jj == -1 || map_data.paths[jj].length < 2) {
+    return -1;
+  }
+
+  return jj;
 }
 
 
 void toggle_path_looped()
 {
-  if (editor_data.current_path == -1) {
-    return;
-  }
+  int jj = editor_ij_to_active_path_jj();
+  if (jj == -1) return;
 
-  paths_data.looped[editor_data.current_path] =
-    !paths_data.looped[editor_data.current_path];
+  map_data.paths[jj].looped = !map_data.paths[jj].looped;
+}
+
+
+void toggle_path_self_only()
+{
+  int jj = editor_ij_to_active_path_jj();
+  if (jj == -1) return;
+
+  map_data.paths[jj].self_only = !map_data.paths[jj].self_only;
 }
 
 
@@ -97,7 +119,7 @@ void start_or_add_to_path()
 {
   int ii, jj;
 
-  if (editor_data.current_path == -1) {
+  if (!editor_data.current_path) {
     ii = ij_to_ii(editor_data.i, editor_data.j);
     jj = map_data.matrix[ii];
 
@@ -105,8 +127,17 @@ void start_or_add_to_path()
       return;
     }
 
-    editor_data.current_path = restart_path(jj, editor_data.i, editor_data.j);
+    editor_data.current_path = &map_data.paths[jj];
+
+    restart_path(editor_data.current_path, editor_data.i, editor_data.j);
   } else {
     add_to_path(editor_data.current_path, editor_data.i, editor_data.j);
   }
+}
+
+void inc_path_step() {
+  int jj = editor_ij_to_active_path_jj();
+  if (jj == -1) return;
+
+  advance_path(&map_data.paths[jj], &map_data.rect_animations[jj], t);
 }

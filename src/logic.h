@@ -259,6 +259,20 @@ void draw_logic(const float frame_fraction)
 }
 
 
+void run_paths(const int found_id, const float t)
+{
+  spot_type type = map_data.spot_types[found_id];
+
+  for (int i = 0; i < map_data.n; ++i) {
+    if (map_data.paths[i].length > 1 &&
+        (!map_data.paths[i].self_only || map_data.spot_types[i] == type)
+        ) {
+      advance_path(&map_data.paths[i], &map_data.rect_animations[i], t);
+    }
+  }
+}
+
+
 void update_logic
 (const float t, const float dt)
 {
@@ -429,25 +443,6 @@ void update_logic
     return;
   }
 
-
-  int i, j;
-  rect_to_ij(&map_data.rects[found_id], &i, &j);
-  rect start_rect = {
-    i * map_data.raw_tile_width,
-    j * map_data.raw_tile_height,
-    (i + 1) * map_data.raw_tile_width,
-    (j + 1) * map_data.raw_tile_height
-  };
-  rect end_rect = {
-    i * map_data.raw_tile_width,
-    (j - 1) * map_data.raw_tile_height,
-    (i + 1) * map_data.raw_tile_width,
-    j * map_data.raw_tile_height
-  };
-  schedule_rect_animation(&map_data.rect_animations[found_id], t, 10.0f, start_rect, end_rect, lerp_tween);
-
-
-
   player_data.undo_rects_i = (player_data.undo_rects_i + 1) % UNDO_RECTS_N;
   player_data.undo_rects[player_data.undo_rects_i] = player_data.rect;
 
@@ -482,4 +477,6 @@ void update_logic
   if (logic.n + logic.n_offset > 0 && (logic.n + logic.n_offset) % logic.steps_till_eval == 0) {
     evaluate(t);
   }
+
+  run_paths(found_id, t);
 }

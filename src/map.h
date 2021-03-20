@@ -26,6 +26,9 @@ const int SPRITE_OFFSET = 0;
 const int spot_type_n = 9;
 
 
+typedef struct path_data_t path_data_t;
+
+
 typedef struct
 {
   int n;
@@ -49,6 +52,7 @@ typedef struct
   tween_data_t tween_per_type[spot_type_n];
   schedule_data_t reset_schedule;
 
+  path_data_t* paths;
   rect_animation_t* rect_animations;
 
   int player_start_x, player_start_y;
@@ -87,6 +91,59 @@ float tile_width = 200.0f;
 float tile_height = 200.0f;
 
 
+void ij_to_xy(const int i, const int j, float* x1, float* y1, float* x2, float* y2)
+{
+  *x1 = -1.0f + i * map_data.raw_tile_width;
+  *y1 = -1.0f + j * map_data.raw_tile_height;
+  *x2 = *x1 + map_data.raw_tile_width;
+  *y2 = *y1 + map_data.raw_tile_height;
+}
+
+
+void ii_to_ij(const int ii, int* i, int* j)
+{
+  *i = ii % map_data.matrix_w;
+  *j = ii / map_data.matrix_w;
+}
+
+
+int ij_to_ii(int i, int j)
+{
+  return j * map_data.matrix_w + i;
+}
+
+
+void ii_to_xy(const int ii, float* x1, float* y1, float* x2, float* y2)
+{
+  int i, j;
+  ii_to_ij(ii, &i, &j);
+  ij_to_xy(i, j, x1, y1, x2, y2);
+}
+
+
+void rect_to_ij(const rect* rect, int* i, int* j)
+{
+  *i = ((rect->x1 + rect->x2) * 0.5f + 1.0f) / map_data.raw_tile_width;
+  *j = ((rect->y1 + rect->y2) * 0.5f + 1.0f) / map_data.raw_tile_height;
+}
+
+
+void ii_to_jj_rect(const int ii, const int jj)
+{
+  float x1, y1, x2, y2;
+  ii_to_xy(ii, &x1, &y1, &x2, &y2);
+
+  map_data.rects[jj] = (rect){
+    x1, y1, x2, y2, 1.0f, 1.0f, 1.0f, 1.0f, flat_z
+  };
+  map_data.prev_rects[jj] = map_data.rects[jj];
+
+  set_sprite(&map_data.rects[jj], &texture, SPRITE_OFFSET + map_data.spot_types[jj]);
+
+  set_rect_animation(&map_data.rect_animations[jj], &map_data.rects[jj]);
+}
+
+
 
 
 #include "paths.h"
@@ -123,10 +180,12 @@ void init_map()
   map_data.matrix = (int*)malloc(map_data.matrix_size * sizeof(int));
   memset(map_data.matrix, -1, map_data.matrix_size * sizeof(int));
   map_data.temp_models_list = (int*)malloc(map_data.matrix_size * sizeof(int));
+  map_data.paths = (path_data_t*)malloc(map_data.matrix_size * sizeof(path_data_t));
   map_data.rect_animations = (rect_animation_t*)malloc(map_data.matrix_size * sizeof(rect_animation_t));
 
   for (int i = 0; i < map_data.matrix_size; ++i) {
     init_rect_animation(&map_data.rect_animations[i]);
+    init_path(&map_data.paths[i]);
   }
 
   reset_map();
@@ -243,59 +302,10 @@ void draw_map(const float frame_fraction)
       &rects_bo, map_data.temp_models_list, map_data.n, 1.0f,
       map_data.rects, map_data.prev_rects, frame_fraction
       );
-}
 
-
-void ij_to_xy(const int i, const int j, float* x1, float* y1, float* x2, float* y2)
-{
-  *x1 = -1.0f + i * map_data.raw_tile_width;
-  *y1 = -1.0f + j * map_data.raw_tile_height;
-  *x2 = *x1 + map_data.raw_tile_width;
-  *y2 = *y1 + map_data.raw_tile_height;
-}
-
-
-void ii_to_ij(const int ii, int* i, int* j)
-{
-  *i = ii % map_data.matrix_w;
-  *j = ii / map_data.matrix_w;
-}
-
-
-int ij_to_ii(int i, int j)
-{
-  return j * map_data.matrix_w + i;
-}
-
-
-void ii_to_xy(const int ii, float* x1, float* y1, float* x2, float* y2)
-{
-  int i, j;
-  ii_to_ij(ii, &i, &j);
-  ij_to_xy(i, j, x1, y1, x2, y2);
-}
-
-
-void rect_to_ij(const rect* rect, int* i, int* j)
-{
-  *i = ((rect->x1 + rect->x2) * 0.5f + 1.0f) / map_data.raw_tile_width;
-  *j = ((rect->y1 + rect->y2) * 0.5f + 1.0f) / map_data.raw_tile_height;
-}
-
-
-void ii_to_jj_rect(const int ii, const int jj)
-{
-  float x1, y1, x2, y2;
-  ii_to_xy(ii, &x1, &y1, &x2, &y2);
-
-  map_data.rects[jj] = (rect){
-    x1, y1, x2, y2, 1.0f, 1.0f, 1.0f, 1.0f, flat_z
-  };
-  map_data.prev_rects[jj] = map_data.rects[jj];
-
-  set_sprite(&map_data.rects[jj], &texture, SPRITE_OFFSET + map_data.spot_types[jj]);
-
-  set_rect_animation(&map_data.rect_animations[jj], &map_data.rects[jj]);
+  for (int i = 0; i < map_data.n; ++i) {
+    draw_path(&map_data.paths[i]);
+  }
 }
 
 
@@ -316,6 +326,14 @@ void matrix_to_rects()
 
 void update_map(const float t)
 {
+  memset(map_data.matrix, -1, map_data.matrix_size * sizeof(int));
+  int i, j, ii;
+  for (int jj = 0; jj < map_data.n; ++jj) {
+    rect_to_ij(&map_data.rects[jj], &i, &j);
+    ii = ij_to_ii(i, j);
+    map_data.matrix[ii] = jj;
+  }
+
   for (int i = 0; i < spot_type_n; ++i) {
     update_tween(&map_data.tween_per_type[i], t);
   }
@@ -409,6 +427,104 @@ void load_map(const char* map_filename)
   }
   mpack_done_array(&reader);
 
+
+  tag = mpack_read_tag(&reader);
+  for (int i = 0; i < map_data.n; ++i) {
+    tag = mpack_read_tag(&reader);
+    if (mpack_reader_error(&reader) != mpack_ok) {
+      fprintf(stderr, "An error occurred decoding the data!\n");
+      return;
+    }
+    if (mpack_tag_type(&tag) == mpack_type_uint) {
+      map_data.paths[i].length = mpack_tag_uint_value(&tag);
+    } else {
+      map_data.paths[i].length = mpack_tag_int_value(&tag);
+    }
+    if (mpack_reader_error(&reader) != mpack_ok) {
+      fprintf(stderr, "An error occurred decoding the data!\n");
+      return;
+    }
+
+    tag = mpack_read_tag(&reader);
+    if (mpack_reader_error(&reader) != mpack_ok) {
+      fprintf(stderr, "An error occurred decoding the data!\n");
+      return;
+    }
+    if (mpack_tag_type(&tag) == mpack_type_uint) {
+      map_data.paths[i].direction = mpack_tag_uint_value(&tag);
+    } else {
+      map_data.paths[i].direction = mpack_tag_int_value(&tag);
+    }
+    if (mpack_reader_error(&reader) != mpack_ok) {
+      fprintf(stderr, "An error occurred decoding the data!\n");
+      return;
+    }
+
+    tag = mpack_read_tag(&reader);
+    if (mpack_reader_error(&reader) != mpack_ok) {
+      fprintf(stderr, "An error occurred decoding the data!\n");
+      return;
+    }
+    if (mpack_tag_type(&tag) == mpack_type_uint) {
+      map_data.paths[i].step = mpack_tag_uint_value(&tag);
+    } else {
+      map_data.paths[i].step = mpack_tag_int_value(&tag);
+    }
+    if (mpack_reader_error(&reader) != mpack_ok) {
+      fprintf(stderr, "An error occurred decoding the data!\n");
+      return;
+    }
+
+    tag = mpack_read_tag(&reader);
+    if (mpack_reader_error(&reader) != mpack_ok) {
+      fprintf(stderr, "An error occurred decoding the data!\n");
+      return;
+    }
+    if (mpack_tag_type(&tag) == mpack_type_uint) {
+      map_data.paths[i].looped = mpack_tag_uint_value(&tag);
+    } else {
+      map_data.paths[i].looped = mpack_tag_int_value(&tag);
+    }
+    if (mpack_reader_error(&reader) != mpack_ok) {
+      fprintf(stderr, "An error occurred decoding the data!\n");
+      return;
+    }
+
+    for (int j = 0; j < PATHS_M; ++j) {
+      tag = mpack_read_tag(&reader);
+      if (mpack_reader_error(&reader) != mpack_ok) {
+        fprintf(stderr, "An error occurred decoding the data!\n");
+        return;
+      }
+      if (mpack_tag_type(&tag) == mpack_type_uint) {
+        map_data.paths[i].positions[j].i = mpack_tag_uint_value(&tag);
+      } else {
+        map_data.paths[i].positions[j].i = mpack_tag_int_value(&tag);
+      }
+      if (mpack_reader_error(&reader) != mpack_ok) {
+        fprintf(stderr, "An error occurred decoding the data!\n");
+        return;
+      }
+
+      tag = mpack_read_tag(&reader);
+      if (mpack_reader_error(&reader) != mpack_ok) {
+        fprintf(stderr, "An error occurred decoding the data!\n");
+        return;
+      }
+      if (mpack_tag_type(&tag) == mpack_type_uint) {
+        map_data.paths[i].positions[j].j = mpack_tag_uint_value(&tag);
+      } else {
+        map_data.paths[i].positions[j].j = mpack_tag_int_value(&tag);
+      }
+      if (mpack_reader_error(&reader) != mpack_ok) {
+        fprintf(stderr, "An error occurred decoding the data!\n");
+        return;
+      }
+    }
+  }
+  mpack_done_array(&reader);
+
+
   tag = mpack_read_tag(&reader);
   if (mpack_reader_error(&reader) != mpack_ok) {
     fprintf(stderr, "An error occurred decoding the data!\n");
@@ -452,6 +568,19 @@ void save_map(const char* map_filename)
   mpack_start_array(&writer, map_data.n);
   for (int i = 0; i < map_data.n; ++i) {
     mpack_write_int(&writer, map_data.spot_types[i]);
+  }
+  mpack_finish_array(&writer);
+  mpack_start_array(&writer, map_data.n * (4 + PATHS_M * 2));
+  for (int i = 0; i < map_data.n; ++i) {
+    mpack_write_int(&writer, map_data.paths[i].length);
+    mpack_write_int(&writer, map_data.paths[i].direction);
+    mpack_write_int(&writer, map_data.paths[i].step);
+    mpack_write_int(&writer, map_data.paths[i].looped);
+
+    for (int j = 0; j < PATHS_M; ++j) {
+      mpack_write_int(&writer, map_data.paths[i].positions[j].i);
+      mpack_write_int(&writer, map_data.paths[i].positions[j].j);
+    }
   }
   mpack_finish_array(&writer);
   mpack_write_int(&writer, map_data.player_start_x);
