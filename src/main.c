@@ -18,6 +18,8 @@ typedef parsl_position pos_t;
 #include "sokol_imgui.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb/stb_image.h"
+#define MINIAUDIO_IMPLEMENTATION
+#include "external/miniaudio.h"
 
 #include "main.glsl.h"
 
@@ -69,6 +71,9 @@ buffer_object death_bo;
 #include "in_types.h"
 #include "death.h"
 #include "player.h"
+
+#include "audio.h"
+
 #include "logic.h"
 #include "editor.h"
 #include "map_list.h"
@@ -123,17 +128,14 @@ void init(void)
   init_buffer_object(&death_bo, 40000, 60000, &death_shader);
 
 
-  const int PATHS_COUNT = 9;
+  const int PATHS_COUNT = 6;
   const char* paths[PATHS_COUNT];
-  paths[0] = "mondrian.png";
-  paths[1] = "picasso.png";
-  paths[2] = "rothko.png";
-  paths[3] = "mondrian.png";
-  paths[4] = "picasso.png";
-  paths[5] = "right0.png";
-  paths[6] = "right1.png";
-  paths[7] = "left0.png";
-  paths[8] = "left1.png";
+  paths[0] = "czekoladka.png";
+  paths[1] = "czekoladka2.png";
+  paths[2] = "kupa.png";
+  paths[3] = "kupa2.png";
+  paths[4] = "gracz.png";
+  paths[5] = "gracz2.png";
   init_texture(&texture, paths, PATHS_COUNT);
 
   init_models();
@@ -231,10 +233,10 @@ void init(void)
       6
       );
 
+  init_audio();
 
-  init_player_animations();
-  init_player();
   init_map();
+  init_player();
   init_paths();
   init_death();
   init_editor();
@@ -295,7 +297,8 @@ void frame(void)
       update_map(t);
       update_death(t);
 
-      if (player_data.won) {
+      if (player_data.won && cur_map_i + 1 < map_list_n) {
+        play_audio("wygrana.wav");
         run_map(cur_map_i + 1);
       }
 
@@ -335,10 +338,10 @@ void frame(void)
   /* add_rects(&sprites_bo, &bg, &bg, 1, frame_fraction); */
 
   draw_player(frame_fraction);
-  draw_logic(frame_fraction);
+  /* draw_logic(frame_fraction); */
   draw_map(frame_fraction);
-  draw_paths();
-  draw_death(frame_fraction);
+  /* draw_paths(); */
+  /* draw_death(frame_fraction); */
   if (in_data.editor) {
     draw_editor(frame_fraction);
   }

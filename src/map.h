@@ -11,19 +11,13 @@ typedef enum spot_type_status
 typedef enum spot_type
 {
   spot_empty = -1,
-  spot_neutral,
-  spot_one,
-  spot_two,
-  spot_three,
-  spot_four,
-  spot_five,
-  spot_checkpoint,
-  spot_spikes,
+  spot_chocolate,
+  spot_shit
 } spot_type;
 
 const int SPRITE_OFFSET = 0;
 
-const int spot_type_n = 9;
+const int spot_type_n = 2;
 
 
 typedef struct
@@ -52,6 +46,9 @@ typedef struct
   rect_animation_t* rect_animations;
 
   int player_start_x, player_start_y;
+
+
+  animation_data_t animations[spot_type_n];
 } map_data_t;
 
 
@@ -96,19 +93,6 @@ float tile_height = 200.0f;
 
 void reset_map()
 {
-  for (int i = 0; i < spot_type_n; ++i) {
-    map_data.tween_per_type[i].fn = lerp_tween;
-    map_data.tween_per_type[i].start_t = 0.0f;
-    map_data.tween_per_type[i].end_t = 1.0f;
-    map_data.tween_per_type[i].start_v = 0.0f;
-    map_data.tween_per_type[i].end_v = 1.0f;
-
-    map_data.spot_type_statuses[i] = spot_active;
-  }
-
-  map_data.tween_per_type[spot_checkpoint].fn = parabola_tween;
-
-  reset_schedule(&map_data.reset_schedule);
 }
 
 
@@ -123,10 +107,9 @@ void init_map()
   map_data.matrix = (int*)malloc(map_data.matrix_size * sizeof(int));
   memset(map_data.matrix, -1, map_data.matrix_size * sizeof(int));
   map_data.temp_models_list = (int*)malloc(map_data.matrix_size * sizeof(int));
-  map_data.rect_animations = (rect_animation_t*)malloc(map_data.matrix_size * sizeof(rect_animation_t));
 
-  for (int i = 0; i < map_data.matrix_size; ++i) {
-    init_rect_animation(&map_data.rect_animations[i]);
+  for (int i = 0; i < spot_type_n; ++i) {
+    init_animation(&map_data.animations[i], i * 2, 2);
   }
 
   reset_map();
@@ -137,112 +120,7 @@ static const float black_f = 0.1f;
 
 void draw_map(const float frame_fraction)
 {
-  spot_type type;
-
-  for (int i = 0; i < map_data.n; ++i) {
-    type = map_data.spot_types[i];
-    if (map_data.spot_type_statuses[type] == spot_active) {
-      map_data.rects[i].z = map_data.prev_rects[i].z = flat_z - 0.3f;
-    } else {
-      map_data.rects[i].z = map_data.prev_rects[i].z = flat_z - 0.6f;
-    }
-
-    if (type == spot_checkpoint) {
-      map_data.prev_rects[i].r = map_data.rects[i].r =
-        lerp(
-            type_colors[type].r,
-            checkpoint_type_color.r,
-            map_data.tween_per_type[type].v
-            );
-      map_data.prev_rects[i].g = map_data.rects[i].g =
-        lerp(
-            type_colors[type].g,
-            checkpoint_type_color.g,
-            map_data.tween_per_type[type].v
-            );
-      map_data.prev_rects[i].b = map_data.rects[i].b =
-        lerp(
-            type_colors[type].b,
-            checkpoint_type_color.b,
-            map_data.tween_per_type[type].v
-            );
-
-      map_data.temp_models_list[i] = 3;
-    } else if (type == spot_spikes) {
-      map_data.rects[i].r = map_data.prev_rects[i].r = spikes_type_color.r;
-      map_data.rects[i].g = map_data.prev_rects[i].g = spikes_type_color.g;
-      map_data.rects[i].b = map_data.prev_rects[i].b = spikes_type_color.b;
-
-      map_data.temp_models_list[i] = 1;
-    } else {
-      map_data.rects[i].r = map_data.rects[i].g = map_data.rects[i].b =
-        map_data.prev_rects[i].r = map_data.prev_rects[i].g = map_data.prev_rects[i].b =
-        lerp(death_type_color.r, black_f, map_data.tween_per_type[type].v);
-
-      map_data.temp_models_list[i] = 1;
-    }
-  }
-  add_models(
-      &rects_bo, map_data.temp_models_list, map_data.n, 1.0f,
-      map_data.rects, map_data.prev_rects, frame_fraction
-      );
-
-
-  for (int i = 0; i < map_data.n; ++i) {
-    type = map_data.spot_types[i];
-
-    if (type == spot_neutral || type == spot_checkpoint || type == spot_spikes) {
-      continue;
-    }
-
-    if (map_data.spot_type_statuses[type] == spot_active) {
-      map_data.rects[i].z = map_data.prev_rects[i].z = flat_z - 0.3f;
-    } else {
-      map_data.rects[i].z = map_data.prev_rects[i].z = flat_z - 0.6f;
-    }
-
-    map_data.rects[i].r = map_data.rects[i].g = map_data.rects[i].b =
-      map_data.prev_rects[i].r = map_data.prev_rects[i].g = map_data.prev_rects[i].b =
-      lerp(death_type_color.r, black_f, map_data.tween_per_type[type].v);
-    map_data.temp_models_list[i] = 2;
-  }
-  add_models(
-      &rects_bo, map_data.temp_models_list, map_data.n, 1.0f,
-      map_data.rects, map_data.prev_rects, frame_fraction
-      );
-
-  for (int i = 0; i < map_data.n; ++i) {
-    type = map_data.spot_types[i];
-
-    if (type == spot_neutral || type == spot_checkpoint || type == spot_spikes) {
-      continue;
-    }
-
-    map_data.prev_rects[i].r = map_data.rects[i].r =
-      lerp(
-          death_type_color.r,
-          type_colors[type].r,
-          map_data.tween_per_type[type].v
-          );
-    map_data.prev_rects[i].g = map_data.rects[i].g =
-      lerp(
-          death_type_color.g,
-          type_colors[type].g,
-          map_data.tween_per_type[type].v
-          );
-    map_data.prev_rects[i].b = map_data.rects[i].b =
-      lerp(
-          death_type_color.b,
-          type_colors[type].b,
-          map_data.tween_per_type[type].v
-          );
-
-    map_data.temp_models_list[i] = 0;
-  }
-  add_models(
-      &rects_bo, map_data.temp_models_list, map_data.n, 1.0f,
-      map_data.rects, map_data.prev_rects, frame_fraction
-      );
+  add_rects(&sprites_bo, map_data.rects, map_data.prev_rects, map_data.n, frame_fraction);
 }
 
 
@@ -293,9 +171,7 @@ void ii_to_jj_rect(const int ii, const int jj)
   };
   map_data.prev_rects[jj] = map_data.rects[jj];
 
-  set_sprite(&map_data.rects[jj], &texture, SPRITE_OFFSET + map_data.spot_types[jj]);
-
-  set_rect_animation(&map_data.rect_animations[jj], &map_data.rects[jj]);
+  set_sprite(&map_data.rects[jj], &texture, map_data.spot_types[jj] * 2);
 }
 
 
@@ -317,13 +193,12 @@ void matrix_to_rects()
 void update_map(const float t)
 {
   for (int i = 0; i < spot_type_n; ++i) {
-    update_tween(&map_data.tween_per_type[i], t);
+    update_animation(&map_data.animations[i], t);
   }
 
-  execute_schedule(&map_data.reset_schedule, t);
-
   for (int i = 0; i < map_data.n; ++i) {
-    update_rect_animation(&map_data.rect_animations[i], t);
+    // printf("set sprite for type %d on %d to %d\n", map_data.spot_types[i], i, map_data.animations[map_data.spot_types[i]].cur_sprite_id);
+    set_sprite(&map_data.rects[i], &texture, map_data.animations[map_data.spot_types[i]].cur_sprite_id);
   }
 
   memcpy(map_data.prev_rects, map_data.rects, map_data.n * sizeof(rect));
@@ -332,6 +207,8 @@ void update_map(const float t)
 
 void load_map(const char* map_filename)
 {
+  printf("load %s\n", map_filename);
+
   char file_path[255];
   sprintf(file_path, "../../../main/src/maps/%s", map_filename);
   mpack_reader_t reader;
@@ -340,7 +217,7 @@ void load_map(const char* map_filename)
   mpack_tag_t tag;
   tag = mpack_read_tag(&reader);
   if (mpack_reader_error(&reader) != mpack_ok) {
-    fprintf(stderr, "An error occurred decoding the data!\n");
+    fprintf(stderr, "A An error occurred decoding the data!\n");
     return;
   }
 
@@ -373,7 +250,7 @@ void load_map(const char* map_filename)
   for (int i = 0; i < map_data.matrix_size; ++i) {
     tag = mpack_read_tag(&reader);
     if (mpack_reader_error(&reader) != mpack_ok) {
-      fprintf(stderr, "An error occurred decoding the data!\n");
+      fprintf(stderr, "B An error occurred decoding the data!\n");
       return;
     }
     if (mpack_tag_type(&tag) == mpack_type_uint) {
@@ -382,7 +259,7 @@ void load_map(const char* map_filename)
       map_data.matrix[i] = mpack_tag_int_value(&tag);
     }
     if (mpack_reader_error(&reader) != mpack_ok) {
-      fprintf(stderr, "An error occurred decoding the data!\n");
+      fprintf(stderr, "C An error occurred decoding the data!\n");
       return;
     }
   }
@@ -394,7 +271,7 @@ void load_map(const char* map_filename)
   for (int i = 0; i < cnt; ++i) {
     tag = mpack_read_tag(&reader);
     if (mpack_reader_error(&reader) != mpack_ok) {
-      fprintf(stderr, "An error occurred decoding the data!\n");
+      fprintf(stderr, "D An error occurred decoding the data!\n");
       return;
     }
     if (mpack_tag_type(&tag) == mpack_type_uint) {
@@ -403,34 +280,11 @@ void load_map(const char* map_filename)
       map_data.spot_types[i] = mpack_tag_int_value(&tag);
     }
     if (mpack_reader_error(&reader) != mpack_ok) {
-      fprintf(stderr, "An error occurred decoding the data!\n");
+      fprintf(stderr, "E An error occurred decoding the data!\n");
       return;
     }
   }
   mpack_done_array(&reader);
-
-  tag = mpack_read_tag(&reader);
-  if (mpack_reader_error(&reader) != mpack_ok) {
-    fprintf(stderr, "An error occurred decoding the data!\n");
-    return;
-  }
-  if (mpack_tag_type(&tag) == mpack_type_uint) {
-    map_data.player_start_x = mpack_tag_uint_value(&tag);
-  } else {
-    map_data.player_start_x = mpack_tag_int_value(&tag);
-  }
-
-  tag = mpack_read_tag(&reader);
-  if (mpack_reader_error(&reader) != mpack_ok) {
-    fprintf(stderr, "An error occurred decoding the data!\n");
-    return;
-  }
-  if (mpack_tag_type(&tag) == mpack_type_uint) {
-    map_data.player_start_y = mpack_tag_uint_value(&tag);
-  } else {
-    map_data.player_start_y = mpack_tag_int_value(&tag);
-  }
-
 
   reset_map();
 
@@ -440,6 +294,8 @@ void load_map(const char* map_filename)
 
 void save_map(const char* map_filename)
 {
+  printf("save %s\n", map_filename);
+
   char file_path[255];
   sprintf(file_path, "%ssrc/maps/%s", main_dir, map_filename);
   mpack_writer_t writer;
@@ -454,8 +310,6 @@ void save_map(const char* map_filename)
     mpack_write_int(&writer, map_data.spot_types[i]);
   }
   mpack_finish_array(&writer);
-  mpack_write_int(&writer, map_data.player_start_x);
-  mpack_write_int(&writer, map_data.player_start_y);
   if (mpack_writer_destroy(&writer) != mpack_ok) {
     fprintf(stderr, "An error occurred encoding the data!\n");
     return;

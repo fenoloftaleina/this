@@ -40,7 +40,6 @@ void run_map(const int map_i)
 
   load_map(cur_map_name);
 
-  reset_player(map_data.player_start_x, map_data.player_start_y);
   reload_logic();
 }
 

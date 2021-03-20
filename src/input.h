@@ -79,7 +79,7 @@ void handle_input(const sapp_event* ev, const float t)
         break;
 
       case SAPP_KEYCODE_U:
-        undo(t);
+        // undo(t);
         break;
 
       case SAPP_KEYCODE_J:
