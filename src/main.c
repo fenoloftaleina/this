@@ -97,6 +97,13 @@ static const float white_f = 0.9f;
 
 void init(void)
 {
+  mniam_id = 0;
+  kupa_id = 0;
+  sklep_id = 0;
+  auto_id = 0;
+  wygrana_id = 0;
+
+
   sg_setup(&(sg_desc){
       .context = sapp_sgcontext()
       });
@@ -128,14 +135,18 @@ void init(void)
   init_buffer_object(&death_bo, 40000, 60000, &death_shader);
 
 
-  const int PATHS_COUNT = 6;
+  const int PATHS_COUNT = 10;
   const char* paths[PATHS_COUNT];
   paths[0] = "czekoladka.png";
   paths[1] = "czekoladka2.png";
   paths[2] = "kupa.png";
   paths[3] = "kupa2.png";
-  paths[4] = "gracz.png";
-  paths[5] = "gracz2.png";
+  paths[4] = "sklep.png";
+  paths[5] = "sklep2.png";
+  paths[6] = "auto.png";
+  paths[7] = "auto2.png";
+  paths[8] = "gracz.png";
+  paths[9] = "gracz2.png";
   init_texture(&texture, paths, PATHS_COUNT);
 
   init_models();
@@ -298,8 +309,15 @@ void frame(void)
       update_death(t);
 
       if (player_data.won && cur_map_i + 1 < map_list_n) {
-        play_audio("wygrana.wav");
+        play_audio(wygranas[wygrana_id]);
+        wygrana_id = (wygrana_id + 1) % wygrana_n;
+
         run_map(cur_map_i + 1);
+      }
+
+      if (player_data.won && cur_map_i + 1 == map_list_n) {
+        play_audio("koniec.wav");
+        cur_map_i += 1;
       }
 
       if (player_data.lost) {
