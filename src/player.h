@@ -44,7 +44,7 @@ void reset_player(float start_x, float start_y)
   player_data.won = false;
   player_data.lost = false;
 
-  init_animation(&player_data.animation, 8, 2);
+  init_animation(&player_data.animation, 10, 2);
 
   move_player_to(1, 5);
 

@@ -14,12 +14,13 @@ typedef enum spot_type
   spot_chocolate,
   spot_shit,
   spot_shop,
-  spot_car
+  spot_car,
+  spot_bad_shop,
 } spot_type;
 
 const int SPRITE_OFFSET = 0;
 
-const int spot_type_n = 4;
+const int spot_type_n = 5;
 
 
 typedef struct

@@ -61,12 +61,13 @@ void init_texture(texture_data* texture, const char** paths, const int paths_n)
 
     i += width + 1;
 
-    if (height > cur_line_max_height) {
-      cur_line_max_height = height;
+    if (j + height > cur_line_max_height) {
+      cur_line_max_height = j + height;
     }
 
     stbi_image_free(image);
   }
 
   // stbi_write_png("/Users/ja/Downloads/asdf.png", 1024, 1024, 4, texture->pixels, 0);
+  // exit(0);
 }
