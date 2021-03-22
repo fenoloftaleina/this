@@ -38,12 +38,15 @@ typedef struct
   spot_type_status spot_type_statuses[spot_type_n];
 
   int* matrix; // matrix, linear, but 2d
+  int* next_matrix;
 
   float raw_tile_width, raw_tile_height;
 
   const int matrix_w;
   const int matrix_h;
   const int matrix_size;
+
+  bool matrix_changed;
 
   // int offset_x, offsey_y; // for moving between maps potentially
 
@@ -140,7 +143,7 @@ void ii_to_jj_rect(const int ii, const int jj)
 
   set_sprite(&map_data.rects[jj], &texture, SPRITE_OFFSET + map_data.spot_types[jj]);
 
-  set_rect_animation(&map_data.rect_animations[jj], &map_data.rects[jj]);
+  reset_rect_animation(&map_data.rect_animations[jj], &map_data.rects[jj]);
 }
 
 
@@ -166,6 +169,8 @@ void reset_map()
   map_data.tween_per_type[spot_checkpoint].fn = parabola_tween;
 
   reset_schedule(&map_data.reset_schedule);
+
+  map_data.matrix_changed = false;
 }
 
 
@@ -179,6 +184,7 @@ void init_map()
   map_data.spot_types = (spot_type*)malloc(map_data.matrix_size * sizeof(spot_type));
   map_data.matrix = (int*)malloc(map_data.matrix_size * sizeof(int));
   memset(map_data.matrix, -1, map_data.matrix_size * sizeof(int));
+  map_data.next_matrix = (int*)malloc(map_data.matrix_size * sizeof(int));
   map_data.temp_models_list = (int*)malloc(map_data.matrix_size * sizeof(int));
   map_data.paths = (path_data_t*)malloc(map_data.matrix_size * sizeof(path_data_t));
   map_data.rect_animations = (rect_animation_t*)malloc(map_data.matrix_size * sizeof(rect_animation_t));
@@ -326,13 +332,24 @@ void matrix_to_rects()
 
 void update_map(const float t)
 {
-  memset(map_data.matrix, -1, map_data.matrix_size * sizeof(int));
+  memset(map_data.next_matrix, -1, map_data.matrix_size * sizeof(int));
+
   int i, j, ii;
+  map_data.matrix_changed = false;
   for (int jj = 0; jj < map_data.n; ++jj) {
     rect_to_ij(&map_data.rects[jj], &i, &j);
     ii = ij_to_ii(i, j);
-    map_data.matrix[ii] = jj;
+    map_data.next_matrix[ii] = jj;
+
+    if (map_data.matrix[ii] != map_data.next_matrix[ii]) {
+      map_data.matrix_changed = true;
+    }
   }
+
+  int* matrix_p = map_data.matrix;
+  map_data.matrix = map_data.next_matrix;
+  map_data.next_matrix = matrix_p;
+
 
   for (int i = 0; i < spot_type_n; ++i) {
     update_tween(&map_data.tween_per_type[i], t);

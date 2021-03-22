@@ -14,16 +14,18 @@ typedef struct
 } rect_animation_t;
 
 
-void set_rect_animation(rect_animation_t* rect_animation, rect* cur_rect_p)
+void reset_rect_animation(rect_animation_t* rect_animation, rect* cur_rect_p)
 {
   rect_animation->cur_rect_p = cur_rect_p;
+
+  rect_animation->schedule_i = 0;
+  rect_animation->execute_i = -1;
 }
 
 
 void init_rect_animation(rect_animation_t* rect_animation)
 {
-  rect_animation->schedule_i = 0;
-  rect_animation->execute_i = -1;
+  reset_rect_animation(rect_animation, NULL);
 }
 
 

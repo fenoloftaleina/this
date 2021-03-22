@@ -287,6 +287,11 @@ void update_logic
   check_collisions();
 
 
+  if (map_data.matrix_changed) {
+    // check map collisions
+  }
+
+
   int logic_x, logic_y;
   rect_to_ij(&player_data.rect, &logic_x, &logic_y);
 
